@@ -52,7 +52,7 @@ function exportMissingEpisodesPDF(seriesData) {
         doc.setFontSize(titleFontSize);
         doc.setTextColor(...plexOrange);
         doc.setFont(undefined, 'bold');
-        doc.text('PlexComplete', margin, currentY);
+        doc.text('Series Complete for Plex', margin, currentY);
         
         // Subtitle
         doc.setFontSize(12);
@@ -86,7 +86,7 @@ function exportMissingEpisodesPDF(seriesData) {
         doc.setTextColor(...lightGray);
         doc.setFont(undefined, 'italic');
         doc.text('© 2025 by Akustikrausch', pageWidth / 2, footerY, { align: 'center' });
-        doc.text('Generated with PlexComplete', pageWidth / 2, footerY + 3, { align: 'center' });
+        doc.text('Generated with Series Complete for Plex', pageWidth / 2, footerY + 3, { align: 'center' });
     }
     
     // Add summary statistics
@@ -234,7 +234,7 @@ function exportMissingEpisodesPDF(seriesData) {
     
     // Generate filename with date
     const today = new Date().toISOString().split('T')[0];
-    const filename = `PlexComplete_Missing_Episodes_${today}.pdf`;
+    const filename = `SeriesComplete_Missing_Episodes_${today}.pdf`;
     
     // Save the PDF
     doc.save(filename);

@@ -1,5 +1,5 @@
 /**
- * Event Delegation System for PlexComplete
+ * Event Delegation System for Series Complete for Plex
  * Handles all dynamic content events without inline handlers
  */
 

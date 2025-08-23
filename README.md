@@ -1,10 +1,10 @@
-# PlexComplete - TV Series Completeness Analyzer for Plex
+# Series Complete for Plex - TV Series Completeness Analyzer
 
-[![Version](https://img.shields.io/badge/version-2.5.1-blue.svg)](https://github.com/yourusername/plexcomplete)
+[![Version](https://img.shields.io/badge/version-1.0.1.1-blue.svg)](https://github.com/yourusername/series-complete-for-plex)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/yourusername/plexcomplete)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/yourusername/series-complete-for-plex)
 
-PlexComplete is a powerful web application that analyzes your Plex TV series library to identify missing episodes and track series completion status. It provides a modern, responsive interface with real-time analysis capabilities and comprehensive statistics.
+Series Complete for Plex is a powerful web application that analyzes your Plex TV series library to identify missing episodes and track series completion status. It provides a modern, responsive interface with real-time analysis capabilities and comprehensive statistics.
 
 ## 🌟 Features
 
@@ -32,8 +32,8 @@ PlexComplete is a powerful web application that analyzes your Plex TV series lib
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/plexcomplete.git
-cd plexcomplete/web-version
+git clone https://github.com/yourusername/series-complete-for-plex.git
+cd series-complete-for-plex/web-version
 
 # Install dependencies
 bun install  # or npm install
@@ -104,4 +104,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**PlexComplete** - Making your Plex TV library complete, one series at a time.
+**Series Complete for Plex** - Making your Plex TV library complete, one series at a time.

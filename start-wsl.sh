@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "╔═══════════════════════════════════════════════════════════════╗"
-echo "║           PlexComplete WSL/Linux Startup Script               ║"
+echo "║     Series Complete for Plex WSL/Linux Startup Script        ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 echo
 
