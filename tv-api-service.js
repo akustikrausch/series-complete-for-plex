@@ -955,7 +955,9 @@ function getMostCommon(arr) {
 // Test API connections
 async function testTmdbApi() {
     try {
-        // Ensure config is loaded
+        // Force reload config to get latest saved keys
+        const config = require('./services/ConfigService');
+        await config.loadConfig();
         await initConfig();
         
         const apiKey = getTmdbApiKey();
