@@ -1,10 +1,10 @@
-# PlexComplete
+# Series Complete for Plex
 
 A web-based tool to analyze your Plex TV series library for completion status and missing episodes.
 
 ## Overview
 
-PlexComplete helps you identify which TV series in your Plex library are incomplete by analyzing your local files against online databases. Get insights into missing episodes, completion percentages, and series statistics.
+Series Complete for Plex helps you identify which TV series in your Plex library are incomplete by analyzing your local files against online databases. Get insights into missing episodes, completion percentages, and series statistics.
 
 ## Features
 
@@ -50,7 +50,7 @@ PlexComplete helps you identify which TV series in your Plex library are incompl
 
 ## API Keys
 
-PlexComplete uses external APIs to get accurate TV series information. **You need at least ONE API key for optimal results**, but the app will work with whatever you provide.
+Series Complete for Plex uses external APIs to get accurate TV series information. **You need at least ONE API key for optimal results**, but the app will work with whatever you provide.
 
 ### TMDb (The Movie Database) - **STRONGLY RECOMMENDED**
 TMDb provides the most comprehensive and reliable TV series data.
@@ -187,7 +187,7 @@ npm run lint
 
 ## License
 
-PlexComplete © 2025 by Akustikrausch
+Series Complete for Plex © 2025 by Akustikrausch
 
 Licensed under Creative Commons Attribution-NonCommercial 4.0 International License.
 See [LICENSE](LICENSE) for details.
