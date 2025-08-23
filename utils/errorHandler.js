@@ -1,5 +1,5 @@
 /**
- * Error tracking and logging for PlexComplete
+ * Error tracking and logging for Series Complete for Plex
  */
 
 const fs = require('fs');

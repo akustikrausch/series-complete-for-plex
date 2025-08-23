@@ -1,5 +1,5 @@
 /**
- * Performance and Error Monitoring for PlexComplete
+ * Performance and Error Monitoring for Series Complete for Plex
  */
 
 const fs = require('fs').promises;

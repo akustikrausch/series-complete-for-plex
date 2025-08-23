@@ -996,7 +996,7 @@ app.post('/api/monitoring/reset', async (req, res) => {
 const startServer = (port = process.env.PORT || 3000, maxRetries = 10) => {
   const server = app.listen(port, '0.0.0.0', () => {
     console.log('\n╔═══════════════════════════════════════════════════════╗');
-    console.log(`║  PlexComplete by WARP9 läuft auf http://localhost:${port}  ║`);
+    console.log(`║  Series Complete for Plex by Akustikrausch läuft auf http://localhost:${port}  ║`);
     console.log('╚═══════════════════════════════════════════════════════╝\n');
     console.log('Der Browser sollte sich automatisch öffnen...\n');
     

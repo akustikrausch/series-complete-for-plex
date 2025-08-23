@@ -1,5 +1,5 @@
 /**
- * Security utilities for PlexComplete
+ * Security utilities for Series Complete for Plex
  */
 
 /**

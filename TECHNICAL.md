@@ -1,6 +1,6 @@
 # Technical Documentation
 
-This document provides detailed technical information about PlexComplete's architecture, APIs, and implementation details.
+This document provides detailed technical information about Series Complete for Plex's architecture, APIs, and implementation details.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ This document provides detailed technical information about PlexComplete's archi
 
 ## Architecture Overview
 
-PlexComplete follows a modern client-server architecture with real-time communication capabilities.
+Series Complete for Plex follows a modern client-server architecture with real-time communication capabilities.
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -143,7 +143,7 @@ public/js/
 
 ### State Management
 
-PlexComplete uses a global state object for client-side state management:
+Series Complete for Plex uses a global state object for client-side state management:
 
 ```javascript
 window.state = {
@@ -212,7 +212,7 @@ const searchSystem = {
 
 ### Plex Database Schema
 
-PlexComplete interacts with the following Plex database tables:
+Series Complete for Plex interacts with the following Plex database tables:
 
 ```sql
 -- Main metadata table
@@ -695,7 +695,7 @@ class VirtualScrolling {
 // ecosystem.config.js - PM2 Configuration
 module.exports = {
     apps: [{
-        name: 'plexcomplete',
+        name: 'series-complete-for-plex',
         script: 'server-crossplatform.js',
         instances: 1,
         exec_mode: 'fork',
@@ -752,7 +752,7 @@ CMD ["node", "server-crossplatform.js"]
 ```nginx
 server {
     listen 80;
-    server_name plexcomplete.yourdomain.com;
+    server_name series-complete-for-plex.yourdomain.com;
     
     location / {
         proxy_pass http://localhost:3000;
@@ -855,10 +855,10 @@ describe('SeriesAnalyzer', () => {
 ```javascript
 // Debug logging
 const debug = {
-    database: require('debug')('plexcomplete:database'),
-    api: require('debug')('plexcomplete:api'),
-    cache: require('debug')('plexcomplete:cache'),
-    websocket: require('debug')('plexcomplete:websocket')
+    database: require('debug')('series-complete-for-plex:database'),
+    api: require('debug')('series-complete-for-plex:api'),
+    cache: require('debug')('series-complete-for-plex:cache'),
+    websocket: require('debug')('series-complete-for-plex:websocket')
 };
 
 // Usage
@@ -868,4 +868,4 @@ debug.api('Making API request to TMDb');
 
 ---
 
-This technical documentation provides a comprehensive overview of PlexComplete's architecture and implementation. For specific implementation details, refer to the source code and inline documentation.
+This technical documentation provides a comprehensive overview of Series Complete for Plex's architecture and implementation. For specific implementation details, refer to the source code and inline documentation.
