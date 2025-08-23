@@ -1,6 +1,6 @@
 # Installation & Setup Guide
 
-This guide will walk you through setting up PlexComplete on your system.
+This guide will walk you through setting up Series Complete for Plex on your system.
 
 ## Table of Contents
 
@@ -35,8 +35,8 @@ This guide will walk you through setting up PlexComplete on your system.
 curl -fsSL https://bun.sh/install | bash
 
 # Clone the repository
-git clone https://github.com/yourusername/plexcomplete.git
-cd plexcomplete/web-version
+git clone https://github.com/yourusername/series-complete-for-plex.git
+cd series-complete-for-plex/web-version
 
 # Install dependencies
 bun install
@@ -49,8 +49,8 @@ bun run dev
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/plexcomplete.git
-cd plexcomplete/web-version
+git clone https://github.com/yourusername/series-complete-for-plex.git
+cd series-complete-for-plex/web-version
 
 # Install dependencies
 npm install
@@ -72,7 +72,7 @@ pm2 start ecosystem.config.js
 
 ## API Key Configuration
 
-PlexComplete requires API keys from external services to fetch TV series metadata.
+Series Complete for Plex requires API keys from external services to fetch TV series metadata.
 
 ### 1. Create Configuration File
 
@@ -140,7 +140,7 @@ Edit `config.json` with your API keys:
 
 ### Automatic Detection (Recommended)
 
-PlexComplete automatically detects your Plex database location on most systems:
+Series Complete for Plex automatically detects your Plex database location on most systems:
 
 **Windows:**
 ```
@@ -283,13 +283,13 @@ cp config.example.json config.json
 
 ```bash
 # Build image
-docker build -t plexcomplete .
+docker build -t series-complete-for-plex .
 
 # Run container
 docker run -p 3000:3000 \
   -v /path/to/config.json:/app/config.json \
   -v /path/to/plex/database:/plex/database:ro \
-  plexcomplete
+  series-complete-for-plex
 ```
 
 ## Security Considerations
@@ -300,7 +300,7 @@ docker run -p 3000:3000 \
 - Consider environment variables for production
 
 ### Database Access
-- PlexComplete only reads from Plex database
+- Series Complete for Plex only reads from Plex database
 - Creates temporary copies for analysis
 - No modifications made to original database
 
@@ -344,10 +344,10 @@ After successful installation:
 If you encounter issues:
 
 1. Check this troubleshooting section
-2. Search existing [GitHub Issues](https://github.com/yourusername/plexcomplete/issues)
+2. Search existing [GitHub Issues](https://github.com/yourusername/series-complete-for-plex/issues)
 3. Create a new issue with detailed information
 4. Join our community discussions
 
 ---
 
-**Installation complete!** You should now have PlexComplete running and ready to analyze your Plex TV library.
+**Installation complete!** You should now have Series Complete for Plex running and ready to analyze your Plex TV library.

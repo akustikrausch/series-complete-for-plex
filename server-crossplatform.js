@@ -1175,7 +1175,7 @@ async function startServer() {
     // Start listening
     server.listen(PORT, () => {
       console.log('╔═══════════════════════════════════════════════════════╗');
-      console.log('║  PlexComplete by Akustikrausch läuft auf http://localhost:3000  ║');
+      console.log('║  Series Complete for Plex by Akustikrausch läuft auf http://localhost:3000  ║');
       console.log('╚═══════════════════════════════════════════════════════╝');
       console.log('\nDer Browser sollte sich automatisch öffnen...\n');
       console.log('Monitoring active at /api/monitoring/dashboard');
