@@ -1,6 +1,9 @@
-// PlexComplete - Modern Plex-Style App
+// Series Complete for Plex - Modern Plex-Style App
 (function() {
     'use strict';
+    
+    // Define critical functions early to ensure they're available for event delegation
+    // These will be properly defined later in the code
 
     // State management - exposed globally for API retry wrapper
     const state = {
@@ -17,8 +20,8 @@
             incomplete: 0,
             critical: 0
         },
-        // Pagination for performance
-        pageSize: window.innerWidth < 768 ? 10 : window.innerWidth < 1024 ? 15 : 20,
+        // Pagination for performance - increased to 80 per page for better overview
+        pageSize: 80,
         currentPage: 1,
         totalPages: 1,
         // Abort controllers for cancellable operations
@@ -27,7 +30,49 @@
     };
 
     // Initialize app
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        
+        // Ensure critical buttons work (fallback for event delegation)
+        setTimeout(() => {
+            // Settings button
+            const settingsBtn = document.getElementById('settings-btn');
+            if (settingsBtn && !settingsBtn.hasAttribute('data-listener-attached')) {
+                settingsBtn.setAttribute('data-listener-attached', 'true');
+                settingsBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('⚙️ Settings button clicked (fallback)');
+                    if (window.openSettings) {
+                        window.openSettings();
+                    }
+                });
+            }
+            
+            // Scan button
+            const scanBtn = document.getElementById('scan-btn');
+            if (scanBtn && !scanBtn.hasAttribute('data-listener-attached')) {
+                scanBtn.setAttribute('data-listener-attached', 'true');
+                scanBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('🔍 Scan button clicked (fallback)');
+                    if (window.handleScanLibrary) {
+                        window.handleScanLibrary();
+                    }
+                });
+            }
+            
+            // Analyze button handler is now in button-fix.js - skip this
+        }, 100);
+        
+    // Debug: Log available functions
+    console.log('[DEBUG] Available window functions:');
+    console.log('- analyzeAllSeries:', typeof window.analyzeAllSeries);
+    console.log('- clearCache:', typeof window.clearCache);
+    console.log('- cleanupDatabase:', typeof window.cleanupDatabase);
+    console.log('- showClearCacheModal:', typeof window.showClearCacheModal);
+    console.log('- showCleanupDatabaseModal:', typeof window.showCleanupDatabaseModal);
+
+    });
 
     // Debounce function for performance
     function debounce(func, wait) {
@@ -39,21 +84,57 @@
     }
     
     function init() {
-        console.log('PlexComplete initialized');
+        console.log('Series Complete for Plex initialized');
         
-        // Emergency scan button fix - add listener directly
-        setTimeout(() => {
-            const emergencyBtn = document.getElementById('scan-library-btn');
-            console.log('🚨 Emergency scan button check:', emergencyBtn);
-            if (emergencyBtn && !emergencyBtn._hasListener) {
-                console.log('🚨 Adding emergency event listener');
-                emergencyBtn.addEventListener('click', () => {
-                    console.log('🚨 Emergency click handler called!');
-                    handleScanLibrary();
-                });
-                emergencyBtn._hasListener = true;
+        // Global modal close handler and dynamic button handler
+        document.addEventListener('click', function(e) {
+            // Check if clicked element or its parent has modal-close class or data-action="close-modal"
+            if (e.target.matches('[data-action="close-modal"]') || 
+                e.target.closest('[data-action="close-modal"]')) {
+                const modal = e.target.closest('.fixed');
+                if (modal) modal.remove();
             }
-        }, 100);
+            
+            // Handle dynamic analyze series buttons
+            const analyzeBtn = e.target.closest('[data-action="analyze-series"]');
+            if (analyzeBtn) {
+                const seriesId = analyzeBtn.dataset.seriesId;
+                if (seriesId) {
+                    analyzeSeries(parseInt(seriesId));
+                }
+            }
+            
+            // Handle analyze series modal buttons
+            const analyzeModalBtn = e.target.closest('[data-action="analyze-series-modal"]');
+            if (analyzeModalBtn) {
+                const seriesId = analyzeModalBtn.dataset.seriesId;
+                if (seriesId) {
+                    analyzeSeries(parseInt(seriesId));
+                    const modal = analyzeModalBtn.closest('.fixed');
+                    if (modal) modal.remove();
+                }
+            }
+            
+            // Handle toggle season buttons
+            const toggleSeasonBtn = e.target.closest('[data-action="toggle-season"]');
+            if (toggleSeasonBtn) {
+                const seriesId = toggleSeasonBtn.dataset.seriesId;
+                const seasonNum = toggleSeasonBtn.dataset.season;
+                if (seriesId && seasonNum) {
+                    toggleSeason(parseInt(seriesId), parseInt(seasonNum));
+                }
+            }
+            
+            // Handle close analysis buttons
+            const closeAnalysisBtn = e.target.closest('[data-action="close-analysis"]');
+            if (closeAnalysisBtn) {
+                const seriesId = closeAnalysisBtn.dataset.seriesId;
+                const analysisDiv = document.getElementById(`analysis-${seriesId}`);
+                if (analysisDiv) {
+                    analysisDiv.classList.add('hidden');
+                }
+            }
+        });
         
         // Global test function for console debugging
         window.testScanButton = function() {
@@ -66,21 +147,16 @@
             }
         };
         
+        // Attach all event listeners properly
         attachEventListeners();
+        
         loadFromCache(); // Load cached series on page load
         updateUI();
         
         // Debounced resize handler
         const handleResize = debounce(() => {
-            // Adjust page size based on viewport
-            const width = window.innerWidth;
-            if (width < 768) {
-                state.pageSize = 10; // Mobile
-            } else if (width < 1024) {
-                state.pageSize = 15; // Tablet
-            } else {
-                state.pageSize = 20; // Desktop
-            }
+            // Keep page size at 80 for all screen sizes for better overview
+            state.pageSize = 80;
             renderSeries();
         }, 250);
         
@@ -91,7 +167,7 @@
             const analyzeBtnInit = document.getElementById('analyze-all-btn');
             if (analyzeBtnInit) {
                 console.log('[Init] Showing Analyze All button - series count:', state.series.length);
-                analyzeBtnInit.classList.remove('hidden');
+                analyzeBtnInit.classList.remove('hidden'); analyzeBtn.setAttribute('title', 'Analyze all series for missing episodes');
             }
         }
         
@@ -132,9 +208,10 @@
     }
     
     // Load cached data from localStorage
-    function loadFromCache() {
+    window.loadFromCache = function() {
+        console.log('[Cache] Loading from localStorage...');
         try {
-            const cached = localStorage.getItem('plexSeriesCache');
+            const cached = localStorage.getItem('seriesCompleteCache');
             if (cached) {
                 const data = JSON.parse(cached);
                 if (data.series && data.timestamp) {
@@ -175,9 +252,10 @@
     }
     
     // Save to cache
-    function saveToCache() {
+    window.saveToCache = function() {
+        console.log(`[Cache] Saving ${state.series.length} series to localStorage...`);
         try {
-            localStorage.setItem('plexSeriesCache', JSON.stringify({
+            localStorage.setItem('seriesCompleteCache', JSON.stringify({
                 series: state.series,
                 timestamp: Date.now()
             }));
@@ -214,7 +292,7 @@
         // Previous button
         paginationHTML += `
             <button data-page="${state.currentPage - 1}" 
-                    class="page-btn px-3 py-2 rounded-lg bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark transition ${state.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" 
+                    class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition ${state.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" 
                     ${state.currentPage === 1 ? 'disabled' : ''}>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -234,7 +312,7 @@
         
         if (startPage > 1) {
             paginationHTML += `
-                <button data-page="1" class="page-btn px-3 py-2 rounded-lg bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark transition">1</button>
+                <button data-page="1" class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition">1</button>
                 ${startPage > 2 ? '<span class="text-plex-light px-2">...</span>' : ''}
             `;
         }
@@ -242,7 +320,7 @@
         for (let i = startPage; i <= endPage; i++) {
             paginationHTML += `
                 <button data-page="${i}" 
-                        class="page-btn px-3 py-2 rounded-lg ${i === state.currentPage ? 'bg-plex-orange text-plex-dark' : 'bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark'} transition">
+                        class="page-btn px-3 py-2 rounded-lg ${i === state.currentPage ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white' : 'bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white'} transition">
                     ${i}
                 </button>
             `;
@@ -251,14 +329,14 @@
         if (endPage < state.totalPages) {
             paginationHTML += `
                 ${endPage < state.totalPages - 1 ? '<span class="text-plex-light px-2">...</span>' : ''}
-                <button data-page="${state.totalPages}" class="page-btn px-3 py-2 rounded-lg bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark transition">${state.totalPages}</button>
+                <button data-page="${state.totalPages}" class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition">${state.totalPages}</button>
             `;
         }
         
         // Next button
         paginationHTML += `
             <button data-page="${state.currentPage + 1}" 
-                    class="page-btn px-3 py-2 rounded-lg bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark transition ${state.currentPage === state.totalPages ? 'opacity-50 cursor-not-allowed' : ''}" 
+                    class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition ${state.currentPage === state.totalPages ? 'opacity-50 cursor-not-allowed' : ''}" 
                     ${state.currentPage === state.totalPages ? 'disabled' : ''}>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -315,14 +393,18 @@
             searchInput.addEventListener('input', debounce(handleSearch, 300));
         }
 
-        // Main action buttons
+        // Main action buttons - Clean duplicate listeners first
         const scanBtn = document.getElementById('scan-library-btn');
-        console.log('🔧 Scan button found:', scanBtn);
         if (scanBtn) {
-            console.log('🔧 Adding event listener to scan button');
-            scanBtn.addEventListener('click', handleScanLibrary);
-        } else {
-            console.error('🔧 Scan button not found!');
+            // Remove any existing listeners by cloning
+            const newScanBtn = scanBtn.cloneNode(true);
+            scanBtn.parentNode.replaceChild(newScanBtn, scanBtn);
+            // Add single clean listener
+            newScanBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('🔍 Scan button clicked');
+                handleScanLibrary();
+            });
         }
 
         const analyzeBtn = document.getElementById('analyze-all-btn');
@@ -335,10 +417,8 @@
             refreshBtn.addEventListener('click', refreshFromCache);
         }
 
-        const settingsBtn = document.getElementById('settings-btn');
-        if (settingsBtn) {
-            settingsBtn.addEventListener('click', openSettings);
-        }
+        // Settings button is now handled by event delegation system
+        // No need for individual event listener here
 
         // Advanced search button
         const advSearchBtn = document.getElementById('advanced-search-btn');
@@ -395,9 +475,16 @@
         }
     }
 
-    // Handle scan library button click
+    // Handle scan library button click - FIXED with debounce
+    let scanInProgress = false;
     window.handleScanLibrary = async function() {
         console.log('🔍 handleScanLibrary called!');
+        
+        // Prevent multiple simultaneous scans
+        if (scanInProgress) {
+            console.log('⚠️ Scan already in progress, ignoring duplicate call');
+            return;
+        }
         
         // Get button elements
         const scanIcon = document.getElementById('scan-icon');
@@ -411,8 +498,12 @@
         if (state.isLoading) {
             // Stop the scan
             stopLibraryScan();
+            scanInProgress = false;
             return;
         }
+        
+        // Mark scan as in progress
+        scanInProgress = true;
         
         // Show spinner, hide icon, change text to "Stop"
         if (scanIcon) scanIcon.classList.add('hidden');
@@ -448,6 +539,7 @@
             state.scanAbortController = null;
         }
         state.isLoading = false;
+        scanInProgress = false;  // Reset scan flag
         showLoadingOverlay(false);
         const progressContainer = document.getElementById('progress-container');
         if (progressContainer) {
@@ -501,7 +593,8 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({}),  // Send empty object instead of no body
-                signal: state.scanAbortController.signal
+                signal: state.scanAbortController.signal,
+                noRetry: true  // Disable automatic retries for this endpoint
             });
             
             updateProgressBar(50);
@@ -529,6 +622,10 @@
                 state.filteredSeries = data.series;
                 console.log('state.series.length:', state.series.length);
                 console.log('state.filteredSeries.length:', state.filteredSeries.length);
+                
+                // Save to cache after successful scan
+                saveToCache();
+                console.log('[Cache] Saved series to cache after scan');
                 
                 // Debug: Check if folders data is present
                 if (data.series.length > 0) {
@@ -612,6 +709,7 @@
         } finally {
             state.isLoading = false;
             state.scanAbortController = null;
+            scanInProgress = false;  // Reset scan flag
             showLoadingOverlay(false);
             updateUI();
         }
@@ -704,7 +802,7 @@
                 if (series._groupKey && series._groupKey !== lastGroup) {
                     cards.push(`
                         <div class="col-span-full mb-4 mt-6 first:mt-0">
-                            <h3 class="text-xl font-bold text-plex-orange flex items-center space-x-2">
+                            <h3 class="text-xl font-bold text-purple-500 flex items-center space-x-2">
                                 <span>${series._groupKey}</span>
                                 <span class="text-sm text-plex-light ml-2">
                                     (${state.filteredSeries.filter(s => s._groupKey === series._groupKey).length} series)
@@ -808,7 +906,7 @@
                 
                 <div class="mt-4 pt-4 border-t border-plex-gray">
                     <div class="flex space-x-2">
-                        <button data-action="analyze" data-series-id="${series.id}" class="series-analyze-btn flex-1 py-2 px-3 bg-plex-orange text-plex-dark rounded-lg font-semibold text-sm hover:bg-opacity-90 transition flex items-center justify-center space-x-1">
+                        <button data-action="analyze" data-series-id="${series.id}" class="series-analyze-btn flex-1 py-2 px-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold text-sm hover:from-purple-600 hover:to-purple-800 transition shadow-md flex items-center justify-center space-x-1" title="Analyze for missing episodes">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
@@ -904,7 +1002,7 @@
             analysisDiv.classList.remove('hidden');
             analysisDiv.innerHTML = `
                 <div class="flex items-center space-x-2 text-plex-light">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-plex-orange"></div>
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
                     <span>Analyzing...</span>
                 </div>
             `;
@@ -1020,11 +1118,10 @@
                         <p class="text-green-400 font-semibold">Series Complete!</p>
                     </div>
                 `}
-                <button onclick="document.getElementById('analysis-${seriesId}').classList.add('hidden')" class="w-full mt-2 py-2 px-3 bg-plex-gray text-plex-white rounded-lg text-sm hover:bg-opacity-70 transition">
+                <button data-action="close-analysis" data-series-id="${seriesId}" class="w-full mt-2 py-2 px-3 bg-plex-gray text-plex-white rounded-lg text-sm hover:bg-opacity-70 transition">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
-                    Close
                 </button>
             </div>
         `;
@@ -1285,13 +1382,13 @@
         
         // Update button states
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('bg-plex-orange', 'text-plex-dark');
+            btn.classList.remove('bg-purple-600', 'text-white');
             btn.classList.add('bg-plex-gray', 'text-plex-white');
         });
         
         if (event && event.target) {
             event.target.classList.remove('bg-plex-gray', 'text-plex-white');
-            event.target.classList.add('bg-plex-orange', 'text-plex-dark');
+            event.target.classList.add('bg-purple-600', 'text-white');
         }
         
         filterSeries();
@@ -1394,7 +1491,7 @@
                             </span>
                         </div>
                     </div>
-                    <button onclick="this.closest('.fixed').remove()" class="text-plex-light hover:text-white">
+                    <button data-action="close-modal" class="text-plex-light hover:text-white" title="Close window">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -1442,7 +1539,7 @@
                             <div class="space-y-1">
                                 ${series.folders.map(folder => `
                                     <div class="flex items-center text-sm text-plex-white">
-                                        <svg class="w-4 h-4 mr-2 text-plex-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                                         </svg>
                                         <span class="font-mono">${escapeHtml(folder)}</span>
@@ -1475,10 +1572,10 @@
                             <div class="space-y-2">
                                 ${series.seasons.map((season, idx) => `
                                     <div class="border border-plex-gray rounded-lg overflow-hidden">
-                                        <button onclick="toggleSeason(${series.id}, ${season.season_number || idx})" 
+                                        <button data-action="toggle-season" data-series-id="${series.id}" data-season="${season.season_number || idx}"
                                                 class="w-full flex justify-between items-center p-3 hover:bg-plex-gray/20 transition">
                                             <div class="flex items-center space-x-2">
-                                                <svg class="w-4 h-4 text-plex-orange season-arrow-${series.id}-${season.season_number || idx} transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-4 h-4 text-purple-500 season-arrow-${series.id}-${season.season_number || idx} transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                                 </svg>
                                                 <span class="text-plex-white font-semibold">Season ${season.season_number || '?'}</span>
@@ -1510,7 +1607,7 @@
                                             ` : `
                                                 <div class="text-center py-4 text-plex-light text-sm">
                                                     <p>Episode details not available</p>
-                                                    <button onclick="analyzeSeries(${series.id})" class="mt-2 text-xs text-plex-orange hover:text-plex-white">
+                                                    <button title="Analyze this series" data-action="analyze-series" data-series-id="${series.id}" class="mt-2 text-xs text-purple-500 hover:text-plex-white">
                                                         Analyze to get episode details
                                                     </button>
                                                 </div>
@@ -1522,14 +1619,10 @@
                         </div>
                     ` : ''}
                     
-                    <div class="flex space-x-3">
-                        <button onclick="analyzeSeries(${series.id}); this.closest('.fixed').remove()" 
-                                class="flex-1 py-3 px-4 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition">
+                    <div class="flex">
+                        <button data-action="analyze-series-modal" data-series-id="${series.id}"
+                                class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-purple-800 transition shadow-md" title="Analyze this series for missing episodes">
                             Analyze Series
-                        </button>
-                        <button onclick="this.closest('.fixed').remove()" 
-                                class="py-3 px-6 bg-plex-gray text-plex-white rounded-lg hover:bg-opacity-70 transition">
-                            Close
                         </button>
                     </div>
                 </div>
@@ -1583,12 +1676,12 @@
     // Custom Re-analyze Modal
     function showReanalyzeModal() {
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] animate-fade-in';
         modal.innerHTML = `
             <div class="glass-effect rounded-xl p-8 max-w-md mx-4 transform transition-all animate-slide-up">
                 <div class="flex items-center justify-center mb-6">
-                    <div class="w-16 h-16 bg-plex-orange bg-opacity-20 rounded-full flex items-center justify-center">
-                        <svg class="w-10 h-10 text-plex-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-16 h-16 bg-purple-600 bg-opacity-20 rounded-full flex items-center justify-center">
+                        <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                     </div>
@@ -1601,7 +1694,7 @@
                 </p>
                 
                 <div class="bg-plex-dark rounded-lg p-4 mb-6">
-                    <h3 class="text-sm font-semibold text-plex-orange mb-3">Re-analysis will:</h3>
+                    <h3 class="text-sm font-semibold text-purple-500 mb-3">Re-analysis will:</h3>
                     <ul class="space-y-2 text-sm text-plex-light">
                         <li class="flex items-start">
                             <svg class="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1635,21 +1728,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <p class="text-xs text-plex-light">
-                        This will analyze <span class="font-semibold text-plex-orange">${state.series.length} series</span> 
+                        This will analyze <span class="font-semibold text-purple-500">${state.series.length} series</span> 
                         and may take several minutes
                     </p>
                 </div>
                 
                 <div class="flex space-x-3">
-                    <button onclick="analyzeAllSeriesMain(true); this.closest('.fixed').remove()" 
-                            class="flex-1 py-3 px-4 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
+                    <button data-action="analyze-all-series" data-force="true" 
+                            class="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                         Re-analyze All
                     </button>
-                    <button onclick="this.closest('.fixed').remove()" 
-                            class="py-3 px-6 bg-plex-gray text-plex-white rounded-lg hover:bg-opacity-70 transition">
+                    <button data-action="close-modal" 
+                            class="py-3 px-6 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition shadow-md" title="Close this window">
                         Cancel
                     </button>
                 </div>
@@ -1720,7 +1813,7 @@
     // Helper function to create modal with proper event handling
     window.createModal = function(content, onMount = null) {
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4';
         modal.innerHTML = content;
         
         document.body.appendChild(modal);
@@ -1773,12 +1866,12 @@
                     </p>
                     
                     <p class="text-sm text-plex-light mb-6">
-                        PlexComplete uses external APIs (TMDb, TheTVDB, OpenAI, or OMDb) to fetch series metadata. Without API keys, the analysis cannot provide accurate results.
+                        Series Complete for Plex uses external APIs (TMDb, TheTVDB, OpenAI, or OMDb) to fetch series metadata. Without API keys, the analysis cannot provide accurate results.
                     </p>
                     
                     <div class="flex space-x-3">
                         <button data-action="close-and-run" data-function="openSettings" 
-                                class="flex-1 py-3 px-4 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition">
+                                class="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
                             Go to Settings
                         </button>
                         <button data-action="close"
@@ -1828,7 +1921,7 @@
                 </svg>
                 <span>Stop Analysis</span>
             `;
-            analyzeBtnMain.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+            analyzeBtnMain.classList.remove('bg-orange-500', 'hover:bg-orange-600');
             analyzeBtnMain.classList.add('bg-red-600', 'hover:bg-red-700');
         }
         
@@ -1842,12 +1935,12 @@
                         <span class="text-plex-white font-semibold">Analyzing Series</span>
                         <span id="analysis-status" class="text-plex-light text-sm ml-2">Preparing...</span>
                     </div>
-                    <button onclick="stopBatchAnalysis()" class="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition">
+                    <button data-action="stop-batch-analysis" class="px-3 py-1 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition">
                         Stop
                     </button>
                 </div>
                 <div class="relative w-full h-2 bg-plex-darker rounded-full overflow-hidden mt-3">
-                    <div id="analysis-progress" class="absolute left-0 top-0 h-full bg-plex-orange transition-all duration-300" style="width: 0%"></div>
+                    <div id="analysis-progress" class="absolute left-0 top-0 h-full bg-purple-600 transition-all duration-300" style="width: 0%"></div>
                 </div>
                 <div id="current-series" class="text-xs text-plex-light mt-2"></div>
             `;
@@ -1935,7 +2028,7 @@
                 </svg>
                 <span>Analyze All</span>
             `;
-            analyzeBtnRestore.classList.add('bg-purple-600', 'hover:bg-purple-700');
+            analyzeBtnRestore.classList.add('bg-orange-500', 'hover:bg-orange-600');
             analyzeBtnRestore.classList.remove('bg-red-600', 'hover:bg-red-700');
         }
     };
@@ -1959,10 +2052,10 @@
         }
         
         analyzeController = new AbortController();
-        const button = document.querySelector('[onclick="analyzeAllSeries()"]');
+        const button = document.querySelector('[title="Analyze all series in library" onclick="window.analyzeAllSeries()"]');
         if (button) {
             button.textContent = 'Stop Analysis';
-            button.classList.remove('bg-plex-orange');
+            button.classList.remove('bg-purple-600');
             button.classList.add('bg-red-600');
         }
         
@@ -2033,7 +2126,7 @@
         if (button) {
             button.textContent = 'Analyze All Series';
             button.classList.remove('bg-red-600');
-            button.classList.add('bg-plex-orange');
+            button.classList.add('bg-purple-600');
         }
         const progressContainer = document.getElementById('progress-container');
         if (progressContainer) {
@@ -2056,14 +2149,21 @@
         }
         
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] overflow-y-auto';
         modal.innerHTML = `
             <div class="glass-effect rounded-xl p-6 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto">
-                <h2 class="text-xl font-bold text-plex-white mb-4">API Settings</h2>
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold text-plex-white">API Settings</h2>
+                    <button data-action="close-modal" class="text-plex-light hover:text-purple-500 transition" title="Close API settings">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
                 
                 <!-- API Configuration Section -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-plex-orange mb-3 flex items-center">
+                    <h3 class="text-lg font-semibold text-purple-500 mb-3 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                         </svg>
@@ -2078,7 +2178,7 @@
                                     <span class="status-indicator ${apiSettings.tmdb?.status === 'active' ? 'bg-green-500' : apiSettings.tmdb?.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'} w-3 h-3 rounded-full mr-2"></span>
                                     <span class="font-semibold text-plex-white">TMDb API</span>
                                 </div>
-                                <button onclick="testSingleApi('tmdb', this)" class="px-3 py-1 bg-plex-gray text-white rounded text-sm hover:bg-opacity-70">
+                                <button data-api="tmdb" class="test-api-btn px-3 py-1 bg-plex-gray text-white rounded text-sm hover:bg-opacity-70">
                                     Test
                                 </button>
                             </div>
@@ -2086,9 +2186,8 @@
                                 <input type="password" id="api-tmdb" placeholder="Enter TMDb API Key" 
                                        value="${apiSettings.tmdb?.key || ''}" 
                                        data-original="${apiSettings.tmdb?.key || ''}"
-                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-plex-orange focus:outline-none"
-                                       onchange="this.dataset.changed='true'">
-                                <button type="button" onclick="toggleApiKeyVisibility('api-tmdb', this)" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-plex-orange">
+                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-purple-500 focus:outline-none api-key-input">
+                                <button type="button" data-input="api-tmdb" class="toggle-visibility-btn absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-purple-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -2107,7 +2206,7 @@
                                     <span class="status-indicator ${apiSettings.thetvdb?.status === 'active' ? 'bg-green-500' : apiSettings.thetvdb?.status === 'error' ? 'bg-red-500' : 'bg-yellow-500'} w-3 h-3 rounded-full mr-2"></span>
                                     <span class="font-semibold text-plex-white">TheTVDB API</span>
                                 </div>
-                                <button onclick="testSingleApi('thetvdb', this)" class="px-3 py-1 bg-plex-gray text-white rounded text-sm hover:bg-opacity-70">
+                                <button data-api="thetvdb" class="test-api-btn px-3 py-1 bg-plex-gray text-white rounded text-sm hover:bg-opacity-70">
                                     Test
                                 </button>
                             </div>
@@ -2115,9 +2214,8 @@
                                 <input type="password" id="api-thetvdb" placeholder="Enter TheTVDB API Key" 
                                        value="${apiSettings.thetvdb?.key || ''}" 
                                        data-original="${apiSettings.thetvdb?.key || ''}"
-                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-plex-orange focus:outline-none"
-                                       onchange="this.dataset.changed='true'">
-                                <button type="button" onclick="toggleApiKeyVisibility('api-thetvdb', this)" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-plex-orange">
+                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-purple-500 focus:outline-none api-key-input">
+                                <button type="button" data-input="api-thetvdb" class="toggle-visibility-btn absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-purple-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -2129,65 +2227,8 @@
                             </div>
                         </div>
                         
-                        <!-- OpenAI API (Optional) -->
-                        <div class="pb-2">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center">
-                                    <span class="status-indicator ${apiSettings.openai?.status === 'active' ? 'bg-green-500' : apiSettings.openai?.status === 'error' ? 'bg-red-500' : 'bg-gray-500'} w-3 h-3 rounded-full mr-2"></span>
-                                    <span class="font-semibold text-plex-white">OpenAI API</span>
-                                    <span class="text-xs text-plex-light ml-2">(Optional)</span>
-                                </div>
-                                <button onclick="testSingleApi('openai', this)" class="px-3 py-1 bg-plex-gray text-white rounded text-sm hover:bg-opacity-70">
-                                    Test
-                                </button>
-                            </div>
-                            <div class="relative">
-                                <input type="password" id="api-openai" placeholder="Enter OpenAI API Key (Optional)" 
-                                       value="${apiSettings.openai?.key || ''}" 
-                                       data-original="${apiSettings.openai?.key || ''}"
-                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-plex-orange focus:outline-none"
-                                       onchange="this.dataset.changed='true'">
-                                <button type="button" onclick="toggleApiKeyVisibility('api-openai', this)" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-plex-orange">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="text-xs text-plex-light mt-1">
-                                Status: <span class="api-status-openai">${apiSettings.openai?.status === 'active' ? '✅ Connected' : apiSettings.openai?.status === 'not_configured' ? '⚫ Not configured' : apiSettings.openai?.status === 'error' ? '❌ Error' : '🟡 Not tested'}</span>
-                            </div>
-                        </div>
-                        
-                        <!-- OMDb API (Optional) -->
-                        <div class="pb-2">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center">
-                                    <span class="status-indicator ${apiSettings.omdb?.status === 'active' ? 'bg-green-500' : apiSettings.omdb?.status === 'error' ? 'bg-red-500' : 'bg-gray-500'} w-3 h-3 rounded-full mr-2"></span>
-                                    <span class="font-semibold text-plex-white">OMDb API</span>
-                                    <span class="text-xs text-plex-light ml-2">(Optional)</span>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <input type="password" id="api-omdb" placeholder="Enter OMDb API Key (Optional)" 
-                                       value="${apiSettings.omdb?.key || ''}" 
-                                       data-original="${apiSettings.omdb?.key || ''}"
-                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-plex-orange focus:outline-none"
-                                       onchange="this.dataset.changed='true'">
-                                <button type="button" onclick="toggleApiKeyVisibility('api-omdb', this)" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-plex-orange">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="text-xs text-plex-light mt-1">
-                                Status: <span class="api-status-omdb">${apiSettings.omdb?.status === 'configured' ? '✅ Configured' : apiSettings.omdb?.status === 'not_configured' ? '⚫ Not configured' : apiSettings.omdb?.status === 'error' ? '❌ Error' : '🟡 Not tested'}</span>
-                            </div>
-                        </div>
-                        
                         <!-- Save API Keys Button -->
-                        <button onclick="saveApiKeys()" class="w-full py-2 px-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
+                        <button id="save-api-keys-btn" class="w-full py-2 px-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V2"/>
                             </svg>
@@ -2198,29 +2239,29 @@
                 
                 <!-- Actions Section -->
                 <div class="space-y-4">
-                    <button onclick="window.open('documentation.html', '_blank')" class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
+                    <button id="open-docs-btn" class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                         </svg>
                         User Manual öffnen
                     </button>
                     
-                    <button onclick="analyzeAllSeries()" class="w-full py-3 px-4 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition">
+                    <button id="analyze-all-settings-btn" class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-purple-800 transition shadow-md" title="Analyze this series for missing episodes">
                         Analyze All Series
                     </button>
                     
-                    <button onclick="clearCache()" class="w-full py-3 px-4 bg-red-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
+                    <button id="clear-cache-settings-btn" class="w-full py-3 px-4 bg-red-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
                         Clear Cache
                     </button>
                     
-                    <button onclick="cleanupDatabase()" class="w-full py-3 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
+                    <button id="cleanup-database-settings-btn" class="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7m-1-3h-3.5l-1-1h-5l-1 1H5m14 0v-.5A1.5 1.5 0 0017.5 2h-11A1.5 1.5 0 005 3.5V4"/>
                         </svg>
                         Cleanup Database
                     </button>
                     
-                    <button onclick="window.retrySettingsUI?.open()" class="w-full py-3 px-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
+                    <button data-action="open-retry-settings" class="w-full py-3 px-4 bg-green-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
@@ -2229,17 +2270,13 @@
                     
                     <div class="pt-4 border-t border-plex-gray">
                         <p class="text-sm text-plex-light text-center">
-                            PlexComplete v1.0.0<br>
+                            Series Complete for Plex v1.0.1<br>
                             Series: ${state.stats.total}<br>
                             Analyzed: ${state.series.filter(s => s.totalEpisodes).length}<br>
-                            <span class="text-xs text-plex-orange mt-2 block">© 2025 by Akustikrausch</span>
+                            <span class="text-xs text-purple-500 mt-2 block">© 2025 by Akustikrausch</span>
                         </p>
                     </div>
                 </div>
-                
-                <button onclick="this.closest('.fixed').remove()" class="mt-4 w-full py-2 px-4 bg-plex-gray text-plex-white rounded-lg hover:bg-opacity-70 transition">
-                    Close
-                </button>
             </div>
         `;
         document.body.appendChild(modal);
@@ -2248,7 +2285,7 @@
     // Clean Settings Modal
     window.openSettings = function() {
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4';
         modal.innerHTML = `
             <div class="glass-effect rounded-xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-6">
@@ -2259,7 +2296,7 @@
                         </svg>
                         Settings
                     </h2>
-                    <button onclick="this.closest('.fixed').remove()" class="text-plex-light hover:text-plex-orange transition">
+                    <button data-action="close-modal" class="text-plex-light hover:text-purple-500 transition" title="Close settings">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -2268,9 +2305,9 @@
                 
                 <!-- Configuration -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-plex-orange mb-3">Configuration</h3>
+                    <h3 class="text-lg font-semibold text-purple-500 mb-3">Configuration</h3>
                     <div class="space-y-3">
-                        <button id="manage-api-keys-btn" 
+                        <button id="manage-api-keys-btn" title="Configure API keys for enhanced metadata" 
                                 class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
@@ -2279,7 +2316,7 @@
                         </button>
                         
                         <button id="database-settings-btn" 
-                                class="w-full py-3 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center">
+                                class="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:bg-orange-600 transition flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7M3 7l9 9 9-9"/>
                             </svg>
@@ -2298,7 +2335,7 @@
                 
                 <!-- Library Actions -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-plex-orange mb-3">Library</h3>
+                    <h3 class="text-lg font-semibold text-purple-500 mb-3">Library</h3>
                     <div class="space-y-3">
                         <button id="settings-scan-btn" 
                                 class="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center">
@@ -2308,15 +2345,15 @@
                             Scan Library
                         </button>
                         
-                        <button onclick="analyzeAllSeries()" 
-                                class="w-full py-3 px-4 bg-plex-orange text-plex-dark rounded-lg hover:bg-orange-500 transition flex items-center">
+                        <button id="settings-analyze-all-btn" 
+                                class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transition shadow-md flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                             </svg>
                             Analyze All Series
                         </button>
                         
-                        <button onclick="cleanupDatabase()" 
+                        <button id="settings-cleanup-btn" 
                                 class="w-full py-3 px-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7m-1-3h-3.5l-1-1h-5l-1 1H5m14 0v-.5A1.5 1.5 0 0017.5 2h-11A1.5 1.5 0 005 3.5V4"/>
@@ -2328,9 +2365,9 @@
                 
                 <!-- System -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-plex-orange mb-3">System</h3>
+                    <h3 class="text-lg font-semibold text-purple-500 mb-3">System</h3>
                     <div class="space-y-3">
-                        <button onclick="clearCache()" 
+                        <button id="settings-clear-cache-btn" 
                                 class="w-full py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -2342,12 +2379,8 @@
                 
                 <div class="pt-4 border-t border-plex-gray text-center">
                     <p class="text-xs text-plex-light mb-4">
-                        <span class="text-plex-orange font-semibold">PlexComplete</span> v1.0.0
+                        <span class="text-purple-500 font-semibold">Series Complete for Plex</span> v1.0.1
                     </p>
-                    <button id="settings-close-bottom-btn" 
-                            class="px-6 py-2 bg-plex-gray text-plex-white rounded-lg hover:bg-opacity-80 transition">
-                        Close
-                    </button>
                 </div>
             </div>
         `;
@@ -2357,7 +2390,7 @@
         const manageApiKeysBtn = modal.querySelector('#manage-api-keys-btn');
         if (manageApiKeysBtn) {
             manageApiKeysBtn.addEventListener('click', () => {
-                modal.remove();
+                // Don't remove settings modal, just open API settings on top
                 openApiSettings();
             });
         }
@@ -2384,34 +2417,150 @@
             });
         }
         
-        const analyzeBtn = modal.querySelector('#settings-analyze-btn');
+        const analyzeBtn = modal.querySelector('#settings-analyze-all-btn');
         if (analyzeBtn) {
             analyzeBtn.addEventListener('click', () => {
-                analyzeAllSeries();
+                console.log('[Settings] Analyze All button clicked');
+                if (window.analyzeAllSeries) {
+                    window.analyzeAllSeries();
+                } else if (window.checkApiKeysAndAnalyze) {
+                    window.checkApiKeysAndAnalyze();
+                } else {
+                    console.error('Analyze all series function not found');
+                }
             });
         }
         
         const cleanupBtn = modal.querySelector('#settings-cleanup-btn');
         if (cleanupBtn) {
             cleanupBtn.addEventListener('click', () => {
-                cleanupDatabase();
+                console.log('[Settings] Cleanup button clicked');
+                if (window.cleanupDatabase) {
+                    window.cleanupDatabase();
+                } else if (window.showCleanupDatabaseModal) {
+                    window.showCleanupDatabaseModal();
+                } else {
+                    console.error('Cleanup database function not found');
+                }
             });
         }
         
         const clearCacheBtn = modal.querySelector('#settings-clear-cache-btn');
         if (clearCacheBtn) {
             clearCacheBtn.addEventListener('click', () => {
-                clearCache();
+                console.log('[Settings] Clear cache button clicked');
+                if (window.clearCache) {
+                    window.clearCache();
+                } else if (window.showClearCacheModal) {
+                    window.showClearCacheModal();
+                } else {
+                    console.error('Clear cache function not found');
+                }
             });
         }
         
-        // Close buttons
-        const closeButtons = modal.querySelectorAll('#settings-close-btn, #settings-close-bottom-btn');
-        closeButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                modal.remove();
+        // Save API Keys button
+        const saveApiBtn = modal.querySelector('#save-api-keys-btn');
+        if (saveApiBtn) {
+            saveApiBtn.addEventListener('click', () => {
+                console.log('[Settings] Save API keys button clicked');
+                if (window.saveApiKeys) {
+                    window.saveApiKeys();
+                } else {
+                    console.error('Save API keys function not found');
+                }
+            });
+        }
+        
+        // Attach event listeners for API test buttons
+        modal.querySelectorAll('.test-api-btn').forEach(btn => {
+            const apiName = btn.dataset.api;
+            if (apiName) {
+                console.log(`[Settings] Attaching test listener for ${apiName}`);
+                btn.addEventListener('click', function() {
+                    console.log(`[Settings] Test button clicked for ${apiName}`);
+                    if (window.testSingleApi) {
+                        window.testSingleApi(apiName, this);
+                    } else {
+                        console.error('testSingleApi function not found');
+                    }
+                });
+            }
+        });
+        
+        // Attach event listeners for API key input changes
+        modal.querySelectorAll('.api-key-input').forEach(input => {
+            input.addEventListener('change', function() {
+                this.dataset.changed = 'true';
             });
         });
+        
+        // Attach event listeners for toggle visibility buttons
+        modal.querySelectorAll('.toggle-visibility-btn').forEach(btn => {
+            const inputId = btn.dataset.input;
+            if (inputId) {
+                btn.addEventListener('click', function() {
+                    if (window.toggleApiKeyVisibility) {
+                        window.toggleApiKeyVisibility(inputId, this);
+                    }
+                });
+            }
+        });
+        
+        // Documentation button
+        const docsBtn = modal.querySelector('#open-docs-btn');
+        if (docsBtn) {
+            docsBtn.addEventListener('click', () => {
+                window.open('documentation.html', '_blank');
+            });
+        }
+        
+        // Analyze All button in settings
+        const analyzeAllSettingsBtn = modal.querySelector('#analyze-all-settings-btn');
+        if (analyzeAllSettingsBtn) {
+            analyzeAllSettingsBtn.addEventListener('click', () => {
+                console.log('[Settings] Analyze All button clicked');
+                if (window.analyzeAllSeries) {
+                    window.analyzeAllSeries();
+                } else {
+                    console.error('analyzeAllSeries not found');
+                }
+            });
+        }
+        
+        // Clear Cache button
+        const clearCacheSettingsBtn = modal.querySelector('#clear-cache-settings-btn');
+        if (clearCacheSettingsBtn) {
+            clearCacheSettingsBtn.addEventListener('click', () => {
+                console.log('[Settings] Clear Cache button clicked');
+                if (window.clearCache) {
+                    window.clearCache();
+                } else {
+                    console.error('clearCache not found');
+                }
+            });
+        }
+        
+        // Cleanup Database button
+        const cleanupDbBtn = modal.querySelector('#cleanup-database-settings-btn');
+        if (cleanupDbBtn) {
+            cleanupDbBtn.addEventListener('click', () => {
+                console.log('[Settings] Cleanup Database button clicked');
+                if (window.cleanupDatabase) {
+                    window.cleanupDatabase();
+                } else {
+                    console.error('cleanupDatabase not found');
+                }
+            });
+        }
+        
+        // Close button (X)
+        const closeButton = modal.querySelector('#settings-close-btn');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                modal.remove();
+            });
+        }
     };
     
     // Database Settings Modal
@@ -2422,7 +2571,7 @@
             const dbData = await dbResponse.json();
             
             const modal = document.createElement('div');
-            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4';
             modal.innerHTML = `
                 <div class="glass-effect rounded-xl p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
                     <div class="flex items-center justify-between mb-6">
@@ -2432,7 +2581,7 @@
                             </svg>
                             Plex Database Settings
                         </h2>
-                        <button id="db-settings-close-btn" class="text-plex-light hover:text-plex-orange transition">
+                        <button id="db-settings-close-btn" class="text-plex-light hover:text-purple-500 transition">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -2441,7 +2590,7 @@
                     
                     <!-- Database Status -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-plex-orange mb-3">Current Database Status</h3>
+                        <h3 class="text-lg font-semibold text-purple-500 mb-3">Current Database Status</h3>
                         <div class="bg-plex-darker rounded-lg p-4">
                             <div class="flex items-center mb-3">
                                 <span class="status-indicator ${dbData.foundPaths?.length > 0 ? 'bg-green-500' : 'bg-red-500'} w-3 h-3 rounded-full mr-2"></span>
@@ -2453,7 +2602,7 @@
                             ${dbData.foundPaths?.length > 0 ? `
                                 <div class="text-sm text-plex-light">
                                     <strong>Current Path:</strong><br>
-                                    <code class="bg-plex-gray px-2 py-1 rounded text-plex-orange break-all">
+                                    <code class="bg-plex-gray px-2 py-1 rounded text-purple-500 break-all">
                                         ${dbData.foundPaths[0]}
                                     </code>
                                 </div>
@@ -2468,7 +2617,7 @@
                     
                     <!-- Custom Path Configuration -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-plex-orange mb-3">Custom Database Path</h3>
+                        <h3 class="text-lg font-semibold text-purple-500 mb-3">Custom Database Path</h3>
                         <div class="bg-plex-darker rounded-lg p-4">
                             <p class="text-sm text-plex-light mb-3">
                                 Geben Sie einen benutzerdefinierten Pfad zur Plex-Datenbank ein, wenn die automatische Erkennung fehlschlägt:
@@ -2479,9 +2628,9 @@
                                        id="custom-db-path" 
                                        placeholder="z.B. /mnt/c/Users/USERNAME/AppData/Local/Plex Media Server/..."
                                        value="${dbData.currentConfig?.customPath || ''}"
-                                       class="w-full px-3 py-2 bg-plex-dark text-white rounded border border-plex-gray focus:border-plex-orange focus:outline-none text-sm">
+                                       class="w-full px-3 py-2 bg-plex-dark text-white rounded border border-plex-gray focus:border-purple-500 focus:outline-none text-sm">
                                 <button id="browse-db-path-btn" 
-                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-plex-orange">
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-purple-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                                     </svg>
@@ -2508,7 +2657,7 @@
                     <!-- Detected Paths -->
                     ${dbData.possiblePaths?.length > 0 ? `
                         <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-plex-orange mb-3">Detected Paths</h3>
+                            <h3 class="text-lg font-semibold text-purple-500 mb-3">Detected Paths</h3>
                             <div class="bg-plex-darker rounded-lg p-4">
                                 ${dbData.possiblePaths.map(path => `
                                     <div class="flex items-center justify-between py-2 border-b border-plex-gray last:border-b-0">
@@ -2516,7 +2665,7 @@
                                         <div class="flex items-center ml-3">
                                             <span class="status-indicator ${dbData.foundPaths?.includes(path) ? 'bg-green-500' : 'bg-red-500'} w-2 h-2 rounded-full"></span>
                                             ${dbData.foundPaths?.includes(path) ? 
-                                                '<button class="ml-2 px-2 py-1 bg-plex-orange text-plex-dark rounded text-xs use-path-btn" data-path="' + path + '">Use</button>' : 
+                                                '<button class="ml-2 px-2 py-1 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded text-xs use-path-btn" data-path="' + path + '">Use</button>' : 
                                                 '<span class="ml-2 text-xs text-red-400">Not Found</span>'
                                             }
                                         </div>
@@ -2528,21 +2677,14 @@
                     
                     <!-- Instructions -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-plex-orange mb-3">Instructions</h3>
+                        <h3 class="text-lg font-semibold text-purple-500 mb-3">Instructions</h3>
                         <div class="bg-plex-darker rounded-lg p-4">
                             <div class="text-sm text-plex-light space-y-2">
                                 ${dbData.instructions?.map(instruction => 
-                                    `<div class="flex items-start"><span class="text-plex-orange mr-2">•</span><span>${instruction}</span></div>`
+                                    `<div class="flex items-start"><span class="text-purple-500 mr-2">•</span><span>${instruction}</span></div>`
                                 ).join('') || ''}
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex justify-end space-x-3">
-                        <button id="db-settings-close-bottom-btn" 
-                                class="px-6 py-2 bg-plex-gray text-plex-white rounded-lg hover:bg-opacity-80 transition">
-                            Close
-                        </button>
                     </div>
                 </div>
             `;
@@ -2550,7 +2692,7 @@
             document.body.appendChild(modal);
             
             // Attach event listeners
-            const closeButtons = modal.querySelectorAll('#db-settings-close-btn, #db-settings-close-bottom-btn');
+            const closeButtons = modal.querySelectorAll('#db-settings-close-btn');
             closeButtons.forEach(btn => {
                 btn.addEventListener('click', () => modal.remove());
             });
@@ -2580,7 +2722,8 @@
                     const response = await fetch('/api/load-database', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ dbPath: path })
+                        body: JSON.stringify({ dbPath: path }),
+                        noRetry: true  // Disable automatic retries
                     });
                     
                     const result = await response.json();
@@ -2606,7 +2749,9 @@
                 try {
                     const response = await fetch('/api/settings', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
                         body: JSON.stringify({
                             database: {
                                 customPath: path
@@ -2681,12 +2826,38 @@
     
     // Test single API
     window.testSingleApi = async function(apiName, button) {
+        console.log(`[TestSingleAPI] Testing ${apiName}`);
+        
         const originalText = button.textContent;
         button.textContent = 'Testing...';
         button.disabled = true;
         
+        // Get the current value from the input field
+        const input = document.getElementById(`api-${apiName}`);
+        const apiKey = input ? input.value.trim() : '';
+        
+        console.log(`[TestSingleAPI] Using key: ${apiKey ? apiKey.substring(0, 10) + '...' : 'none'}`);
+        
         try {
-            console.log(`[API Test] Testing ${apiName} API...`);
+            // First save the key if it exists
+            if (apiKey) {
+                const savePayload = {};
+                savePayload[apiName] = apiKey;
+                
+                console.log(`[TestSingleAPI] Saving key first...`);
+                const saveResponse = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(savePayload)
+                });
+                
+                if (!saveResponse.ok) {
+                    throw new Error('Failed to save API key');
+                }
+            }
+            
+            // Then test the API
+            console.log(`[TestSingleAPI] Now testing ${apiName} API...`);
             const response = await fetch('/api/test-apis');
             const data = await response.json();
             
@@ -2730,29 +2901,29 @@
     
     // Save API keys
     window.saveApiKeys = async function() {
+        console.log('[SaveAPIKeys] Function called');
+        
         const tmdbInput = document.getElementById('api-tmdb');
         const thetvdbInput = document.getElementById('api-thetvdb');
-        const openaiInput = document.getElementById('api-openai');
-        const omdbInput = document.getElementById('api-omdb');
         
-        // Only send keys that have been changed or are new
+        console.log('[SaveAPIKeys] Inputs found:', {
+            tmdb: !!tmdbInput,
+            thetvdb: !!thetvdbInput
+        });
+        
+        // Collect all API keys to save
         const payload = {};
         
-        if (tmdbInput && (tmdbInput.dataset.changed === 'true' || !tmdbInput.value.startsWith('***'))) {
-            payload.tmdb = tmdbInput.value;
+        // Always save if there's a value that's not empty
+        if (tmdbInput && tmdbInput.value && tmdbInput.value.trim()) {
+            payload.tmdb = tmdbInput.value.trim();
         }
         
-        if (thetvdbInput && (thetvdbInput.dataset.changed === 'true' || !thetvdbInput.value.startsWith('***'))) {
-            payload.thetvdb = thetvdbInput.value;
+        if (thetvdbInput && thetvdbInput.value && thetvdbInput.value.trim()) {
+            payload.thetvdb = thetvdbInput.value.trim();
         }
         
-        if (openaiInput && (openaiInput.dataset.changed === 'true' || !openaiInput.value.startsWith('***'))) {
-            payload.openai = openaiInput.value;
-        }
-        
-        if (omdbInput && (omdbInput.dataset.changed === 'true' || !omdbInput.value.startsWith('***'))) {
-            payload.omdb = omdbInput.value;
-        }
+        console.log('[SaveAPIKeys] Payload to save:', payload);
         
         if (Object.keys(payload).length === 0) {
             showNotification('info', 'No changes to save');
@@ -2760,6 +2931,7 @@
         }
         
         try {
+            console.log('[SaveAPIKeys] Sending to server...');
             const response = await fetch('/api/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2790,51 +2962,51 @@
     };
     
     // Custom Cleanup Database Modal
-    function showCleanupDatabaseModal() {
+    window.showCleanupDatabaseModal = function() {
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] animate-fade-in';
         modal.innerHTML = `
             <div class="glass-effect rounded-xl p-8 max-w-md mx-4 transform transition-all animate-slide-up">
                 <div class="flex items-center justify-center mb-6">
-                    <div class="w-16 h-16 bg-purple-600 bg-opacity-20 rounded-full flex items-center justify-center">
-                        <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-16 h-16 bg-orange-500 bg-opacity-20 rounded-full flex items-center justify-center">
+                        <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7m-1-3h-3.5l-1-1h-5l-1 1H5m14 0v-.5A1.5 1.5 0 0017.5 2h-11A1.5 1.5 0 005 3.5V4"/>
                         </svg>
                     </div>
                 </div>
                 
-                <h2 class="text-2xl font-bold text-plex-white text-center mb-4">Clean Up Database?</h2>
+                <h2 class="text-2xl font-bold text-plex-white text-center mb-4">Clean Up Caches?</h2>
                 
                 <p class="text-plex-light text-center mb-6">
-                    Optimize your library database by removing duplicates and fixing inconsistencies.
+                    Clear all temporary files and cached data to free up space and ensure fresh data.
                 </p>
                 
                 <div class="bg-plex-dark rounded-lg p-4 mb-6">
-                    <h3 class="text-sm font-semibold text-purple-400 mb-3">This will:</h3>
+                    <h3 class="text-sm font-semibold text-amber-400 mb-3">This will:</h3>
                     <ul class="space-y-2 text-sm text-plex-light">
                         <li class="flex items-start">
                             <svg class="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <span>Remove duplicate series entries</span>
+                            <span>Clear all API response caches</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <span>Merge series from multiple libraries</span>
+                            <span>Remove cached analysis results</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <span>Fix inconsistent episode counts</span>
+                            <span>Delete temporary database copies</span>
                         </li>
                         <li class="flex items-start">
                             <svg class="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                             </svg>
-                            <span>Optimize database performance</span>
+                            <span>Clear browser localStorage</span>
                         </li>
                     </ul>
                 </div>
@@ -2859,15 +3031,15 @@
                 </div>
                 
                 <div class="flex space-x-3">
-                    <button onclick="window.performCleanupDatabase(); this.closest('.fixed').remove()" 
-                            class="flex-1 py-3 px-4 bg-purple-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
+                    <button id="confirm-cleanup-btn" 
+                            class="flex-1 py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7m-1-3h-3.5l-1-1h-5l-1 1H5m14 0v-.5A1.5 1.5 0 0017.5 2h-11A1.5 1.5 0 005 3.5V4"/>
                         </svg>
                         Clean Up Database
                     </button>
-                    <button onclick="this.closest('.fixed').remove()" 
-                            class="py-3 px-6 bg-plex-gray text-plex-white rounded-lg hover:bg-opacity-70 transition">
+                    <button data-action="close-modal" 
+                            class="py-3 px-6 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition shadow-md" title="Close this window">
                         Cancel
                     </button>
                 </div>
@@ -2875,13 +3047,32 @@
         `;
         
         document.body.appendChild(modal);
+        
+        // Add event listener for the cleanup button
+        const cleanupBtn = modal.querySelector('#confirm-cleanup-btn');
+        if (cleanupBtn) {
+            cleanupBtn.addEventListener('click', () => {
+                console.log('[Cleanup Modal] Confirm button clicked');
+                modal.remove();
+                if (window.performCleanupDatabase) {
+                    window.performCleanupDatabase();
+                } else {
+                    console.error('performCleanupDatabase not found');
+                }
+            });
+        }
     }
     
     // Clear cache
     // Cleanup database - remove duplicates and optimize
-    window.cleanupDatabase = async function() {
-        // Show custom modal
-        showCleanupDatabaseModal();
+    window.cleanupDatabase = function() {
+        if (typeof showCleanupDatabaseModal === 'function') {
+            showCleanupDatabaseModal();
+        } else if (window.showCleanupDatabaseModal) {
+            window.showCleanupDatabaseModal();
+        } else {
+            console.error('Cleanup database modal not found');
+        }
     };
     
     window.performCleanupDatabase = async function() {
@@ -2897,28 +3088,29 @@
             
             if (result.success && result.stats) {
                 // Clear local cache
-                localStorage.removeItem('plexSeriesCache');
+                localStorage.removeItem('seriesCompleteCache');
                 
-                // Show results
-                if (result.stats.duplicatesRemoved > 0) {
-                    showNotification('success', 
-                        `✅ Database cleaned! Merged ${result.stats.duplicatesRemoved} duplicate series`
+                // Clear the series from state
+                state.series = [];
+                state.filteredSeries = [];
+                
+                // Update UI to show empty state
+                renderSeries();
+                calculateStats();
+                
+                // Show success message
+                let message = '✅ All caches cleared successfully!';
+                if (result.stats.removedAnalyses > 0) {
+                    message += ` Removed ${result.stats.removedAnalyses} cached analyses.`;
+                }
+                showNotification('success', message);
+                
+                // Inform user they need to scan again
+                setTimeout(() => {
+                    showNotification('info', 
+                        '📍 Please click "Scan Library" to reload your series collection'
                     );
-                } else {
-                    showNotification('success', 'Database is already clean - no duplicates found');
-                }
-                
-                // Reload the cleaned data immediately
-                await loadDatabase();
-                
-                // Show additional info after reload
-                if (result.stats.seriesWithMultipleFolders > 0) {
-                    setTimeout(() => {
-                        showNotification('info', 
-                            `📁 ${result.stats.seriesWithMultipleFolders} series are stored across multiple folders`
-                        );
-                    }, 2000);
-                }
+                }, 2000);
                 
             } else {
                 throw new Error(result.error || 'Cleanup failed');
@@ -2929,10 +3121,15 @@
         }
     };
     
-    // Custom Clear Cache Modal
-    function showClearCacheModal() {
+    // Clear cache function
+    window.clearCache = function() {
+        showClearCacheModal();
+    };
+    
+        // Custom Clear Cache Modal
+    window.showClearCacheModal = function() {
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] animate-fade-in';
         modal.innerHTML = `
             <div class="glass-effect rounded-xl p-8 max-w-md mx-4 transform transition-all animate-slide-up">
                 <div class="flex items-center justify-center mb-6">
@@ -2990,15 +3187,15 @@
                 </div>
                 
                 <div class="flex space-x-3">
-                    <button onclick="window.performClearCache(); this.closest('.fixed').remove()" 
+                    <button id="confirm-clear-cache-btn" 
                             class="flex-1 py-3 px-4 bg-red-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
                         Clear Cache
                     </button>
-                    <button onclick="this.closest('.fixed').remove()" 
-                            class="py-3 px-6 bg-plex-gray text-plex-white rounded-lg hover:bg-opacity-70 transition">
+                    <button data-action="close-modal" 
+                            class="py-3 px-6 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition shadow-md" title="Close this window">
                         Cancel
                     </button>
                 </div>
@@ -3006,12 +3203,23 @@
         `;
         
         document.body.appendChild(modal);
+        
+        // Add event listener for the clear cache button
+        const clearCacheBtn = modal.querySelector('#confirm-clear-cache-btn');
+        if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', () => {
+                console.log('[Clear Cache Modal] Confirm button clicked');
+                modal.remove();
+                if (window.performClearCache) {
+                    window.performClearCache();
+                } else {
+                    console.error('performClearCache not found');
+                }
+            });
+        }
     }
     
-    window.clearCache = async function() {
-        // Show custom modal
-        showClearCacheModal();
-    };
+    
     
     window.performClearCache = async function() {
         

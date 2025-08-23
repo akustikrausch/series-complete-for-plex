@@ -34,7 +34,7 @@ class ExportManager {
                 <div class="p-6 border-b border-plex-gray">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-bold text-plex-white">📊 Export Data</h2>
-                        <button onclick="exportManager.close()" class="text-plex-light hover:text-plex-white">
+                        <button data-action="close-export-manager" class="text-plex-light hover:text-plex-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -61,14 +61,14 @@ class ExportManager {
                             </div>
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="csv-include-missing" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="csv-include-missing" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">Include missing episodes</label>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="csv-include-stats" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="csv-include-stats" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">Include completion stats</label>
                                 </div>
-                                <button onclick="exportManager.exportCSV()" 
+                                <button data-action="export-csv" 
                                     class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition">
                                     Export CSV
                                 </button>
@@ -90,14 +90,14 @@ class ExportManager {
                             </div>
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="json-pretty-print" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="json-pretty-print" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">Pretty print (formatted)</label>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="json-include-metadata" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="json-include-metadata" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">Include export metadata</label>
                                 </div>
-                                <button onclick="exportManager.exportJSON()" 
+                                <button data-action="export-json" 
                                     class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
                                     Export JSON
                                 </button>
@@ -107,7 +107,7 @@ class ExportManager {
                         <!-- HTML Report -->
                         <div class="glass-effect rounded-lg p-4">
                             <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center">
+                                <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                     </svg>
@@ -119,15 +119,15 @@ class ExportManager {
                             </div>
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="html-include-charts" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="html-include-charts" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">Include interactive charts</label>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="html-dark-theme" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="html-dark-theme" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">Dark theme</label>
                                 </div>
-                                <button onclick="exportManager.exportHTML()" 
-                                    class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition">
+                                <button data-action="export-html" 
+                                    class="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
                                     Export HTML Report
                                 </button>
                             </div>
@@ -148,14 +148,14 @@ class ExportManager {
                             </div>
                             <div class="space-y-3">
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="md-include-toc" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="md-include-toc" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">Include table of contents</label>
                                 </div>
                                 <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="md-github-flavored" checked class="rounded text-plex-orange">
+                                    <input type="checkbox" id="md-github-flavored" checked class="rounded text-purple-500">
                                     <label class="text-sm text-plex-light">GitHub Flavored Markdown</label>
                                 </div>
-                                <button onclick="exportManager.exportMarkdown()" 
+                                <button data-action="export-markdown" 
                                     class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition">
                                     Export Markdown
                                 </button>
@@ -179,11 +179,11 @@ class ExportManager {
                             Ready to export <span id="export-count">0</span> series
                         </div>
                         <div class="flex space-x-3">
-                            <button onclick="exportManager.exportAll()" 
-                                class="px-4 py-2 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
+                            <button data-action="export-all" 
+                                class="px-4 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
                                 Export All Formats
                             </button>
-                            <button onclick="exportManager.close()" 
+                            <button data-action="close-export-manager" 
                                 class="px-4 py-2 text-plex-light hover:text-plex-white transition">
                                 Close
                             </button>
@@ -676,7 +676,7 @@ class ExportManager {
 
     // Export All Formats
     async exportAll() {
-        const button = document.querySelector('button[onclick="exportManager.exportAll()"]');
+        const button = document.querySelector('button[data-action="export-all"]');
         const originalText = button.innerHTML;
         
         button.innerHTML = `

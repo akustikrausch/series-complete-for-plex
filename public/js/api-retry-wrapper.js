@@ -126,8 +126,8 @@ class ApiRetryWrapper {
                                 </svg>
                                 <span>Analysis failed: ${error.message}</span>
                             </div>
-                            <button onclick="window.analyzeSeries('${seriesId}', true)" 
-                                class="mt-2 text-xs text-plex-orange hover:text-plex-white transition">
+                            <button data-action="analyze-series" data-series-id="${seriesId}" data-force="true" 
+                                class="mt-2 text-xs text-purple-500 hover:text-plex-white transition">
                                 Try Again
                             </button>
                         </div>
@@ -173,7 +173,10 @@ class ApiRetryWrapper {
                 const result = await this.retryManager.retryDatabaseOperation(
                     async () => {
                         const response = await fetch('/api/load-database', {
-                            method: 'POST'
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({}),
+                            noRetry: true  // Disable global retry manager
                         });
 
                         if (!response.ok) {
@@ -507,7 +510,7 @@ class ApiRetryWrapper {
                         <p class="text-green-400 font-semibold">Series Complete!</p>
                     </div>
                 `}
-                <button onclick="document.getElementById('analysis-${seriesId}').classList.add('hidden')" 
+                <button data-action="close-analysis-result" data-analysis-id="analysis-${seriesId}" 
                     class="w-full mt-2 py-2 px-3 bg-plex-gray text-plex-white rounded-lg text-sm hover:bg-opacity-70 transition">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>

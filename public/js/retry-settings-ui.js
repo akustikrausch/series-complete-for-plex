@@ -16,7 +16,7 @@ class RetrySettingsUI {
                 <div class="p-6 border-b border-plex-gray">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-bold text-plex-white">⚙️ Retry Settings</h2>
-                        <button onclick="retrySettingsUI.close()" class="text-plex-light hover:text-plex-white">
+                        <button data-action="close-retry-settings" class="text-plex-light hover:text-plex-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -29,7 +29,7 @@ class RetrySettingsUI {
                     <!-- Tabs -->
                     <div class="border-b border-plex-gray">
                         <div class="flex space-x-8 px-6">
-                            <button class="retry-tab py-4 px-2 border-b-2 border-plex-orange text-plex-orange font-semibold" data-tab="configuration">
+                            <button class="retry-tab py-4 px-2 border-b-2 border-plex-orange text-purple-500 font-semibold" data-tab="configuration">
                                 Configuration
                             </button>
                             <button class="retry-tab py-4 px-2 border-b-2 border-transparent text-plex-light hover:text-plex-white" data-tab="monitoring">
@@ -83,8 +83,8 @@ class RetrySettingsUI {
                             <div class="space-y-6">
                                 <div class="flex justify-between items-center">
                                     <h3 class="text-lg font-semibold text-plex-white">API Health Status</h3>
-                                    <button onclick="retrySettingsUI.runHealthCheck()" 
-                                        class="bg-plex-orange text-plex-dark px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 transition">
+                                    <button data-action="run-health-check" 
+                                        class="bg-purple-600 text-plex-dark px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 transition">
                                         Run Health Check
                                     </button>
                                 </div>
@@ -103,12 +103,12 @@ class RetrySettingsUI {
                             Settings are automatically saved to local storage
                         </div>
                         <div class="flex space-x-3">
-                            <button onclick="retrySettingsUI.resetToDefaults()" 
+                            <button data-action="reset-retry-defaults" 
                                 class="px-4 py-2 text-plex-light hover:text-plex-white transition">
                                 Reset to Defaults
                             </button>
-                            <button onclick="retrySettingsUI.close()" 
-                                class="px-6 py-2 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
+                            <button data-action="close-retry-settings" 
+                                class="px-6 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
                                 Close
                             </button>
                         </div>
@@ -152,7 +152,7 @@ class RetrySettingsUI {
                     </div>
                     <div>
                         <label class="flex items-center space-x-2 text-sm text-plex-light">
-                            <input type="checkbox" id="${type}-jitter" class="rounded text-plex-orange">
+                            <input type="checkbox" id="${type}-jitter" class="rounded text-purple-500">
                             <span>Enable Jitter</span>
                         </label>
                         <div class="text-xs text-plex-gray mt-1">Adds randomness to prevent thundering herd</div>
@@ -188,10 +188,10 @@ class RetrySettingsUI {
         // Update tab buttons
         document.querySelectorAll('.retry-tab').forEach(tab => {
             if (tab.dataset.tab === tabName) {
-                tab.classList.add('border-plex-orange', 'text-plex-orange');
+                tab.classList.add('border-plex-orange', 'text-purple-500');
                 tab.classList.remove('border-transparent', 'text-plex-light');
             } else {
-                tab.classList.remove('border-plex-orange', 'text-plex-orange');
+                tab.classList.remove('border-plex-orange', 'text-purple-500');
                 tab.classList.add('border-transparent', 'text-plex-light');
             }
         });
@@ -314,7 +314,7 @@ class RetrySettingsUI {
                         <div class="text-sm font-semibold text-red-400">${id}</div>
                         <div class="text-xs text-red-300">${breaker.consecutiveFailures} consecutive failures</div>
                     </div>
-                    <button onclick="window.retryManager.forceRetry('${id}')" 
+                    <button data-action="force-retry" data-retry-id="${id}" 
                         class="text-xs bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700">
                         Reset
                     </button>
@@ -346,7 +346,7 @@ class RetrySettingsUI {
     async runHealthCheck() {
         if (!window.apiRetryWrapper) return;
 
-        const button = document.querySelector('button[onclick="retrySettingsUI.runHealthCheck()"]');
+        const button = document.querySelector('button[data-action="run-health-check"]');
         const originalText = button.innerHTML;
         
         button.innerHTML = `

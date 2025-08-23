@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-4">API Test Debug Page</h1>
+        
+        <div class="bg-gray-800 rounded-lg p-6 mb-4">
+            <h2 class="text-xl mb-4">Direct API Test</h2>
+            <input type="text" id="api-key" placeholder="Enter TMDb API Key" 
+                   class="w-full px-3 py-2 bg-gray-700 text-white rounded mb-4">
+            <button id="test-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Test API
+            </button>
+            <div id="result" class="mt-4 p-3 bg-gray-700 rounded hidden"></div>
+        </div>
+        
+        <div class="bg-gray-800 rounded-lg p-6">
+            <h2 class="text-xl mb-4">Console Output</h2>
+            <pre id="console" class="bg-gray-900 p-3 rounded text-sm overflow-auto max-h-96"></pre>
+        </div>
+    </div>
+
+    <script>
+        const logToConsole = (msg) => {
+            const consoleEl = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleEl.textContent += `[${timestamp}] ${msg}\n`;
+            console.log(msg);
+        };
+
+        document.getElementById('test-btn').addEventListener('click', async () => {
+            logToConsole('Test button clicked');
+            const apiKey = document.getElementById('api-key').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!apiKey) {
+                logToConsole('No API key provided');
+                resultDiv.textContent = 'Please enter an API key';
+                resultDiv.classList.remove('hidden');
+                return;
+            }
+            
+            logToConsole(`Testing API key: ${apiKey.substring(0, 10)}...`);
+            
+            try {
+                // First save the key
+                const saveResponse = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tmdb: apiKey })
+                });
+                
+                logToConsole(`Save response: ${saveResponse.status}`);
+                
+                // Then test it
+                const testResponse = await fetch('/api/test-apis');
+                const testData = await testResponse.json();
+                
+                logToConsole(`Test response: ${JSON.stringify(testData)}`);
+                
+                // Interpret results  
+                if (testData.success && testData.results) {
+                    if (testData.results.tmdb === true) {
+                        resultDiv.innerHTML = `<div class="text-green-400">✅ TMDb API Key is VALID!</div>`;
+                    } else {
+                        // Try a direct test with the key
+                        const directTest = await fetch(`https://api.themoviedb.org/3/tv/1396?api_key=${apiKey}`);
+                        if (directTest.ok) {
+                            resultDiv.innerHTML = `<div class="text-green-400">✅ API Key is VALID (direct test successful)!</div>`;
+                        } else {
+                            resultDiv.innerHTML = `<div class="text-red-400">❌ API Key appears to be invalid</div>`;
+                        }
+                    }
+                } else {
+                    resultDiv.textContent = `Result: ${JSON.stringify(testData, null, 2)}`;
+                }
+                resultDiv.classList.remove('hidden');
+                
+            } catch (error) {
+                logToConsole(`Error: ${error.message}`);
+                resultDiv.textContent = `Error: ${error.message}`;
+                resultDiv.classList.remove('hidden');
+            }
+        });
+        
+        logToConsole('Debug page loaded');
+        logToConsole('Event listener attached');
+    </script>
+</body>
+</html>

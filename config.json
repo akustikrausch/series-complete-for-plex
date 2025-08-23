@@ -21,17 +21,6 @@
       "apiKey": "",
       "baseUrl": "https://api4.thetvdb.com/v4",
       "enabled": true
-    },
-    "openai": {
-      "apiKey": "",
-      "baseUrl": "https://api.openai.com/v1",
-      "model": "gpt-3.5-turbo",
-      "enabled": false
-    },
-    "omdb": {
-      "apiKey": "",
-      "baseUrl": "http://www.omdbapi.com",
-      "enabled": true
     }
   },
   "features": {
