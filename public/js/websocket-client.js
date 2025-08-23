@@ -241,7 +241,7 @@ class WebSocketClient {
             indicator.innerHTML = `
                 <div id="ws-status-dot" class="w-3 h-3 rounded-full bg-gray-500"></div>
                 <span id="ws-status-text" class="text-xs text-plex-light">Connecting...</span>
-                <div id="ws-tasks-count" class="hidden ml-2 px-2 py-1 bg-plex-orange rounded text-xs text-plex-dark font-semibold">0</div>
+                <div id="ws-tasks-count" class="hidden ml-2 px-2 py-1 bg-purple-600 rounded text-xs text-plex-dark font-semibold">0</div>
             `;
             document.body.appendChild(indicator);
         }
@@ -314,7 +314,7 @@ class WebSocketClient {
                             <span class="text-sm text-plex-white">${task.seriesTitle}</span>
                             <div class="flex items-center space-x-2">
                                 <div class="w-20 h-2 bg-plex-gray rounded-full overflow-hidden">
-                                    <div class="h-full bg-plex-orange transition-all duration-300" style="width: ${task.progress}%"></div>
+                                    <div class="h-full bg-purple-600 transition-all duration-300" style="width: ${task.progress}%"></div>
                                 </div>
                                 <span class="text-xs text-plex-light">${task.progress}%</span>
                             </div>
@@ -345,7 +345,7 @@ class WebSocketClient {
                 if (analyzeButton) {
                     progressBar = document.createElement('div');
                     progressBar.className = 'ws-progress-bar w-full h-1 bg-plex-gray rounded-full overflow-hidden mt-2';
-                    progressBar.innerHTML = `<div class="h-full bg-plex-orange transition-all duration-300" style="width: 0%"></div>`;
+                    progressBar.innerHTML = `<div class="h-full bg-purple-600 transition-all duration-300" style="width: 0%"></div>`;
                     analyzeButton.parentElement.appendChild(progressBar);
                 }
             }
@@ -393,12 +393,12 @@ class WebSocketClient {
                     <h4 class="font-semibold text-plex-white">${title}</h4>
                     <p class="text-sm text-plex-light mt-1">${message}</p>
                     ${options.action ? `
-                        <button onclick="${options.action}" class="mt-2 text-xs text-plex-orange hover:text-plex-white transition">
+                        <button data-action="view-details" data-detail-action="${options.action}" class="mt-2 text-xs text-purple-500 hover:text-plex-white transition">
                             View Details →
                         </button>
                     ` : ''}
                 </div>
-                <button onclick="document.getElementById('${id}').remove()" class="ml-4 text-plex-light hover:text-plex-white">
+                <button data-action="close-notification" data-notification-id="${id}" class="ml-4 text-plex-light hover:text-plex-white">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>

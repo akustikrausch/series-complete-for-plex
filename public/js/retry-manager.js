@@ -402,7 +402,7 @@ class RetryManager {
     createRetryIndicator(operationId, container) {
         const indicator = document.createElement('div');
         indicator.setAttribute('data-retry-operation', operationId);
-        indicator.className = 'retry-indicator text-plex-orange text-xs';
+        indicator.className = 'retry-indicator text-purple-500 text-xs';
         
         if (container) {
             container.appendChild(indicator);

@@ -35,6 +35,7 @@ class StatisticsManager {
             data: null
         };
         
+        this.closeAnalytics = this.closeAnalytics.bind(this);
         this.init();
     }
 
@@ -443,7 +444,7 @@ class StatisticsManager {
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center space-x-6">
                         <div class="flex items-center space-x-2">
-                            <svg class="w-5 h-5 text-plex-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                             <span class="text-sm font-semibold text-plex-white">Library Overview</span>
@@ -461,7 +462,7 @@ class StatisticsManager {
                         </div>
                     </div>
                     
-                    <div class="text-xs text-plex-orange font-semibold flex items-center space-x-1">
+                    <div class="text-xs text-purple-500 font-semibold flex items-center space-x-1">
                         <span>Click for detailed analytics</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -553,7 +554,7 @@ class StatisticsManager {
                 if (count === 0) return '';
                 const percentage = Math.round((count / totalSeries) * 100);
                 const colorClass = {
-                    '4K': 'bg-purple-500',
+                    '4K': 'bg-amber-500',
                     'HD': 'bg-blue-500', 
                     'SD': 'bg-green-500',
                     'Unknown': 'bg-gray-500'
@@ -623,15 +624,15 @@ class StatisticsManager {
                                 <p class="text-plex-light">Comprehensive statistics and insights for your Plex library</p>
                             </div>
                             <div class="flex items-center space-x-4">
-                                <button onclick="statisticsManager.forceRefresh()" 
-                                    class="px-4 py-2 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center space-x-2">
+                                <button data-action="refresh-statistics" 
+                                    class="px-4 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center space-x-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                     </svg>
                                     <span>Refresh Stats</span>
                                 </button>
-                                <button onclick="statisticsManager.closeAnalytics()" 
-                                    class="text-plex-light hover:text-plex-white transition">
+                                <button data-action="close-analytics" 
+                                    class="text-plex-light hover:text-purple-500 transition" title="Close analytics">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
@@ -651,11 +652,11 @@ class StatisticsManager {
                             <div class="text-plex-light">Total Episodes</div>
                         </div>
                         <div class="glass-effect rounded-xl p-6 text-center">
-                            <div class="text-3xl font-bold text-plex-orange mb-2" id="analytics-completion-rate">0%</div>
+                            <div class="text-3xl font-bold text-purple-500 mb-2" id="analytics-completion-rate">0%</div>
                             <div class="text-plex-light">Completion Rate</div>
                         </div>
                         <div class="glass-effect rounded-xl p-6 text-center">
-                            <div class="text-3xl font-bold text-purple-400 mb-2" id="analytics-total-size">0 TB</div>
+                            <div class="text-3xl font-bold text-amber-400 mb-2" id="analytics-total-size">0 TB</div>
                             <div class="text-plex-light">Estimated Size</div>
                         </div>
                     </div>
@@ -767,18 +768,18 @@ class StatisticsManager {
                     <!-- Statistics Info Footer -->
                     <div class="glass-effect rounded-xl p-6 mt-8">
                         <div class="flex items-start space-x-3">
-                            <svg class="w-5 h-5 text-plex-orange mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <div class="text-sm text-plex-light">
                                 <h4 class="font-semibold text-plex-white mb-2">When are statistics generated?</h4>
                                 <div class="space-y-2">
                                     <div class="flex items-start">
-                                        <span class="text-plex-orange font-semibold mr-2">During Scan:</span>
+                                        <span class="text-purple-500 font-semibold mr-2">During Scan:</span>
                                         <span>Basic statistics are collected - series count, episode count, folder paths for quality detection, library structure</span>
                                     </div>
                                     <div class="flex items-start">
-                                        <span class="text-plex-orange font-semibold mr-2">During Analysis:</span>
+                                        <span class="text-purple-500 font-semibold mr-2">During Analysis:</span>
                                         <span>Detailed metadata is added - exact episode counts, missing episodes, completion status, series end dates, studios/genres</span>
                                     </div>
                                     <div class="flex items-start">
@@ -1080,7 +1081,7 @@ class StatisticsManager {
                     <span class="text-2xl">${fact.icon}</span>
                     <span class="text-plex-light text-sm">${fact.label}</span>
                 </div>
-                <span class="text-plex-orange font-semibold">${fact.value}</span>
+                <span class="text-purple-500 font-semibold">${fact.value}</span>
             </div>
         `).join('');
     }
@@ -1134,7 +1135,7 @@ class StatisticsManager {
                 growthHTML += `
                     <div class="text-sm mt-2 pt-2 border-t border-plex-gray">
                         <span class="text-plex-light">Latest:</span>
-                        <div class="text-xs text-plex-orange mt-1">${recentSeries.title}</div>
+                        <div class="text-xs text-purple-500 mt-1">${recentSeries.title}</div>
                         <div class="text-xs text-plex-light">${daysAgo} days ago</div>
                     </div>
                 `;
@@ -1171,10 +1172,10 @@ class StatisticsManager {
                 <div class="text-sm mt-2 pt-2 border-t border-plex-gray">
                     <span class="text-plex-light">Today's Calls:</span>
                     <div class="text-xs mt-1">
-                        <span class="text-plex-light">TMDb:</span> <span class="text-plex-orange">${apiUsage[today]?.tmdb || 0}</span>
+                        <span class="text-plex-light">TMDb:</span> <span class="text-purple-500">${apiUsage[today]?.tmdb || 0}</span>
                     </div>
                     <div class="text-xs">
-                        <span class="text-plex-light">TVDB:</span> <span class="text-plex-orange">${apiUsage[today]?.thetvdb || 0}</span>
+                        <span class="text-plex-light">TVDB:</span> <span class="text-purple-500">${apiUsage[today]?.thetvdb || 0}</span>
                     </div>
                 </div>
             `;
@@ -1202,7 +1203,7 @@ class StatisticsManager {
                             <span class="text-plex-light">Speed:</span> <span class="text-green-400">${seriesPerSec} series/sec</span>
                         </div>
                         <div class="text-xs">
-                            <span class="text-plex-light">Duration:</span> <span class="text-plex-orange">${(parseInt(lastScanTime) / 1000).toFixed(1)}s</span>
+                            <span class="text-plex-light">Duration:</span> <span class="text-purple-500">${(parseInt(lastScanTime) / 1000).toFixed(1)}s</span>
                         </div>
                     </div>
                 `;
@@ -1247,7 +1248,7 @@ class StatisticsManager {
         container.innerHTML = genres.map(([genre, count]) => `
             <div class="flex justify-between items-center p-3 bg-plex-dark rounded-lg">
                 <span class="text-plex-white">${genre}</span>
-                <span class="text-plex-orange font-semibold">${count}</span>
+                <span class="text-purple-500 font-semibold">${count}</span>
             </div>
         `).join('');
     }

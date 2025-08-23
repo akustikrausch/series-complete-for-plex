@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlexComplete - User Manual</title>
+    <title>Series Complete for Plex - User Manual</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -11,7 +11,7 @@
             theme: {
                 extend: {
                     colors: {
-                        'plex-orange': '#E5A00D',
+                        'plex-purple': '#9B59B6',
                         'plex-dark': '#1F2127',
                         'plex-darker': '#171A1F',
                         'plex-gray': '#3F4045',
@@ -28,13 +28,13 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        h2 { color: #E5A00D; }
-        h3 { color: #E5A00D; }
-        .toc-item:hover { color: #E5A00D; }
+        h2 { color: #9B59B6; }
+        h3 { color: #9B59B6; }
+        .toc-item:hover { color: #9B59B6; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1F2127; }
         ::-webkit-scrollbar-thumb { background: #3F4045; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #E5A00D; }
+        ::-webkit-scrollbar-thumb:hover { background: #9B59B6; }
         [data-lang]:not(.active) { display: none; }
     </style>
 </head>
@@ -44,16 +44,16 @@
         <div class="glass-effect rounded-xl p-6 mb-8">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-3xl font-bold text-plex-orange mb-2">
-                        <span data-lang="en" class="active">PlexComplete User Manual</span>
-                        <span data-lang="de">PlexComplete Benutzerhandbuch</span>
+                    <h1 class="text-3xl font-bold text-purple-500 mb-2">
+                        <span data-lang="en" class="active">Series Complete for Plex User Manual</span>
+                        <span data-lang="de">Series Complete for Plex Benutzerhandbuch</span>
                     </h1>
                     <p class="text-plex-light">Version 1.0.0 - © 2025 by Akustikrausch</p>
                 </div>
                 <div class="flex items-center space-x-4">
                     <!-- Language Selector -->
                     <div class="flex items-center bg-plex-dark rounded-lg p-1">
-                        <button onclick="setLanguage('en')" id="lang-en" class="px-3 py-1 rounded text-sm font-medium bg-plex-orange text-plex-dark">
+                        <button onclick="setLanguage('en')" id="lang-en" class="px-3 py-1 rounded text-sm font-medium bg-purple-600 text-plex-dark">
                             EN
                         </button>
                         <button onclick="setLanguage('de')" id="lang-de" class="px-3 py-1 rounded text-sm font-medium text-plex-light hover:text-white">
@@ -72,52 +72,52 @@
             <!-- Table of Contents -->
             <div class="lg:col-span-1">
                 <div class="glass-effect rounded-xl p-6 sticky top-8">
-                    <h3 class="text-lg font-bold text-plex-orange mb-4">
+                    <h3 class="text-lg font-bold text-purple-500 mb-4">
                         <span data-lang="en" class="active">Table of Contents</span>
                         <span data-lang="de">Inhaltsverzeichnis</span>
                     </h3>
                     <nav class="space-y-2">
-                        <a href="#overview" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#overview" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">📌 Overview</span>
                             <span data-lang="de">📌 Übersicht</span>
                         </a>
-                        <a href="#getting-started" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#getting-started" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">🚀 Getting Started</span>
                             <span data-lang="de">🚀 Erste Schritte</span>
                         </a>
-                        <a href="#main-features" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#main-features" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">⭐ Main Features</span>
                             <span data-lang="de">⭐ Hauptfunktionen</span>
                         </a>
-                        <a href="#api-config" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#api-config" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">🔧 API Configuration</span>
                             <span data-lang="de">🔧 API-Konfiguration</span>
                         </a>
-                        <a href="#analysis" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#analysis" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">📊 Series Analysis</span>
                             <span data-lang="de">📊 Serienanalyse</span>
                         </a>
-                        <a href="#troubleshooting" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#troubleshooting" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">❓ Troubleshooting</span>
                             <span data-lang="de">❓ Fehlerbehebung</span>
                         </a>
-                        <a href="#advanced-search" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#advanced-search" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">🔍 Advanced Search</span>
                             <span data-lang="de">🔍 Erweiterte Suche</span>
                         </a>
-                        <a href="#keyboard" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#keyboard" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">⌨️ Keyboard Shortcuts</span>
                             <span data-lang="de">⌨️ Tastenkürzel</span>
                         </a>
-                        <a href="#retry-system" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#retry-system" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">🔄 Smart Retry System</span>
                             <span data-lang="de">🔄 Intelligentes Wiederholungssystem</span>
                         </a>
-                        <a href="#statistics" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#statistics" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">📊 Statistics & Analytics</span>
                             <span data-lang="de">📊 Statistiken & Analysen</span>
                         </a>
-                        <a href="#export-suite" class="block toc-item hover:text-plex-orange transition">
+                        <a href="#export-suite" class="block toc-item hover:text-purple-500 transition">
                             <span data-lang="en" class="active">📤 Multi-Format Export</span>
                             <span data-lang="de">📤 Multi-Format Export</span>
                         </a>
@@ -136,19 +136,19 @@
                     
                     <!-- Introduction -->
                     <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-3 text-plex-orange">
-                            <span data-lang="en" class="active">What is PlexComplete?</span>
-                            <span data-lang="de">Was ist PlexComplete?</span>
+                        <h3 class="text-xl font-semibold mb-3 text-purple-500">
+                            <span data-lang="en" class="active">What is Series Complete for Plex?</span>
+                            <span data-lang="de">Was ist Series Complete for Plex?</span>
                         </h3>
                         <p class="mb-4">
                             <span data-lang="en" class="active">
-                                PlexComplete is an advanced open-source analysis tool specifically designed for Plex Media Server users 
+                                Series Complete for Plex is an advanced open-source analysis tool specifically designed for Plex Media Server users 
                                 who want to maintain a complete and organized TV series collection. It provides deep insights into your 
                                 media library by connecting directly to your local Plex database and cross-referencing with multiple 
                                 online databases to identify missing episodes, incomplete seasons, and series that need attention.
                             </span>
                             <span data-lang="de">
-                                PlexComplete ist ein fortschrittliches Open-Source-Analysetool, das speziell für Plex Media Server-Benutzer 
+                                Series Complete for Plex ist ein fortschrittliches Open-Source-Analysetool, das speziell für Plex Media Server-Benutzer 
                                 entwickelt wurde, die eine vollständige und organisierte TV-Seriensammlung pflegen möchten. Es bietet tiefe 
                                 Einblicke in Ihre Medienbibliothek, indem es sich direkt mit Ihrer lokalen Plex-Datenbank verbindet und mit 
                                 mehreren Online-Datenbanken abgleicht, um fehlende Episoden, unvollständige Staffeln und Serien zu identifizieren, 
@@ -158,13 +158,13 @@
                         
                         <p class="mb-4">
                             <span data-lang="en" class="active">
-                                Unlike simple file scanners, PlexComplete understands the actual content of your library, recognizes 
+                                Unlike simple file scanners, Series Complete for Plex understands the actual content of your library, recognizes 
                                 different naming conventions, handles multi-part episodes, and provides accurate completeness metrics 
                                 based on official episode counts from trusted sources like TMDb, TheTVDB, and even uses AI verification 
                                 through OpenAI when needed.
                             </span>
                             <span data-lang="de">
-                                Im Gegensatz zu einfachen Datei-Scannern versteht PlexComplete den tatsächlichen Inhalt Ihrer Bibliothek, 
+                                Im Gegensatz zu einfachen Datei-Scannern versteht Series Complete for Plex den tatsächlichen Inhalt Ihrer Bibliothek, 
                                 erkennt verschiedene Namenskonventionen, verarbeitet mehrteilige Episoden und liefert genaue Vollständigkeitsmetriken 
                                 basierend auf offiziellen Episodenzahlen aus vertrauenswürdigen Quellen wie TMDb, TheTVDB und nutzt bei Bedarf 
                                 sogar KI-Verifizierung durch OpenAI.
@@ -172,15 +172,15 @@
                         </p>
                     </div>
                     
-                    <!-- Why PlexComplete -->
+                    <!-- Why Series Complete for Plex -->
                     <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-3 text-plex-orange">
-                            <span data-lang="en" class="active">Why PlexComplete?</span>
-                            <span data-lang="de">Warum PlexComplete?</span>
+                        <h3 class="text-xl font-semibold mb-3 text-purple-500">
+                            <span data-lang="en" class="active">Why Series Complete for Plex?</span>
+                            <span data-lang="de">Warum Series Complete for Plex?</span>
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="bg-plex-darker rounded-lg p-3">
-                                <h4 class="font-bold text-plex-orange mb-2">
+                                <h4 class="font-bold text-purple-500 mb-2">
                                     <span data-lang="en" class="active">🎯 Accuracy</span>
                                     <span data-lang="de">🎯 Genauigkeit</span>
                                 </h4>
@@ -190,7 +190,7 @@
                                 </p>
                             </div>
                             <div class="bg-plex-darker rounded-lg p-3">
-                                <h4 class="font-bold text-plex-orange mb-2">
+                                <h4 class="font-bold text-purple-500 mb-2">
                                     <span data-lang="en" class="active">⚡ Performance</span>
                                     <span data-lang="de">⚡ Leistung</span>
                                 </h4>
@@ -200,7 +200,7 @@
                                 </p>
                             </div>
                             <div class="bg-plex-darker rounded-lg p-3">
-                                <h4 class="font-bold text-plex-orange mb-2">
+                                <h4 class="font-bold text-purple-500 mb-2">
                                     <span data-lang="en" class="active">🔒 Privacy</span>
                                     <span data-lang="de">🔒 Datenschutz</span>
                                 </h4>
@@ -210,7 +210,7 @@
                                 </p>
                             </div>
                             <div class="bg-plex-darker rounded-lg p-3">
-                                <h4 class="font-bold text-plex-orange mb-2">
+                                <h4 class="font-bold text-purple-500 mb-2">
                                     <span data-lang="en" class="active">📱 Responsive</span>
                                     <span data-lang="de">📱 Responsiv</span>
                                 </h4>
@@ -230,12 +230,12 @@
                         </h3>
                         <p class="text-sm mb-2">
                             <span data-lang="en" class="active">
-                                PlexComplete is released under the <strong>Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)</strong>.
+                                Series Complete for Plex is released under the <strong>Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)</strong>.
                                 This means you are free to use, modify, and distribute this software for non-commercial purposes, 
                                 provided you give appropriate credit to the original authors.
                             </span>
                             <span data-lang="de">
-                                PlexComplete wird unter der <strong>Creative Commons Namensnennung-Nicht kommerziell 4.0 International Lizenz (CC BY-NC 4.0)</strong> 
+                                Series Complete for Plex wird unter der <strong>Creative Commons Namensnennung-Nicht kommerziell 4.0 International Lizenz (CC BY-NC 4.0)</strong> 
                                 veröffentlicht. Das bedeutet, Sie können diese Software für nicht-kommerzielle Zwecke frei verwenden, 
                                 modifizieren und verteilen, sofern Sie die ursprünglichen Autoren angemessen würdigen.
                             </span>
@@ -279,14 +279,14 @@
                         <span data-lang="de">🚀 Erste Schritte</span>
                     </h2>
                     
-                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 text-purple-500">
                         <span data-lang="en" class="active">1. Scan Plex Database</span>
                         <span data-lang="de">1. Plex-Datenbank scannen</span>
                     </h3>
                     <div class="bg-plex-darker rounded-lg p-4 mb-4">
                         <ol class="space-y-2 list-decimal list-inside">
-                            <li data-lang="en" class="active">Click <span class="text-plex-orange font-semibold">"Scan Library"</span> in the top bar</li>
-                            <li data-lang="de">Klicken Sie auf <span class="text-plex-orange font-semibold">"Scan Library"</span> in der oberen Leiste</li>
+                            <li data-lang="en" class="active">Click <span class="text-purple-500 font-semibold">"Scan Library"</span> in the top bar</li>
+                            <li data-lang="de">Klicken Sie auf <span class="text-purple-500 font-semibold">"Scan Library"</span> in der oberen Leiste</li>
                             <li data-lang="en" class="active">The app automatically copies your Plex database (original remains unchanged)</li>
                             <li data-lang="de">Die Anwendung kopiert automatisch Ihre Plex-Datenbank (Original bleibt unverändert)</li>
                             <li data-lang="en" class="active">All TV series are loaded and displayed</li>
@@ -296,7 +296,7 @@
                         </ol>
                     </div>
 
-                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 text-purple-500">
                         <span data-lang="en" class="active">2. Series Overview</span>
                         <span data-lang="de">2. Serienübersicht</span>
                     </h3>
@@ -452,7 +452,7 @@
                         </div>
                     </div>
 
-                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 text-purple-500">
                         <span data-lang="en" class="active">Available APIs</span>
                         <span data-lang="de">Verfügbare APIs</span>
                     </h3>
@@ -474,13 +474,13 @@
                                 <span data-lang="de">Die umfassendste und zuverlässigste Quelle für TV-Seriendaten. Liefert Serieninfos, Episodenzahlen und Vollständigkeitsstatus.</span>
                             </p>
                             <div class="bg-plex-dark rounded p-3 mb-3">
-                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                <h5 class="font-semibold mb-2 text-purple-500">
                                     <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
                                     <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
                                 </h5>
                                 <ol class="space-y-1 list-decimal list-inside text-sm">
-                                    <li data-lang="en" class="active">Go to <a href="https://www.themoviedb.org/" target="_blank" class="text-plex-orange hover:underline">themoviedb.org</a></li>
-                                    <li data-lang="de">Gehen Sie zu <a href="https://www.themoviedb.org/" target="_blank" class="text-plex-orange hover:underline">themoviedb.org</a></li>
+                                    <li data-lang="en" class="active">Go to <a href="https://www.themoviedb.org/" target="_blank" class="text-purple-500 hover:underline">themoviedb.org</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="https://www.themoviedb.org/" target="_blank" class="text-purple-500 hover:underline">themoviedb.org</a></li>
                                     <li data-lang="en" class="active">Click "Join TMDb" (top right) and create free account</li>
                                     <li data-lang="de">Klicken Sie auf "Join TMDb" (oben rechts) und erstellen Sie ein kostenloses Konto</li>
                                     <li data-lang="en" class="active">Confirm your email address</li>
@@ -489,8 +489,8 @@
                                     <li data-lang="de">Gehen Sie zu Settings → API → Create → Developer</li>
                                     <li data-lang="en" class="active">Accept the terms and conditions</li>
                                     <li data-lang="de">Akzeptieren Sie die Nutzungsbedingungen</li>
-                                    <li data-lang="en" class="active">Fill out the form: Application Name: "PlexComplete", URL: "http://localhost:3000", Summary: "Personal TV series tracker"</li>
-                                    <li data-lang="de">Füllen Sie das Formular aus: Application Name: "PlexComplete", URL: "http://localhost:3000", Summary: "Personal TV series tracker"</li>
+                                    <li data-lang="en" class="active">Fill out the form: Application Name: "Series Complete for Plex", URL: "http://localhost:3000", Summary: "Personal TV series tracker"</li>
+                                    <li data-lang="de">Füllen Sie das Formular aus: Application Name: "Series Complete for Plex", URL: "http://localhost:3000", Summary: "Personal TV series tracker"</li>
                                     <li data-lang="en" class="active">Copy the "API Key (v3 auth)" - this is what you need!</li>
                                     <li data-lang="de">Kopieren Sie den "API Key (v3 auth)" - das ist was Sie brauchen!</li>
                                 </ol>
@@ -517,13 +517,13 @@
                                 <span data-lang="de">Ausgezeichnete Backup-Quelle mit detaillierten Episodeninformationen und Ausstrahlungsdaten. Perfekte Ergänzung zu TMDb.</span>
                             </p>
                             <div class="bg-plex-dark rounded p-3 mb-3">
-                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                <h5 class="font-semibold mb-2 text-purple-500">
                                     <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
                                     <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
                                 </h5>
                                 <ol class="space-y-1 list-decimal list-inside text-sm">
-                                    <li data-lang="en" class="active">Go to <a href="https://thetvdb.com/" target="_blank" class="text-plex-orange hover:underline">thetvdb.com</a></li>
-                                    <li data-lang="de">Gehen Sie zu <a href="https://thetvdb.com/" target="_blank" class="text-plex-orange hover:underline">thetvdb.com</a></li>
+                                    <li data-lang="en" class="active">Go to <a href="https://thetvdb.com/" target="_blank" class="text-purple-500 hover:underline">thetvdb.com</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="https://thetvdb.com/" target="_blank" class="text-purple-500 hover:underline">thetvdb.com</a></li>
                                     <li data-lang="en" class="active">Click "Register" and create free account</li>
                                     <li data-lang="de">Klicken Sie auf "Register" und erstellen Sie ein kostenloses Konto</li>
                                     <li data-lang="en" class="active">Confirm your email address</li>
@@ -532,8 +532,8 @@
                                     <li data-lang="de">Gehen Sie zu Dashboard → API Access</li>
                                     <li data-lang="en" class="active">Click "Create API Key"</li>
                                     <li data-lang="de">Klicken Sie auf "Create API Key"</li>
-                                    <li data-lang="en" class="active">Fill out: API Key Name: "PlexComplete", Description: "Personal use for TV series tracking"</li>
-                                    <li data-lang="de">Füllen Sie aus: API Key Name: "PlexComplete", Description: "Personal use for TV series tracking"</li>
+                                    <li data-lang="en" class="active">Fill out: API Key Name: "Series Complete for Plex", Description: "Personal use for TV series tracking"</li>
+                                    <li data-lang="de">Füllen Sie aus: API Key Name: "Series Complete for Plex", Description: "Personal use for TV series tracking"</li>
                                     <li data-lang="en" class="active">Copy your API key</li>
                                     <li data-lang="de">Kopieren Sie Ihren API-Key</li>
                                 </ol>
@@ -549,7 +549,7 @@
                             <div class="flex items-center mb-3">
                                 <span class="text-2xl mr-3">🤖</span>
                                 <h4 class="font-bold text-lg">3. OpenAI - 
-                                    <span class="text-purple-400 text-sm font-normal">
+                                    <span class="text-amber-400 text-sm font-normal">
                                         <span data-lang="en" class="active">OPTIONAL</span>
                                         <span data-lang="de">OPTIONAL</span>
                                     </span>
@@ -560,21 +560,21 @@
                                 <span data-lang="de">KI-gestützte Fallback-Option für sehr obskure Serien, die andere APIs nicht kennen. Wird nur verwendet, wenn TMDb und TheTVDB versagen.</span>
                             </p>
                             <div class="bg-plex-dark rounded p-3 mb-3">
-                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                <h5 class="font-semibold mb-2 text-purple-500">
                                     <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
                                     <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
                                 </h5>
                                 <ol class="space-y-1 list-decimal list-inside text-sm">
-                                    <li data-lang="en" class="active">Go to <a href="https://platform.openai.com/" target="_blank" class="text-plex-orange hover:underline">platform.openai.com</a></li>
-                                    <li data-lang="de">Gehen Sie zu <a href="https://platform.openai.com/" target="_blank" class="text-plex-orange hover:underline">platform.openai.com</a></li>
+                                    <li data-lang="en" class="active">Go to <a href="https://platform.openai.com/" target="_blank" class="text-purple-500 hover:underline">platform.openai.com</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="https://platform.openai.com/" target="_blank" class="text-purple-500 hover:underline">platform.openai.com</a></li>
                                     <li data-lang="en" class="active">Create account or sign in</li>
                                     <li data-lang="de">Konto erstellen oder anmelden</li>
                                     <li data-lang="en" class="active">Go to API Keys section</li>
                                     <li data-lang="de">Gehen Sie zum API Keys Bereich</li>
                                     <li data-lang="en" class="active">Click "Create new secret key"</li>
                                     <li data-lang="de">Klicken Sie auf "Create new secret key"</li>
-                                    <li data-lang="en" class="active">Name it "PlexComplete" and copy the key</li>
-                                    <li data-lang="de">Nennen Sie ihn "PlexComplete" und kopieren Sie den Key</li>
+                                    <li data-lang="en" class="active">Name it "Series Complete for Plex" and copy the key</li>
+                                    <li data-lang="de">Nennen Sie ihn "Series Complete for Plex" und kopieren Sie den Key</li>
                                     <li data-lang="en" class="active">⚠️ IMPORTANT: Add billing info and set usage limits!</li>
                                     <li data-lang="de">⚠️ WICHTIG: Zahlungsinformationen hinzufügen und Nutzungslimits setzen!</li>
                                 </ol>
@@ -601,13 +601,13 @@
                                 <span data-lang="de">Zusätzliche Metadatenquelle für Poster-Bilder und IMDb-Bewertungen. Schön zu haben, aber nicht essentiell.</span>
                             </p>
                             <div class="bg-plex-dark rounded p-3 mb-3">
-                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                <h5 class="font-semibold mb-2 text-purple-500">
                                     <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
                                     <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
                                 </h5>
                                 <ol class="space-y-1 list-decimal list-inside text-sm">
-                                    <li data-lang="en" class="active">Go to <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" class="text-plex-orange hover:underline">omdbapi.com/apikey.aspx</a></li>
-                                    <li data-lang="de">Gehen Sie zu <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" class="text-plex-orange hover:underline">omdbapi.com/apikey.aspx</a></li>
+                                    <li data-lang="en" class="active">Go to <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" class="text-purple-500 hover:underline">omdbapi.com/apikey.aspx</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" class="text-purple-500 hover:underline">omdbapi.com/apikey.aspx</a></li>
                                     <li data-lang="en" class="active">Select "FREE! (1,000 daily limit)"</li>
                                     <li data-lang="de">Wählen Sie "FREE! (1,000 daily limit)"</li>
                                     <li data-lang="en" class="active">Enter your email address</li>
@@ -625,7 +625,7 @@
                         </div>
                     </div>
 
-                    <h3 class="text-xl font-semibold mb-3 mt-6 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 mt-6 text-purple-500">
                         <span data-lang="en" class="active">Setup API Keys</span>
                         <span data-lang="de">API-Keys einrichten</span>
                     </h3>
@@ -652,7 +652,7 @@
                         </p>
                     </div>
 
-                    <h3 class="text-xl font-semibold mb-3 mt-6 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 mt-6 text-purple-500">
                         <span data-lang="en" class="active">🎯 Configuration Scenarios</span>
                         <span data-lang="de">🎯 Konfigurationsszenarien</span>
                     </h3>
@@ -695,7 +695,7 @@
 
                         <!-- Scenario 3: Only TheTVDB -->
                         <div class="bg-plex-darker rounded-lg p-4">
-                            <h4 class="font-semibold mb-2 text-purple-400">
+                            <h4 class="font-semibold mb-2 text-amber-400">
                                 <span data-lang="en" class="active">📺 Only TheTVDB</span>
                                 <span data-lang="de">📺 Nur TheTVDB</span>
                             </h4>
@@ -738,7 +738,7 @@
                         <span data-lang="de">📊 Serienanalyse</span>
                     </h2>
                     
-                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 text-purple-500">
                         <span data-lang="en" class="active">Single Analysis</span>
                         <span data-lang="de">Einzelanalyse</span>
                     </h3>
@@ -757,7 +757,7 @@
                         </ol>
                     </div>
 
-                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 text-purple-500">
                         <span data-lang="en" class="active">Batch Analysis</span>
                         <span data-lang="de">Batch-Analyse</span>
                     </h3>
@@ -778,7 +778,7 @@
                         </ol>
                     </div>
 
-                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                    <h3 class="text-xl font-semibold mb-3 text-purple-500">
                         <span data-lang="en" class="active">Automatic Analysis</span>
                         <span data-lang="de">Automatische Analyse</span>
                     </h3>
@@ -921,8 +921,8 @@
                                 <span data-lang="de">WebSocket-Verbindung</span>
                             </h3>
                             <p class="text-sm mb-3">
-                                <span data-lang="en" class="active">PlexComplete uses WebSocket technology for real-time updates. The connection status is shown in the bottom-right corner:</span>
-                                <span data-lang="de">PlexComplete verwendet WebSocket-Technologie für Echtzeit-Updates. Der Verbindungsstatus wird in der unteren rechten Ecke angezeigt:</span>
+                                <span data-lang="en" class="active">Series Complete for Plex uses WebSocket technology for real-time updates. The connection status is shown in the bottom-right corner:</span>
+                                <span data-lang="de">Series Complete for Plex verwendet WebSocket-Technologie für Echtzeit-Updates. Der Verbindungsstatus wird in der unteren rechten Ecke angezeigt:</span>
                             </p>
                             <ul class="space-y-1 list-disc list-inside text-sm">
                                 <li><span class="text-green-500">●</span> <span data-lang="en" class="active">Green pulse: Connected and active</span><span data-lang="de">Grünes Pulsieren: Verbunden und aktiv</span></li>
@@ -1046,19 +1046,19 @@
                             </p>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                 <div class="bg-plex-gray rounded p-3">
-                                    <div class="font-semibold text-plex-orange">AND</div>
+                                    <div class="font-semibold text-purple-500">AND</div>
                                     <div data-lang="en" class="active">All terms must match</div>
                                     <div data-lang="de">Alle Begriffe müssen übereinstimmen</div>
                                     <div class="text-xs mt-1 text-plex-light">crime drama → both words</div>
                                 </div>
                                 <div class="bg-plex-gray rounded p-3">
-                                    <div class="font-semibold text-plex-orange">OR</div>
+                                    <div class="font-semibold text-purple-500">OR</div>
                                     <div data-lang="en" class="active">Any term can match</div>
                                     <div data-lang="de">Jeder Begriff kann übereinstimmen</div>
                                     <div class="text-xs mt-1 text-plex-light">comedy horror → either word</div>
                                 </div>
                                 <div class="bg-plex-gray rounded p-3">
-                                    <div class="font-semibold text-plex-orange">NOT</div>
+                                    <div class="font-semibold text-purple-500">NOT</div>
                                     <div data-lang="en" class="active">Exclude matching terms</div>
                                     <div data-lang="de">Übereinstimmende Begriffe ausschließen</div>
                                     <div class="text-xs mt-1 text-plex-light">drama → exclude dramas</div>
@@ -1077,7 +1077,7 @@
                             </p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Exact Phrases</span>
                                         <span data-lang="de">Exakte Phrasen</span>
                                     </div>
@@ -1088,7 +1088,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Must Include</span>
                                         <span data-lang="de">Muss enthalten</span>
                                     </div>
@@ -1099,7 +1099,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Must Exclude</span>
                                         <span data-lang="de">Muss ausschließen</span>
                                     </div>
@@ -1110,7 +1110,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Field Search</span>
                                         <span data-lang="de">Feldsuche</span>
                                     </div>
@@ -1130,7 +1130,7 @@
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Content Filters</span>
                                         <span data-lang="de">Inhaltsfilter</span>
                                     </div>
@@ -1144,7 +1144,7 @@
                                     </ul>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Completion Filters</span>
                                         <span data-lang="de">Vervollständigungsfilter</span>
                                     </div>
@@ -1219,7 +1219,7 @@
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Saved Presets</span>
                                         <span data-lang="de">Gespeicherte Voreinstellungen</span>
                                     </div>
@@ -1233,7 +1233,7 @@
                                     </ul>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Search History</span>
                                         <span data-lang="de">Suchverlauf</span>
                                     </div>
@@ -1367,8 +1367,8 @@
                                 <span data-lang="de">Automatische Fehlerbehebung</span>
                             </h3>
                             <p class="text-sm mb-3">
-                                <span data-lang="en" class="active">PlexComplete automatically retries failed operations using intelligent exponential backoff:</span>
-                                <span data-lang="de">PlexComplete wiederholt fehlgeschlagene Operationen automatisch mit intelligentem exponentiellen Backoff:</span>
+                                <span data-lang="en" class="active">Series Complete for Plex automatically retries failed operations using intelligent exponential backoff:</span>
+                                <span data-lang="de">Series Complete for Plex wiederholt fehlgeschlagene Operationen automatisch mit intelligentem exponentiellen Backoff:</span>
                             </p>
                             <ul class="space-y-1 list-disc list-inside text-sm">
                                 <li data-lang="en" class="active">API requests: Up to 3 retries with exponential backoff</li>
@@ -1410,7 +1410,7 @@
                             </p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">Configuration Tab</div>
+                                    <div class="font-semibold text-purple-500 mb-2">Configuration Tab</div>
                                     <ul class="space-y-1 list-disc list-inside">
                                         <li data-lang="en" class="active">Adjust retry counts per operation type</li>
                                         <li data-lang="de">Wiederholungszähler pro Operationstyp anpassen</li>
@@ -1421,7 +1421,7 @@
                                     </ul>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">Monitoring Tab</div>
+                                    <div class="font-semibold text-purple-500 mb-2">Monitoring Tab</div>
                                     <ul class="space-y-1 list-disc list-inside">
                                         <li data-lang="en" class="active">View active retry operations</li>
                                         <li data-lang="de">Aktive Wiederholungsoperationen anzeigen</li>
@@ -1478,7 +1478,7 @@
                             </p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Overview Cards</span>
                                         <span data-lang="de">Übersichtskarten</span>
                                     </div>
@@ -1492,7 +1492,7 @@
                                     </ul>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Interactive Charts</span>
                                         <span data-lang="de">Interaktive Diagramme</span>
                                     </div>
@@ -1521,7 +1521,7 @@
                             </p>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Library Growth</span>
                                         <span data-lang="de">Bibliothekswachstum</span>
                                     </div>
@@ -1535,7 +1535,7 @@
                                     </ul>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">API Usage</span>
                                         <span data-lang="de">API-Nutzung</span>
                                     </div>
@@ -1549,7 +1549,7 @@
                                     </ul>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Performance</span>
                                         <span data-lang="de">Leistung</span>
                                     </div>
@@ -1605,7 +1605,7 @@
                             </p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Resolution Detection</span>
                                         <span data-lang="de">Auflösungserkennung</span>
                                     </div>
@@ -1618,7 +1618,7 @@
                                     </ul>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Feature Detection</span>
                                         <span data-lang="de">Feature-Erkennung</span>
                                     </div>
@@ -1639,7 +1639,7 @@
                             </h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Top Networks</span>
                                         <span data-lang="de">Top-Netzwerke</span>
                                     </div>
@@ -1649,7 +1649,7 @@
                                     </p>
                                 </div>
                                 <div>
-                                    <div class="font-semibold text-plex-orange mb-2">
+                                    <div class="font-semibold text-purple-500 mb-2">
                                         <span data-lang="en" class="active">Top Genres</span>
                                         <span data-lang="de">Top-Genres</span>
                                     </div>
@@ -1747,7 +1747,7 @@
                                     </ul>
                                 </div>
                                 <div class="bg-plex-gray rounded p-3">
-                                    <div class="font-semibold text-purple-400 mb-2">📈 HTML Report</div>
+                                    <div class="font-semibold text-amber-400 mb-2">📈 HTML Report</div>
                                     <ul class="space-y-1 list-disc list-inside text-xs">
                                         <li data-lang="en" class="active">Interactive charts (Chart.js)</li>
                                         <li data-lang="de">Interaktive Diagramme (Chart.js)</li>
@@ -1799,7 +1799,7 @@
                 <!-- Footer -->
                 <div class="glass-effect rounded-xl p-6 text-center">
                     <p class="text-plex-light">
-                        PlexComplete v1.0.0 - <span data-lang="en" class="active">A tool by Akustikrausch</span><span data-lang="de">Ein Tool von Akustikrausch</span><br>
+                        Series Complete for Plex v1.0.0 - <span data-lang="en" class="active">A tool by Akustikrausch</span><span data-lang="de">Ein Tool von Akustikrausch</span><br>
                         <span class="text-xs">
                             <span data-lang="en" class="active">For questions and support visit our project page</span>
                             <span data-lang="de">Für Fragen und Support besuchen Sie unsere Projektseite</span>
@@ -1827,10 +1827,10 @@
             const deBtn = document.getElementById('lang-de');
             
             if (lang === 'en') {
-                enBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-plex-orange text-plex-dark';
+                enBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-purple-600 text-plex-dark';
                 deBtn.className = 'px-3 py-1 rounded text-sm font-medium text-plex-light hover:text-white';
             } else {
-                deBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-plex-orange text-plex-dark';
+                deBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-purple-600 text-plex-dark';
                 enBtn.className = 'px-3 py-1 rounded text-sm font-medium text-plex-light hover:text-white';
             }
             
@@ -1868,9 +1868,9 @@
             });
 
             navItems.forEach(item => {
-                item.classList.remove('text-plex-orange');
+                item.classList.remove('text-purple-500');
                 if (item.getAttribute('href') === `#${current}`) {
-                    item.classList.add('text-plex-orange');
+                    item.classList.add('text-purple-500');
                 }
             });
         });

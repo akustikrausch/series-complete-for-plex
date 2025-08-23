@@ -94,15 +94,7 @@ const PORT = process.env.PORT || 3000;
 
 // Security Middleware - FIRST!
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://unpkg.com"],
-            fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-            imgSrc: ["'self'", "data:", "https:"],
-        }
-    },
+    contentSecurityPolicy: false,  // Temporarily disable CSP completely
     crossOriginEmbedderPolicy: false // Allow external resources
 }));
 
@@ -122,10 +114,15 @@ app.use(cors({
 app.use(express.json({ 
     limit: '10mb', // Reduced from 50mb
     verify: (req, res, buf, encoding) => {
+        // Skip verification for empty bodies
+        if (buf.length === 0) {
+            return;
+        }
         // Verify JSON structure
         try {
             JSON.parse(buf);
         } catch (err) {
+            console.error('JSON Parse Error:', err);
             throw new Error('Invalid JSON');
         }
     }
@@ -922,33 +919,44 @@ app.post('/api/clear-errors', (req, res) => {
 // Database cleanup endpoint
 app.post('/api/cleanup-database', async (req, res) => {
   try {
-    console.log('Starting database cleanup...');
+    console.log('Starting cache cleanup...');
     
     // Clear all caches
-    await fs.rm(path.join(__dirname, 'api-cache'), { recursive: true, force: true });
-    await fs.mkdir(path.join(__dirname, 'api-cache'), { recursive: true });
+    const apiCacheDir = path.join(__dirname, 'api-cache');
+    if (require('fs').existsSync(apiCacheDir)) {
+      await fs.rm(apiCacheDir, { recursive: true, force: true });
+    }
+    await fs.mkdir(apiCacheDir, { recursive: true });
     
     // Clear analysis cache
     const cacheFile = path.join(__dirname, 'analysis-cache.json');
+    let removedAnalyses = 0;
     if (require('fs').existsSync(cacheFile)) {
+      try {
+        const cacheData = JSON.parse(await fs.readFile(cacheFile, 'utf8'));
+        removedAnalyses = cacheData.length || 0;
+      } catch (e) {
+        // Ignore parse errors
+      }
       await fs.unlink(cacheFile);
     }
     
-    // Get fresh data from database
-    const series = await getSeriesFromDatabase();
+    // Clear temp database files
+    const tempDir = path.join(os.tmpdir(), 'plex-series-checker');
+    if (require('fs').existsSync(tempDir)) {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    }
     
-    // Count duplicates that were merged
-    const uniqueTitles = new Set(series.map(s => s.title.toLowerCase()));
-    const duplicatesRemoved = series.filter(s => s.allIds && s.allIds.length > 1).length;
+    console.log('✅ Cache cleanup completed');
     
     res.json({ 
       success: true, 
-      message: 'Database cleaned',
+      message: 'All caches cleared successfully',
       stats: {
-        totalSeries: series.length,
-        uniqueSeries: uniqueTitles.size,
-        duplicatesRemoved: duplicatesRemoved,
-        seriesWithMultipleFolders: series.filter(s => s.folders && s.folders.length > 1).length
+        apiCacheCleared: true,
+        analysisCacheCleared: removedAnalyses > 0,
+        tempFilesCleared: true,
+        removedAnalyses: removedAnalyses
       }
     });
   } catch (error) {
@@ -1113,6 +1121,8 @@ app.post('/api/settings', validateApiKeys, async (req, res) => {
 
 app.get('/api/test-apis', async (req, res) => {
   try {
+    // Reload configuration before testing to get latest saved keys
+    await config.loadConfig();
     const results = await testApiConfiguration();
     res.json({ success: true, results });
   } catch (error) {
