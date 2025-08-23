@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlexComplete - Monitoring Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        plex: '#E5A00D',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans">
+    <!-- Header -->
+    <header class="bg-gray-800 border-b border-gray-700">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <h1 class="text-2xl font-bold text-plex">PlexComplete Monitoring</h1>
+                <div class="flex gap-4">
+                    <button onclick="refreshData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                        Aktualisieren
+                    </button>
+                    <button onclick="resetMetrics()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                        Reset Metriken
+                    </button>
+                    <a href="/" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                        Zurück
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="p-6">
+        <!-- Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-medium mb-2">Uptime</h3>
+                <p class="text-3xl font-bold text-white" id="uptime">-</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-medium mb-2">Analysierte Serien</h3>
+                <p class="text-3xl font-bold text-plex" id="totalAnalyzed">0</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-medium mb-2">Cache Hit Rate</h3>
+                <p class="text-3xl font-bold text-green-500" id="cacheHitRate">0%</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-gray-400 text-sm font-medium mb-2">Fehlerrate</h3>
+                <p class="text-3xl font-bold text-red-500" id="errorRate">0%</p>
+            </div>
+        </div>
+
+        <!-- Performance Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Memory Usage Chart -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4">Memory Usage (MB)</h2>
+                <canvas id="memoryChart"></canvas>
+            </div>
+            
+            <!-- API Performance Chart -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4">API Performance</h2>
+                <canvas id="apiChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Detailed Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- API Statistics -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4">API Statistiken</h2>
+                <div id="apiStats" class="space-y-3">
+                    <p class="text-gray-400">Lade Daten...</p>
+                </div>
+            </div>
+
+            <!-- Error Summary -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4">Fehler-Übersicht</h2>
+                <div id="errorStats" class="space-y-3">
+                    <p class="text-gray-400">Lade Daten...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Info -->
+        <div class="mt-6 bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h2 class="text-xl font-semibold mb-4">System Information</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="systemInfo">
+                <div>
+                    <span class="text-gray-400">Peak Memory:</span>
+                    <span class="font-semibold" id="peakMemory">-</span>
+                </div>
+                <div>
+                    <span class="text-gray-400">Current Memory:</span>
+                    <span class="font-semibold" id="currentMemory">-</span>
+                </div>
+                <div>
+                    <span class="text-gray-400">Avg CPU Load:</span>
+                    <span class="font-semibold" id="avgCpuLoad">-</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let memoryChart = null;
+        let apiChart = null;
+
+        async function fetchMonitoringData() {
+            try {
+                const [reportResponse, dashboardResponse, errorResponse] = await Promise.all([
+                    fetch('/api/monitoring/report'),
+                    fetch('/api/monitoring/dashboard'),
+                    fetch('/api/error-stats')
+                ]);
+
+                const report = await reportResponse.json();
+                const dashboard = await dashboardResponse.json();
+                const errors = await errorResponse.json();
+
+                return { report: report.report, dashboard: dashboard.data, errors: errors.stats };
+            } catch (error) {
+                console.error('Failed to fetch monitoring data:', error);
+                return null;
+            }
+        }
+
+        function updateOverview(data) {
+            document.getElementById('uptime').textContent = data.report.uptime;
+            document.getElementById('totalAnalyzed').textContent = data.report.performance.totalAnalyzed;
+            document.getElementById('cacheHitRate').textContent = data.report.performance.cacheHitRate;
+            document.getElementById('errorRate').textContent = data.report.errors.errorRate;
+        }
+
+        function updateMemoryChart(data) {
+            const ctx = document.getElementById('memoryChart').getContext('2d');
+            
+            if (memoryChart) {
+                memoryChart.destroy();
+            }
+
+            const metrics = data.dashboard.recentMetrics || [];
+            const labels = metrics.map((_, i) => i === metrics.length - 1 ? 'Now' : `-${metrics.length - i - 1}m`);
+            const memoryData = metrics.map(m => m.memory);
+
+            memoryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Memory (MB)',
+                        data: memoryData,
+                        borderColor: '#E5A00D',
+                        backgroundColor: 'rgba(229, 160, 13, 0.1)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAPIChart(data) {
+            const ctx = document.getElementById('apiChart').getContext('2d');
+            
+            if (apiChart) {
+                apiChart.destroy();
+            }
+
+            const apis = Object.keys(data.report.apis);
+            const calls = apis.map(api => data.report.apis[api].calls);
+            const avgTimes = apis.map(api => data.report.apis[api].avgTime);
+
+            apiChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: apis.map(api => api.toUpperCase()),
+                    datasets: [{
+                        label: 'API Calls',
+                        data: calls,
+                        backgroundColor: '#3B82F6',
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Avg Time (ms)',
+                        data: avgTimes,
+                        backgroundColor: '#10B981',
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateAPIStats(data) {
+            const container = document.getElementById('apiStats');
+            container.innerHTML = '';
+
+            for (const [api, stats] of Object.entries(data.report.apis)) {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center p-3 bg-gray-700 rounded">
+                        <span class="font-medium">${api.toUpperCase()}</span>
+                        <div class="text-sm text-gray-400">
+                            <span>${stats.calls} calls</span>
+                            <span class="mx-2">•</span>
+                            <span>${stats.avgTime}ms avg</span>
+                            <span class="mx-2">•</span>
+                            <span class="${stats.errorRate === '0%' ? 'text-green-500' : 'text-red-500'}">${stats.errorRate} errors</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateErrorStats(data) {
+            const container = document.getElementById('errorStats');
+            container.innerHTML = '';
+
+            container.innerHTML = `
+                <div class="mb-4">
+                    <div class="flex justify-between items-center">
+                        <span>Total Errors:</span>
+                        <span class="font-bold text-red-500">${data.errors.totalErrors}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>Critical Errors:</span>
+                        <span class="font-bold text-red-600">${data.report.errors.critical}</span>
+                    </div>
+                </div>
+            `;
+
+            if (data.report.errors.topErrors.length > 0) {
+                container.innerHTML += '<h3 class="font-medium mb-2">Top Error Types:</h3>';
+                data.report.errors.topErrors.forEach(error => {
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center p-2 bg-gray-700 rounded">
+                            <span class="text-sm">${error.type}</span>
+                            <span class="text-sm font-medium">${error.count}</span>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function updateSystemInfo(data) {
+            document.getElementById('peakMemory').textContent = data.report.system.peakMemory;
+            document.getElementById('currentMemory').textContent = data.report.system.currentMemory;
+            document.getElementById('avgCpuLoad').textContent = data.report.system.avgCpuLoad.toFixed(2);
+        }
+
+        async function refreshData() {
+            const data = await fetchMonitoringData();
+            if (data) {
+                updateOverview(data);
+                updateMemoryChart(data);
+                updateAPIChart(data);
+                updateAPIStats(data);
+                updateErrorStats(data);
+                updateSystemInfo(data);
+            }
+        }
+
+        async function resetMetrics() {
+            if (!confirm('Wirklich alle Metriken zurücksetzen?')) return;
+
+            try {
+                await fetch('/api/monitoring/reset', { method: 'POST' });
+                await refreshData();
+            } catch (error) {
+                console.error('Failed to reset metrics:', error);
+            }
+        }
+
+        // Initial load and auto-refresh
+        refreshData();
+        setInterval(refreshData, 10000); // Refresh every 10 seconds
+    </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "ignore": [
+    "*.json",
+    "analysis-cache.json",
+    "series-data-cache.json",
+    "api-cache/*",
+    "node_modules/*",
+    "public/*",
+    "*.md",
+    "*.log",
+    "*.db"
+  ],
+  "watch": [
+    "server-crossplatform.js",
+    "services/*.js"
+  ],
+  "ext": "js",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}
