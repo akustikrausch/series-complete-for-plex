@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlexComplete - User Manual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'plex-orange': '#E5A00D',
+                        'plex-dark': '#1F2127',
+                        'plex-darker': '#171A1F',
+                        'plex-gray': '#3F4045',
+                        'plex-light': '#999999'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background: linear-gradient(135deg, #1a1c22 0%, #282a36 100%); }
+        .glass-effect {
+            background: rgba(31, 33, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        h2 { color: #E5A00D; }
+        h3 { color: #E5A00D; }
+        .toc-item:hover { color: #E5A00D; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1F2127; }
+        ::-webkit-scrollbar-thumb { background: #3F4045; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #E5A00D; }
+        [data-lang]:not(.active) { display: none; }
+    </style>
+</head>
+<body class="text-gray-300 min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="glass-effect rounded-xl p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-plex-orange mb-2">
+                        <span data-lang="en" class="active">PlexComplete User Manual</span>
+                        <span data-lang="de">PlexComplete Benutzerhandbuch</span>
+                    </h1>
+                    <p class="text-plex-light">Version 1.0.0 - © 2025 by Akustikrausch</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Language Selector -->
+                    <div class="flex items-center bg-plex-dark rounded-lg p-1">
+                        <button onclick="setLanguage('en')" id="lang-en" class="px-3 py-1 rounded text-sm font-medium bg-plex-orange text-plex-dark">
+                            EN
+                        </button>
+                        <button onclick="setLanguage('de')" id="lang-de" class="px-3 py-1 rounded text-sm font-medium text-plex-light hover:text-white">
+                            DE
+                        </button>
+                    </div>
+                    <button onclick="window.close()" class="px-4 py-2 bg-plex-gray text-white rounded-lg hover:bg-opacity-70">
+                        <span data-lang="en" class="active">Close</span>
+                        <span data-lang="de">Schließen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Table of Contents -->
+            <div class="lg:col-span-1">
+                <div class="glass-effect rounded-xl p-6 sticky top-8">
+                    <h3 class="text-lg font-bold text-plex-orange mb-4">
+                        <span data-lang="en" class="active">Table of Contents</span>
+                        <span data-lang="de">Inhaltsverzeichnis</span>
+                    </h3>
+                    <nav class="space-y-2">
+                        <a href="#overview" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">📌 Overview</span>
+                            <span data-lang="de">📌 Übersicht</span>
+                        </a>
+                        <a href="#getting-started" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">🚀 Getting Started</span>
+                            <span data-lang="de">🚀 Erste Schritte</span>
+                        </a>
+                        <a href="#main-features" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">⭐ Main Features</span>
+                            <span data-lang="de">⭐ Hauptfunktionen</span>
+                        </a>
+                        <a href="#api-config" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">🔧 API Configuration</span>
+                            <span data-lang="de">🔧 API-Konfiguration</span>
+                        </a>
+                        <a href="#analysis" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">📊 Series Analysis</span>
+                            <span data-lang="de">📊 Serienanalyse</span>
+                        </a>
+                        <a href="#troubleshooting" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">❓ Troubleshooting</span>
+                            <span data-lang="de">❓ Fehlerbehebung</span>
+                        </a>
+                        <a href="#advanced-search" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">🔍 Advanced Search</span>
+                            <span data-lang="de">🔍 Erweiterte Suche</span>
+                        </a>
+                        <a href="#keyboard" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">⌨️ Keyboard Shortcuts</span>
+                            <span data-lang="de">⌨️ Tastenkürzel</span>
+                        </a>
+                        <a href="#retry-system" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">🔄 Smart Retry System</span>
+                            <span data-lang="de">🔄 Intelligentes Wiederholungssystem</span>
+                        </a>
+                        <a href="#statistics" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">📊 Statistics & Analytics</span>
+                            <span data-lang="de">📊 Statistiken & Analysen</span>
+                        </a>
+                        <a href="#export-suite" class="block toc-item hover:text-plex-orange transition">
+                            <span data-lang="en" class="active">📤 Multi-Format Export</span>
+                            <span data-lang="de">📤 Multi-Format Export</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="lg:col-span-3 space-y-8">
+                <!-- Overview -->
+                <section id="overview" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">📌 Overview</span>
+                        <span data-lang="de">📌 Übersicht</span>
+                    </h2>
+                    
+                    <!-- Introduction -->
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                            <span data-lang="en" class="active">What is PlexComplete?</span>
+                            <span data-lang="de">Was ist PlexComplete?</span>
+                        </h3>
+                        <p class="mb-4">
+                            <span data-lang="en" class="active">
+                                PlexComplete is an advanced open-source analysis tool specifically designed for Plex Media Server users 
+                                who want to maintain a complete and organized TV series collection. It provides deep insights into your 
+                                media library by connecting directly to your local Plex database and cross-referencing with multiple 
+                                online databases to identify missing episodes, incomplete seasons, and series that need attention.
+                            </span>
+                            <span data-lang="de">
+                                PlexComplete ist ein fortschrittliches Open-Source-Analysetool, das speziell für Plex Media Server-Benutzer 
+                                entwickelt wurde, die eine vollständige und organisierte TV-Seriensammlung pflegen möchten. Es bietet tiefe 
+                                Einblicke in Ihre Medienbibliothek, indem es sich direkt mit Ihrer lokalen Plex-Datenbank verbindet und mit 
+                                mehreren Online-Datenbanken abgleicht, um fehlende Episoden, unvollständige Staffeln und Serien zu identifizieren, 
+                                die Aufmerksamkeit benötigen.
+                            </span>
+                        </p>
+                        
+                        <p class="mb-4">
+                            <span data-lang="en" class="active">
+                                Unlike simple file scanners, PlexComplete understands the actual content of your library, recognizes 
+                                different naming conventions, handles multi-part episodes, and provides accurate completeness metrics 
+                                based on official episode counts from trusted sources like TMDb, TheTVDB, and even uses AI verification 
+                                through OpenAI when needed.
+                            </span>
+                            <span data-lang="de">
+                                Im Gegensatz zu einfachen Datei-Scannern versteht PlexComplete den tatsächlichen Inhalt Ihrer Bibliothek, 
+                                erkennt verschiedene Namenskonventionen, verarbeitet mehrteilige Episoden und liefert genaue Vollständigkeitsmetriken 
+                                basierend auf offiziellen Episodenzahlen aus vertrauenswürdigen Quellen wie TMDb, TheTVDB und nutzt bei Bedarf 
+                                sogar KI-Verifizierung durch OpenAI.
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <!-- Why PlexComplete -->
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                            <span data-lang="en" class="active">Why PlexComplete?</span>
+                            <span data-lang="de">Warum PlexComplete?</span>
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-plex-darker rounded-lg p-3">
+                                <h4 class="font-bold text-plex-orange mb-2">
+                                    <span data-lang="en" class="active">🎯 Accuracy</span>
+                                    <span data-lang="de">🎯 Genauigkeit</span>
+                                </h4>
+                                <p class="text-sm">
+                                    <span data-lang="en" class="active">Multi-source verification ensures accurate episode counts</span>
+                                    <span data-lang="de">Multi-Quellen-Verifizierung gewährleistet genaue Episodenzahlen</span>
+                                </p>
+                            </div>
+                            <div class="bg-plex-darker rounded-lg p-3">
+                                <h4 class="font-bold text-plex-orange mb-2">
+                                    <span data-lang="en" class="active">⚡ Performance</span>
+                                    <span data-lang="de">⚡ Leistung</span>
+                                </h4>
+                                <p class="text-sm">
+                                    <span data-lang="en" class="active">Intelligent caching and pagination for smooth operation</span>
+                                    <span data-lang="de">Intelligentes Caching und Paginierung für reibungslosen Betrieb</span>
+                                </p>
+                            </div>
+                            <div class="bg-plex-darker rounded-lg p-3">
+                                <h4 class="font-bold text-plex-orange mb-2">
+                                    <span data-lang="en" class="active">🔒 Privacy</span>
+                                    <span data-lang="de">🔒 Datenschutz</span>
+                                </h4>
+                                <p class="text-sm">
+                                    <span data-lang="en" class="active">Works locally with your database, no data leaves your system</span>
+                                    <span data-lang="de">Arbeitet lokal mit Ihrer Datenbank, keine Daten verlassen Ihr System</span>
+                                </p>
+                            </div>
+                            <div class="bg-plex-darker rounded-lg p-3">
+                                <h4 class="font-bold text-plex-orange mb-2">
+                                    <span data-lang="en" class="active">📱 Responsive</span>
+                                    <span data-lang="de">📱 Responsiv</span>
+                                </h4>
+                                <p class="text-sm">
+                                    <span data-lang="en" class="active">Works seamlessly on desktop, tablet, and mobile devices</span>
+                                    <span data-lang="de">Funktioniert nahtlos auf Desktop, Tablet und Mobilgeräten</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- License Information -->
+                    <div class="bg-blue-900 bg-opacity-30 border border-blue-600 rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-semibold mb-2 text-blue-400">
+                            <span data-lang="en" class="active">📜 License & Usage</span>
+                            <span data-lang="de">📜 Lizenz & Nutzung</span>
+                        </h3>
+                        <p class="text-sm mb-2">
+                            <span data-lang="en" class="active">
+                                PlexComplete is released under the <strong>Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)</strong>.
+                                This means you are free to use, modify, and distribute this software for non-commercial purposes, 
+                                provided you give appropriate credit to the original authors.
+                            </span>
+                            <span data-lang="de">
+                                PlexComplete wird unter der <strong>Creative Commons Namensnennung-Nicht kommerziell 4.0 International Lizenz (CC BY-NC 4.0)</strong> 
+                                veröffentlicht. Das bedeutet, Sie können diese Software für nicht-kommerzielle Zwecke frei verwenden, 
+                                modifizieren und verteilen, sofern Sie die ursprünglichen Autoren angemessen würdigen.
+                            </span>
+                        </p>
+                        <p class="text-xs text-gray-400">
+                            <span data-lang="en" class="active">© 2025 Akustikrausch - For commercial use, please contact the authors.</span>
+                            <span data-lang="de">© 2025 Akustikrausch - Für kommerzielle Nutzung kontaktieren Sie bitte die Autoren.</span>
+                        </p>
+                    </div>
+                    <!-- Core Features -->
+                    <div class="bg-plex-darker rounded-lg p-4">
+                        <h4 class="font-bold mb-2">
+                            <span data-lang="en" class="active">Core Features:</span>
+                            <span data-lang="de">Kernfunktionen:</span>
+                        </h4>
+                        <ul class="space-y-1 list-disc list-inside">
+                            <li data-lang="en" class="active">Automatic detection of missing episodes with multi-API verification</li>
+                            <li data-lang="de">Automatische Erkennung fehlender Episoden mit Multi-API-Verifizierung</li>
+                            <li data-lang="en" class="active">Real-time completeness analysis with visual indicators</li>
+                            <li data-lang="de">Echtzeit-Vollständigkeitsanalyse mit visuellen Indikatoren</li>
+                            <li data-lang="en" class="active">Smart duplicate detection across multiple folders</li>
+                            <li data-lang="de">Intelligente Duplikat-Erkennung über mehrere Ordner</li>
+                            <li data-lang="en" class="active">PDF export for missing episodes and documentation</li>
+                            <li data-lang="de">PDF-Export für fehlende Episoden und Dokumentation</li>
+                            <li data-lang="en" class="active">24-hour local cache + 7-day API cache for optimal performance</li>
+                            <li data-lang="de">24-Stunden lokaler Cache + 7-Tage API-Cache für optimale Leistung</li>
+                            <li data-lang="en" class="active">Batch processing with concurrent API requests</li>
+                            <li data-lang="de">Stapelverarbeitung mit gleichzeitigen API-Anfragen</li>
+                            <li data-lang="en" class="active">Mobile-responsive design with touch gestures</li>
+                            <li data-lang="de">Mobile-responsive Design mit Touch-Gesten</li>
+                            <li data-lang="en" class="active">Keyboard shortcuts for power users</li>
+                            <li data-lang="de">Tastenkürzel für Power-User</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Getting Started -->
+                <section id="getting-started" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">🚀 Getting Started</span>
+                        <span data-lang="de">🚀 Erste Schritte</span>
+                    </h2>
+                    
+                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                        <span data-lang="en" class="active">1. Scan Plex Database</span>
+                        <span data-lang="de">1. Plex-Datenbank scannen</span>
+                    </h3>
+                    <div class="bg-plex-darker rounded-lg p-4 mb-4">
+                        <ol class="space-y-2 list-decimal list-inside">
+                            <li data-lang="en" class="active">Click <span class="text-plex-orange font-semibold">"Scan Library"</span> in the top bar</li>
+                            <li data-lang="de">Klicken Sie auf <span class="text-plex-orange font-semibold">"Scan Library"</span> in der oberen Leiste</li>
+                            <li data-lang="en" class="active">The app automatically copies your Plex database (original remains unchanged)</li>
+                            <li data-lang="de">Die Anwendung kopiert automatisch Ihre Plex-Datenbank (Original bleibt unverändert)</li>
+                            <li data-lang="en" class="active">All TV series are loaded and displayed</li>
+                            <li data-lang="de">Alle TV-Serien werden geladen und angezeigt</li>
+                            <li data-lang="en" class="active">Analysis starts automatically for unanalyzed series</li>
+                            <li data-lang="de">Die Analyse startet automatisch für noch nicht analysierte Serien</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                        <span data-lang="en" class="active">2. Series Overview</span>
+                        <span data-lang="de">2. Serienübersicht</span>
+                    </h3>
+                    <div class="bg-plex-darker rounded-lg p-4">
+                        <p class="mb-2">
+                            <span data-lang="en" class="active">Each series shows:</span>
+                            <span data-lang="de">Jede Serie zeigt:</span>
+                        </p>
+                        <ul class="space-y-1 list-disc list-inside">
+                            <li><span class="text-green-500">🟢</span> = <span data-lang="en" class="active">Complete (100%)</span><span data-lang="de">Vollständig (100%)</span></li>
+                            <li><span class="text-yellow-500">🟡</span> = <span data-lang="en" class="active">Partially complete (50-99%)</span><span data-lang="de">Teilweise vollständig (50-99%)</span></li>
+                            <li><span class="text-red-500">🔴</span> = <span data-lang="en" class="active">Incomplete (<50%)</span><span data-lang="de">Unvollständig (<50%)</span></li>
+                            <li><span class="text-gray-500">⚫</span> = <span data-lang="en" class="active">Not analyzed yet</span><span data-lang="de">Noch nicht analysiert</span></li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Main Features -->
+                <section id="main-features" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">⭐ Main Features</span>
+                        <span data-lang="de">⭐ Hauptfunktionen</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">🔔 Real-time Notifications</span>
+                                <span data-lang="de">🔔 Echtzeit-Benachrichtigungen</span>
+                            </h3>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">WebSocket connection for instant updates</li>
+                                <li data-lang="de">WebSocket-Verbindung für sofortige Updates</li>
+                                <li data-lang="en" class="active">Live progress tracking during analysis</li>
+                                <li data-lang="de">Live-Fortschrittsverfolgung während der Analyse</li>
+                                <li data-lang="en" class="active">Sound notifications for completed tasks</li>
+                                <li data-lang="de">Ton-Benachrichtigungen für abgeschlossene Aufgaben</li>
+                                <li data-lang="en" class="active">Background task status indicators</li>
+                                <li data-lang="de">Statusanzeigen für Hintergrundaufgaben</li>
+                                <li data-lang="en" class="active">Persistent notification history</li>
+                                <li data-lang="de">Persistente Benachrichtigungshistorie</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">🔍 Search & Filter</span>
+                                <span data-lang="de">🔍 Suche & Filter</span>
+                            </h3>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Search bar: Real-time search for series titles</li>
+                                <li data-lang="de">Suchleiste: Echtzeit-Suche nach Serientiteln</li>
+                                <li data-lang="en" class="active">Filter buttons: All / Complete / Incomplete / Critical</li>
+                                <li data-lang="de">Filter-Buttons: Alle / Vollständig / Unvollständig / Kritisch</li>
+                                <li data-lang="en" class="active">Automatic display updates</li>
+                                <li data-lang="de">Automatische Aktualisierung der Anzeige</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">📊 Statistics</span>
+                                <span data-lang="de">📊 Statistiken</span>
+                            </h3>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Total number of series</li>
+                                <li data-lang="de">Gesamtzahl der Serien</li>
+                                <li data-lang="en" class="active">Number of complete series</li>
+                                <li data-lang="de">Anzahl vollständiger Serien</li>
+                                <li data-lang="en" class="active">Number of incomplete series</li>
+                                <li data-lang="de">Anzahl unvollständiger Serien</li>
+                                <li data-lang="en" class="active">Live updates after each analysis</li>
+                                <li data-lang="de">Live-Updates nach jeder Analyse</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">💾 Cache Management</span>
+                                <span data-lang="de">💾 Cache-Management</span>
+                            </h3>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Automatic caching for 24 hours</li>
+                                <li data-lang="de">Automatisches Caching für 24 Stunden</li>
+                                <li data-lang="en" class="active">"Clear Cache" removes all cached data</li>
+                                <li data-lang="de">"Clear Cache" löscht alle zwischengespeicherten Daten</li>
+                                <li data-lang="en" class="active">API responses cached for 7 days</li>
+                                <li data-lang="de">API-Antworten werden 7 Tage gecacht</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">🧹 Database Cleanup</span>
+                                <span data-lang="de">🧹 Datenbankbereinigung</span>
+                            </h3>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Detects and merges duplicate series entries</li>
+                                <li data-lang="de">Erkennt und vereint doppelte Serieneinträge</li>
+                                <li data-lang="en" class="active">Shows series with multiple storage locations</li>
+                                <li data-lang="de">Zeigt Serien mit mehreren Speicherorten</li>
+                                <li data-lang="en" class="active">Optimizes database performance</li>
+                                <li data-lang="de">Optimiert die Datenbankleistung</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- API Configuration -->
+                <section id="api-config" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">🔧 API Configuration</span>
+                        <span data-lang="de">🔧 API-Konfiguration</span>
+                    </h2>
+                    
+                    <div class="bg-green-900 bg-opacity-30 border border-green-600 rounded-lg p-4 mb-4">
+                        <p class="text-green-400 font-semibold mb-2">
+                            <span data-lang="en" class="active">✅ Flexible Configuration:</span>
+                            <span data-lang="de">✅ Flexible Konfiguration:</span>
+                        </p>
+                        <p class="text-sm">
+                            <span data-lang="en" class="active">The app works with ANY combination of API keys. Even with just ONE API key you get great results!</span>
+                            <span data-lang="de">Die App funktioniert mit JEDER Kombination von API-Keys. Sogar mit nur EINEM API-Key erhalten Sie großartige Ergebnisse!</span>
+                        </p>
+                    </div>
+
+                    <div class="bg-blue-900 bg-opacity-30 border border-blue-600 rounded-lg p-4 mb-6">
+                        <h4 class="text-blue-400 font-semibold mb-3">
+                            <span data-lang="en" class="active">📋 Configuration Options:</span>
+                            <span data-lang="de">📋 Konfigurationsoptionen:</span>
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="font-semibold text-green-400 mb-1">
+                                    <span data-lang="en" class="active">✨ Recommended (FREE):</span>
+                                    <span data-lang="de">✨ Empfohlen (KOSTENLOS):</span>
+                                </p>
+                                <ul class="space-y-1 list-disc list-inside text-xs">
+                                    <li data-lang="en" class="active">TMDb + TheTVDB = Best accuracy</li>
+                                    <li data-lang="de">TMDb + TheTVDB = Beste Genauigkeit</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-yellow-400 mb-1">
+                                    <span data-lang="en" class="active">⚡ Minimum (FREE):</span>
+                                    <span data-lang="de">⚡ Minimum (KOSTENLOS):</span>
+                                </p>
+                                <ul class="space-y-1 list-disc list-inside text-xs">
+                                    <li data-lang="en" class="active">Only TMDb = Still very good</li>
+                                    <li data-lang="de">Nur TMDb = Immer noch sehr gut</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                        <span data-lang="en" class="active">Available APIs</span>
+                        <span data-lang="de">Verfügbare APIs</span>
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- TMDb API -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-3">🎬</span>
+                                <h4 class="font-bold text-lg">1. TMDb (The Movie Database) - 
+                                    <span class="text-green-400 text-sm font-normal">
+                                        <span data-lang="en" class="active">STRONGLY RECOMMENDED</span>
+                                        <span data-lang="de">STARK EMPFOHLEN</span>
+                                    </span>
+                                </h4>
+                            </div>
+                            <p class="text-sm text-plex-light mb-3">
+                                <span data-lang="en" class="active">The most comprehensive and reliable source for TV series data. Provides series info, episode counts, and completion status.</span>
+                                <span data-lang="de">Die umfassendste und zuverlässigste Quelle für TV-Seriendaten. Liefert Serieninfos, Episodenzahlen und Vollständigkeitsstatus.</span>
+                            </p>
+                            <div class="bg-plex-dark rounded p-3 mb-3">
+                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                    <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
+                                    <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
+                                </h5>
+                                <ol class="space-y-1 list-decimal list-inside text-sm">
+                                    <li data-lang="en" class="active">Go to <a href="https://www.themoviedb.org/" target="_blank" class="text-plex-orange hover:underline">themoviedb.org</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="https://www.themoviedb.org/" target="_blank" class="text-plex-orange hover:underline">themoviedb.org</a></li>
+                                    <li data-lang="en" class="active">Click "Join TMDb" (top right) and create free account</li>
+                                    <li data-lang="de">Klicken Sie auf "Join TMDb" (oben rechts) und erstellen Sie ein kostenloses Konto</li>
+                                    <li data-lang="en" class="active">Confirm your email address</li>
+                                    <li data-lang="de">Bestätigen Sie Ihre E-Mail-Adresse</li>
+                                    <li data-lang="en" class="active">Go to Settings → API → Create → Developer</li>
+                                    <li data-lang="de">Gehen Sie zu Settings → API → Create → Developer</li>
+                                    <li data-lang="en" class="active">Accept the terms and conditions</li>
+                                    <li data-lang="de">Akzeptieren Sie die Nutzungsbedingungen</li>
+                                    <li data-lang="en" class="active">Fill out the form: Application Name: "PlexComplete", URL: "http://localhost:3000", Summary: "Personal TV series tracker"</li>
+                                    <li data-lang="de">Füllen Sie das Formular aus: Application Name: "PlexComplete", URL: "http://localhost:3000", Summary: "Personal TV series tracker"</li>
+                                    <li data-lang="en" class="active">Copy the "API Key (v3 auth)" - this is what you need!</li>
+                                    <li data-lang="de">Kopieren Sie den "API Key (v3 auth)" - das ist was Sie brauchen!</li>
+                                </ol>
+                            </div>
+                            <p class="text-xs text-green-400">
+                                <span data-lang="en" class="active">💰 Cost: Completely FREE with generous limits (thousands of requests per day)</span>
+                                <span data-lang="de">💰 Kosten: Komplett KOSTENLOS mit großzügigen Limits (Tausende Anfragen pro Tag)</span>
+                            </p>
+                        </div>
+
+                        <!-- TheTVDB API -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-3">📺</span>
+                                <h4 class="font-bold text-lg">2. TheTVDB - 
+                                    <span class="text-blue-400 text-sm font-normal">
+                                        <span data-lang="en" class="active">RECOMMENDED</span>
+                                        <span data-lang="de">EMPFOHLEN</span>
+                                    </span>
+                                </h4>
+                            </div>
+                            <p class="text-sm text-plex-light mb-3">
+                                <span data-lang="en" class="active">Excellent backup source with detailed episode information and air dates. Perfect complement to TMDb.</span>
+                                <span data-lang="de">Ausgezeichnete Backup-Quelle mit detaillierten Episodeninformationen und Ausstrahlungsdaten. Perfekte Ergänzung zu TMDb.</span>
+                            </p>
+                            <div class="bg-plex-dark rounded p-3 mb-3">
+                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                    <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
+                                    <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
+                                </h5>
+                                <ol class="space-y-1 list-decimal list-inside text-sm">
+                                    <li data-lang="en" class="active">Go to <a href="https://thetvdb.com/" target="_blank" class="text-plex-orange hover:underline">thetvdb.com</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="https://thetvdb.com/" target="_blank" class="text-plex-orange hover:underline">thetvdb.com</a></li>
+                                    <li data-lang="en" class="active">Click "Register" and create free account</li>
+                                    <li data-lang="de">Klicken Sie auf "Register" und erstellen Sie ein kostenloses Konto</li>
+                                    <li data-lang="en" class="active">Confirm your email address</li>
+                                    <li data-lang="de">Bestätigen Sie Ihre E-Mail-Adresse</li>
+                                    <li data-lang="en" class="active">Go to Dashboard → API Access</li>
+                                    <li data-lang="de">Gehen Sie zu Dashboard → API Access</li>
+                                    <li data-lang="en" class="active">Click "Create API Key"</li>
+                                    <li data-lang="de">Klicken Sie auf "Create API Key"</li>
+                                    <li data-lang="en" class="active">Fill out: API Key Name: "PlexComplete", Description: "Personal use for TV series tracking"</li>
+                                    <li data-lang="de">Füllen Sie aus: API Key Name: "PlexComplete", Description: "Personal use for TV series tracking"</li>
+                                    <li data-lang="en" class="active">Copy your API key</li>
+                                    <li data-lang="de">Kopieren Sie Ihren API-Key</li>
+                                </ol>
+                            </div>
+                            <p class="text-xs text-green-400">
+                                <span data-lang="en" class="active">💰 Cost: FREE for personal use</span>
+                                <span data-lang="de">💰 Kosten: KOSTENLOS für persönliche Nutzung</span>
+                            </p>
+                        </div>
+
+                        <!-- OpenAI API -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-3">🤖</span>
+                                <h4 class="font-bold text-lg">3. OpenAI - 
+                                    <span class="text-purple-400 text-sm font-normal">
+                                        <span data-lang="en" class="active">OPTIONAL</span>
+                                        <span data-lang="de">OPTIONAL</span>
+                                    </span>
+                                </h4>
+                            </div>
+                            <p class="text-sm text-plex-light mb-3">
+                                <span data-lang="en" class="active">AI-powered fallback for very obscure series that other APIs don't know. Only used when TMDb and TheTVDB fail.</span>
+                                <span data-lang="de">KI-gestützte Fallback-Option für sehr obskure Serien, die andere APIs nicht kennen. Wird nur verwendet, wenn TMDb und TheTVDB versagen.</span>
+                            </p>
+                            <div class="bg-plex-dark rounded p-3 mb-3">
+                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                    <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
+                                    <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
+                                </h5>
+                                <ol class="space-y-1 list-decimal list-inside text-sm">
+                                    <li data-lang="en" class="active">Go to <a href="https://platform.openai.com/" target="_blank" class="text-plex-orange hover:underline">platform.openai.com</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="https://platform.openai.com/" target="_blank" class="text-plex-orange hover:underline">platform.openai.com</a></li>
+                                    <li data-lang="en" class="active">Create account or sign in</li>
+                                    <li data-lang="de">Konto erstellen oder anmelden</li>
+                                    <li data-lang="en" class="active">Go to API Keys section</li>
+                                    <li data-lang="de">Gehen Sie zum API Keys Bereich</li>
+                                    <li data-lang="en" class="active">Click "Create new secret key"</li>
+                                    <li data-lang="de">Klicken Sie auf "Create new secret key"</li>
+                                    <li data-lang="en" class="active">Name it "PlexComplete" and copy the key</li>
+                                    <li data-lang="de">Nennen Sie ihn "PlexComplete" und kopieren Sie den Key</li>
+                                    <li data-lang="en" class="active">⚠️ IMPORTANT: Add billing info and set usage limits!</li>
+                                    <li data-lang="de">⚠️ WICHTIG: Zahlungsinformationen hinzufügen und Nutzungslimits setzen!</li>
+                                </ol>
+                            </div>
+                            <p class="text-xs text-yellow-400">
+                                <span data-lang="en" class="active">💰 Cost: Pay-per-use (~$0.001 per series analysis)</span>
+                                <span data-lang="de">💰 Kosten: Pay-per-Use (~$0,001 pro Serienanalyse)</span>
+                            </p>
+                        </div>
+
+                        <!-- OMDb API -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <div class="flex items-center mb-3">
+                                <span class="text-2xl mr-3">🎭</span>
+                                <h4 class="font-bold text-lg">4. OMDb - 
+                                    <span class="text-gray-400 text-sm font-normal">
+                                        <span data-lang="en" class="active">OPTIONAL</span>
+                                        <span data-lang="de">OPTIONAL</span>
+                                    </span>
+                                </h4>
+                            </div>
+                            <p class="text-sm text-plex-light mb-3">
+                                <span data-lang="en" class="active">Additional metadata source for poster images and IMDb ratings. Nice to have but not essential.</span>
+                                <span data-lang="de">Zusätzliche Metadatenquelle für Poster-Bilder und IMDb-Bewertungen. Schön zu haben, aber nicht essentiell.</span>
+                            </p>
+                            <div class="bg-plex-dark rounded p-3 mb-3">
+                                <h5 class="font-semibold mb-2 text-plex-orange">
+                                    <span data-lang="en" class="active">📝 Step-by-Step Setup:</span>
+                                    <span data-lang="de">📝 Schritt-für-Schritt-Anleitung:</span>
+                                </h5>
+                                <ol class="space-y-1 list-decimal list-inside text-sm">
+                                    <li data-lang="en" class="active">Go to <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" class="text-plex-orange hover:underline">omdbapi.com/apikey.aspx</a></li>
+                                    <li data-lang="de">Gehen Sie zu <a href="http://www.omdbapi.com/apikey.aspx" target="_blank" class="text-plex-orange hover:underline">omdbapi.com/apikey.aspx</a></li>
+                                    <li data-lang="en" class="active">Select "FREE! (1,000 daily limit)"</li>
+                                    <li data-lang="de">Wählen Sie "FREE! (1,000 daily limit)"</li>
+                                    <li data-lang="en" class="active">Enter your email address</li>
+                                    <li data-lang="de">Geben Sie Ihre E-Mail-Adresse ein</li>
+                                    <li data-lang="en" class="active">Check your email and click activation link</li>
+                                    <li data-lang="de">Prüfen Sie Ihre E-Mail und klicken Sie auf den Aktivierungslink</li>
+                                    <li data-lang="en" class="active">Copy your API key from the email</li>
+                                    <li data-lang="de">Kopieren Sie Ihren API-Key aus der E-Mail</li>
+                                </ol>
+                            </div>
+                            <p class="text-xs text-green-400">
+                                <span data-lang="en" class="active">💰 Cost: FREE (1,000 requests per day)</span>
+                                <span data-lang="de">💰 Kosten: KOSTENLOS (1.000 Anfragen pro Tag)</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-3 mt-6 text-plex-orange">
+                        <span data-lang="en" class="active">Setup API Keys</span>
+                        <span data-lang="de">API-Keys einrichten</span>
+                    </h3>
+                    <div class="bg-plex-darker rounded-lg p-4">
+                        <ol class="space-y-2 list-decimal list-inside">
+                            <li data-lang="en" class="active">Open Settings (gear icon)</li>
+                            <li data-lang="de">Öffnen Sie die Einstellungen (Zahnrad-Symbol)</li>
+                            <li data-lang="en" class="active">Click "API Settings"</li>
+                            <li data-lang="de">Klicken Sie auf "API Settings"</li>
+                            <li data-lang="en" class="active">Enter your API keys</li>
+                            <li data-lang="de">Geben Sie Ihre API-Keys ein</li>
+                            <li data-lang="en" class="active">Click "Test" next to each API</li>
+                            <li data-lang="de">Klicken Sie auf "Test" neben jeder API</li>
+                            <li data-lang="en" class="active">Save with "Save API Configuration"</li>
+                            <li data-lang="de">Speichern Sie mit "Save API Configuration"</li>
+                        </ol>
+                        <p class="text-sm text-plex-light mt-3">
+                            <span data-lang="en" class="active">Status indicators:</span>
+                            <span data-lang="de">Status-Indikatoren:</span>
+                            <span class="text-green-500">🟢 Active</span> | 
+                            <span class="text-red-500">🔴 Error</span> | 
+                            <span class="text-yellow-500">🟡 Not tested</span> |
+                            <span class="text-gray-500">⚫ Not configured</span>
+                        </p>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-3 mt-6 text-plex-orange">
+                        <span data-lang="en" class="active">🎯 Configuration Scenarios</span>
+                        <span data-lang="de">🎯 Konfigurationsszenarien</span>
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Scenario 1: Only TMDb -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h4 class="font-semibold mb-2 text-green-400">
+                                <span data-lang="en" class="active">✨ Only TMDb (Recommended Minimum)</span>
+                                <span data-lang="de">✨ Nur TMDb (Empfohlenes Minimum)</span>
+                            </h4>
+                            <ul class="space-y-1 text-sm text-plex-light">
+                                <li data-lang="en" class="active">• Covers 95%+ of all TV series</li>
+                                <li data-lang="de">• Deckt 95%+ aller TV-Serien ab</li>
+                                <li data-lang="en" class="active">• Fast and reliable</li>
+                                <li data-lang="de">• Schnell und zuverlässig</li>
+                                <li data-lang="en" class="active">• 100% FREE</li>
+                                <li data-lang="de">• 100% KOSTENLOS</li>
+                                <li data-lang="en" class="active">• Perfect for most users!</li>
+                                <li data-lang="de">• Perfekt für die meisten Nutzer!</li>
+                            </ul>
+                        </div>
+
+                        <!-- Scenario 2: TMDb + TheTVDB -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h4 class="font-semibold mb-2 text-blue-400">
+                                <span data-lang="en" class="active">🏆 TMDb + TheTVDB (Best Setup)</span>
+                                <span data-lang="de">🏆 TMDb + TheTVDB (Beste Lösung)</span>
+                            </h4>
+                            <ul class="space-y-1 text-sm text-plex-light">
+                                <li data-lang="en" class="active">• Maximum coverage and accuracy</li>
+                                <li data-lang="de">• Maximale Abdeckung und Genauigkeit</li>
+                                <li data-lang="en" class="active">• Detailed episode information</li>
+                                <li data-lang="de">• Detaillierte Episodeninformationen</li>
+                                <li data-lang="en" class="active">• Fallback for obscure series</li>
+                                <li data-lang="de">• Fallback für obskure Serien</li>
+                                <li data-lang="en" class="active">• Both APIs are FREE</li>
+                                <li data-lang="de">• Beide APIs sind KOSTENLOS</li>
+                            </ul>
+                        </div>
+
+                        <!-- Scenario 3: Only TheTVDB -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h4 class="font-semibold mb-2 text-purple-400">
+                                <span data-lang="en" class="active">📺 Only TheTVDB</span>
+                                <span data-lang="de">📺 Nur TheTVDB</span>
+                            </h4>
+                            <ul class="space-y-1 text-sm text-plex-light">
+                                <li data-lang="en" class="active">• Good coverage for TV series</li>
+                                <li data-lang="de">• Gute Abdeckung für TV-Serien</li>
+                                <li data-lang="en" class="active">• Excellent episode details</li>
+                                <li data-lang="de">• Exzellente Episodendetails</li>
+                                <li data-lang="en" class="active">• FREE for personal use</li>
+                                <li data-lang="de">• KOSTENLOS für persönliche Nutzung</li>
+                                <li data-lang="en" class="active">• Works great on its own</li>
+                                <li data-lang="de">• Funktioniert super alleine</li>
+                            </ul>
+                        </div>
+
+                        <!-- Scenario 4: No API Keys -->
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h4 class="font-semibold mb-2 text-gray-400">
+                                <span data-lang="en" class="active">⚠️ No API Keys</span>
+                                <span data-lang="de">⚠️ Keine API-Keys</span>
+                            </h4>
+                            <ul class="space-y-1 text-sm text-plex-light">
+                                <li data-lang="en" class="active">• App still works with basic features</li>
+                                <li data-lang="de">• App funktioniert noch mit Grundfunktionen</li>
+                                <li data-lang="en" class="active">• Uses episode estimation</li>
+                                <li data-lang="de">• Verwendet Episodenschätzung</li>
+                                <li data-lang="en" class="active">• Limited accuracy</li>
+                                <li data-lang="de">• Begrenzte Genauigkeit</li>
+                                <li data-lang="en" class="active">• Get at least TMDb for best experience!</li>
+                                <li data-lang="de">• Holen Sie sich mindestens TMDb für beste Erfahrung!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analysis -->
+                <section id="analysis" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">📊 Series Analysis</span>
+                        <span data-lang="de">📊 Serienanalyse</span>
+                    </h2>
+                    
+                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                        <span data-lang="en" class="active">Single Analysis</span>
+                        <span data-lang="de">Einzelanalyse</span>
+                    </h3>
+                    <div class="bg-plex-darker rounded-lg p-4 mb-4">
+                        <p class="mb-2">
+                            <span data-lang="en" class="active">For a single series:</span>
+                            <span data-lang="de">Für eine einzelne Serie:</span>
+                        </p>
+                        <ol class="space-y-1 list-decimal list-inside text-sm">
+                            <li data-lang="en" class="active">Click "Analyze" on the desired series</li>
+                            <li data-lang="de">Klicken Sie auf "Analyze" bei der gewünschten Serie</li>
+                            <li data-lang="en" class="active">Analysis runs in background (approx. 1-3 seconds)</li>
+                            <li data-lang="de">Die Analyse läuft im Hintergrund (ca. 1-3 Sekunden)</li>
+                            <li data-lang="en" class="active">Card updates automatically with results</li>
+                            <li data-lang="de">Die Karte aktualisiert sich automatisch mit den Ergebnissen</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                        <span data-lang="en" class="active">Batch Analysis</span>
+                        <span data-lang="de">Batch-Analyse</span>
+                    </h3>
+                    <div class="bg-plex-darker rounded-lg p-4 mb-4">
+                        <p class="mb-2">
+                            <span data-lang="en" class="active">For all series at once:</span>
+                            <span data-lang="de">Für alle Serien gleichzeitig:</span>
+                        </p>
+                        <ol class="space-y-1 list-decimal list-inside text-sm">
+                            <li data-lang="en" class="active">Click "Analyze All" (purple button)</li>
+                            <li data-lang="de">Klicken Sie auf "Analyze All" (lila Button)</li>
+                            <li data-lang="en" class="active">Progress bar shows status</li>
+                            <li data-lang="de">Ein Fortschrittsbalken zeigt den Status</li>
+                            <li data-lang="en" class="active">You can stop anytime with "Stop"</li>
+                            <li data-lang="de">Sie können jederzeit mit "Stop" abbrechen</li>
+                            <li data-lang="en" class="active">Already analyzed series are skipped</li>
+                            <li data-lang="de">Bereits analysierte Serien werden übersprungen</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="text-xl font-semibold mb-3 text-plex-orange">
+                        <span data-lang="en" class="active">Automatic Analysis</span>
+                        <span data-lang="de">Automatische Analyse</span>
+                    </h3>
+                    <div class="bg-plex-darker rounded-lg p-4">
+                        <p class="mb-2">
+                            <span data-lang="en" class="active">After scan automatically starts:</span>
+                            <span data-lang="de">Nach dem Scan startet automatisch:</span>
+                        </p>
+                        <ul class="space-y-1 list-disc list-inside text-sm">
+                            <li data-lang="en" class="active">Only for unanalyzed series</li>
+                            <li data-lang="de">Nur für noch nicht analysierte Serien</li>
+                            <li data-lang="en" class="active">Smart rate-limiting prevents API overload</li>
+                            <li data-lang="de">Intelligente Rate-Limiting verhindert API-Überlastung</li>
+                            <li data-lang="en" class="active">Browser remains responsive during analysis</li>
+                            <li data-lang="de">Browser bleibt responsiv während der Analyse</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- PDF Export -->
+                <section id="export" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">📄 PDF Export</span>
+                        <span data-lang="de">📄 PDF-Export</span>
+                    </h2>
+                    
+                    <div class="bg-plex-darker rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-semibold mb-2">
+                            <span data-lang="en" class="active">Export Missing Episodes</span>
+                            <span data-lang="de">Export fehlender Episoden</span>
+                        </h3>
+                        <ol class="space-y-1 list-decimal list-inside text-sm">
+                            <li data-lang="en" class="active">Open Settings</li>
+                            <li data-lang="de">Öffnen Sie die Einstellungen</li>
+                            <li data-lang="en" class="active">Click "Export Missing Episodes (PDF)"</li>
+                            <li data-lang="de">Klicken Sie auf "Export Missing Episodes (PDF)"</li>
+                            <li data-lang="en" class="active">PDF is automatically generated and downloaded</li>
+                            <li data-lang="de">PDF wird automatisch generiert und heruntergeladen</li>
+                        </ol>
+                    </div>
+
+                    <div class="bg-plex-darker rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-2">
+                            <span data-lang="en" class="active">PDF Content</span>
+                            <span data-lang="de">PDF-Inhalt</span>
+                        </h3>
+                        <ul class="space-y-1 list-disc list-inside text-sm">
+                            <li data-lang="en" class="active">Overview of all incomplete series</li>
+                            <li data-lang="de">Übersicht aller unvollständigen Serien</li>
+                            <li data-lang="en" class="active">Sorted by completion percentage</li>
+                            <li data-lang="de">Sortiert nach Vollständigkeitsgrad</li>
+                            <li data-lang="en" class="active">Visual progress bars</li>
+                            <li data-lang="de">Visuelle Fortschrittsbalken</li>
+                            <li data-lang="en" class="active">Detailed episode lists</li>
+                            <li data-lang="de">Detaillierte Episodenlisten</li>
+                            <li data-lang="en" class="active">A4 format for easy printing</li>
+                            <li data-lang="de">A4-Format für einfaches Drucken</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Troubleshooting -->
+                <section id="troubleshooting" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">❓ Troubleshooting</span>
+                        <span data-lang="de">❓ Fehlerbehebung</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="font-bold mb-2 text-yellow-400">
+                                <span data-lang="en" class="active">Problem: Database not found</span>
+                                <span data-lang="de">Problem: Datenbank wird nicht gefunden</span>
+                            </h3>
+                            <p class="text-sm mb-2">
+                                <span data-lang="en" class="active">Solution:</span>
+                                <span data-lang="de">Lösung:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Ensure Plex Media Server is running</li>
+                                <li data-lang="de">Stellen Sie sicher, dass Plex Media Server läuft</li>
+                                <li data-lang="en" class="active">Check path in .env file</li>
+                                <li data-lang="de">Prüfen Sie den Pfad in der .env Datei</li>
+                                <li data-lang="en" class="active">Default Windows path: <code class="text-xs bg-plex-dark px-1 rounded">C:\Users\[Name]\AppData\Local\Plex Media Server</code></li>
+                                <li data-lang="de">Standard-Pfad Windows: <code class="text-xs bg-plex-dark px-1 rounded">C:\Users\[Name]\AppData\Local\Plex Media Server</code></li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="font-bold mb-2 text-yellow-400">
+                                <span data-lang="en" class="active">Problem: Analysis finds no metadata</span>
+                                <span data-lang="de">Problem: Analyse findet keine Metadaten</span>
+                            </h3>
+                            <p class="text-sm mb-2">
+                                <span data-lang="en" class="active">Solution:</span>
+                                <span data-lang="de">Lösung:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Check API configuration in settings</li>
+                                <li data-lang="de">Prüfen Sie die API-Konfiguration in den Einstellungen</li>
+                                <li data-lang="en" class="active">Test each API individually with "Test" button</li>
+                                <li data-lang="de">Testen Sie jede API einzeln mit dem "Test" Button</li>
+                                <li data-lang="en" class="active">Ensure API keys are valid</li>
+                                <li data-lang="de">Stellen Sie sicher, dass die API-Keys gültig sind</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="font-bold mb-2 text-yellow-400">
+                                <span data-lang="en" class="active">Problem: Browser becomes slow</span>
+                                <span data-lang="de">Problem: Browser wird langsam</span>
+                            </h3>
+                            <p class="text-sm mb-2">
+                                <span data-lang="en" class="active">Solution:</span>
+                                <span data-lang="de">Lösung:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Use "Clear Cache" in settings</li>
+                                <li data-lang="de">Verwenden Sie "Clear Cache" in den Einstellungen</li>
+                                <li data-lang="en" class="active">Close other browser tabs</li>
+                                <li data-lang="de">Schließen Sie andere Browser-Tabs</li>
+                                <li data-lang="en" class="active">Use Chrome or Edge for best performance</li>
+                                <li data-lang="de">Nutzen Sie Chrome oder Edge für beste Performance</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Real-time Features -->
+                <section id="realtime" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">📡 Real-time Features</span>
+                        <span data-lang="de">📡 Echtzeit-Funktionen</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">WebSocket Connection</span>
+                                <span data-lang="de">WebSocket-Verbindung</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">PlexComplete uses WebSocket technology for real-time updates. The connection status is shown in the bottom-right corner:</span>
+                                <span data-lang="de">PlexComplete verwendet WebSocket-Technologie für Echtzeit-Updates. Der Verbindungsstatus wird in der unteren rechten Ecke angezeigt:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li><span class="text-green-500">●</span> <span data-lang="en" class="active">Green pulse: Connected and active</span><span data-lang="de">Grünes Pulsieren: Verbunden und aktiv</span></li>
+                                <li><span class="text-yellow-500">●</span> <span data-lang="en" class="active">Yellow: Reconnecting automatically</span><span data-lang="de">Gelb: Automatische Wiederverbindung</span></li>
+                                <li><span class="text-red-500">●</span> <span data-lang="en" class="active">Red: Connection error (refresh page)</span><span data-lang="de">Rot: Verbindungsfehler (Seite aktualisieren)</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Live Progress Tracking</span>
+                                <span data-lang="de">Live-Fortschrittsverfolgung</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">During analysis, you'll see real-time progress updates:</span>
+                                <span data-lang="de">Während der Analyse sehen Sie Echtzeit-Fortschrittsaktualisierungen:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Progress bars on series cards during analysis</li>
+                                <li data-lang="de">Fortschrittsbalken auf Serienkarten während der Analyse</li>
+                                <li data-lang="en" class="active">Active task counter in status indicator</li>
+                                <li data-lang="de">Aktive Aufgabenzähler in der Statusanzeige</li>
+                                <li data-lang="en" class="active">Hover over status indicator to see task details</li>
+                                <li data-lang="de">Fahren Sie über die Statusanzeige, um Aufgabendetails zu sehen</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Notifications</span>
+                                <span data-lang="de">Benachrichtigungen</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Notifications appear in the top-right corner with different styles:</span>
+                                <span data-lang="de">Benachrichtigungen erscheinen in der oberen rechten Ecke mit verschiedenen Stilen:</span>
+                            </p>
+                            <ul class="space-y-2 text-sm">
+                                <li class="border-l-4 border-green-500 pl-2">
+                                    <strong data-lang="en" class="active">Success (Green):</strong><strong data-lang="de">Erfolg (Grün):</strong>
+                                    <span data-lang="en" class="active">Analysis completed successfully</span>
+                                    <span data-lang="de">Analyse erfolgreich abgeschlossen</span>
+                                </li>
+                                <li class="border-l-4 border-blue-500 pl-2">
+                                    <strong data-lang="en" class="active">Info (Blue):</strong><strong data-lang="de">Info (Blau):</strong>
+                                    <span data-lang="en" class="active">General information and updates</span>
+                                    <span data-lang="de">Allgemeine Informationen und Updates</span>
+                                </li>
+                                <li class="border-l-4 border-yellow-500 pl-2">
+                                    <strong data-lang="en" class="active">Warning (Yellow):</strong><strong data-lang="de">Warnung (Gelb):</strong>
+                                    <span data-lang="en" class="active">Important notices or partial issues</span>
+                                    <span data-lang="de">Wichtige Hinweise oder teilweise Probleme</span>
+                                </li>
+                                <li class="border-l-4 border-red-500 pl-2">
+                                    <strong data-lang="en" class="active">Error (Red):</strong><strong data-lang="de">Fehler (Rot):</strong>
+                                    <span data-lang="en" class="active">Task failures or connection errors</span>
+                                    <span data-lang="de">Aufgabenfehler oder Verbindungsfehler</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Sound Notifications</span>
+                                <span data-lang="de">Ton-Benachrichtigungen</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Each notification type has a unique sound that plays automatically:</span>
+                                <span data-lang="de">Jeder Benachrichtigungstyp hat einen einzigartigen Ton, der automatisch abgespielt wird:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Success: Ascending two-tone chime</li>
+                                <li data-lang="de">Erfolg: Aufsteigender Zweiklang</li>
+                                <li data-lang="en" class="active">Error: Descending warning tone</li>
+                                <li data-lang="de">Fehler: Absteigender Warnton</li>
+                                <li data-lang="en" class="active">Warning: Double beep alert</li>
+                                <li data-lang="de">Warnung: Doppel-Piepton</li>
+                                <li data-lang="en" class="active">Info: Single soft tone</li>
+                                <li data-lang="de">Info: Einzelner sanfter Ton</li>
+                            </ul>
+                            <p class="text-sm mt-3">
+                                <span data-lang="en" class="active">Note: Sounds are enabled by default and settings are saved in your browser.</span>
+                                <span data-lang="de">Hinweis: Töne sind standardmäßig aktiviert und Einstellungen werden in Ihrem Browser gespeichert.</span>
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Advanced Search -->
+                <section id="advanced-search" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">🔍 Advanced Search</span>
+                        <span data-lang="de">🔍 Erweiterte Suche</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Opening Advanced Search</span>
+                                <span data-lang="de">Erweiterte Suche öffnen</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Access the powerful search interface through:</span>
+                                <span data-lang="de">Greifen Sie auf die leistungsstarke Suchoberfläche zu über:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Click the "🔍 Advanced Search" button in the top-right corner</li>
+                                <li data-lang="de">Klicken Sie auf die Schaltfläche "🔍 Erweiterte Suche" in der oberen rechten Ecke</li>
+                                <li data-lang="en" class="active">Use keyboard shortcut: <code class="bg-plex-gray px-1 rounded">Ctrl+Shift+F</code></li>
+                                <li data-lang="de">Tastenkombination verwenden: <code class="bg-plex-gray px-1 rounded">Strg+Umschalt+F</code></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Boolean Search Operators</span>
+                                <span data-lang="de">Boolesche Suchoperatoren</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Use boolean logic to create complex search queries:</span>
+                                <span data-lang="de">Verwenden Sie boolesche Logik für komplexe Suchanfragen:</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div class="bg-plex-gray rounded p-3">
+                                    <div class="font-semibold text-plex-orange">AND</div>
+                                    <div data-lang="en" class="active">All terms must match</div>
+                                    <div data-lang="de">Alle Begriffe müssen übereinstimmen</div>
+                                    <div class="text-xs mt-1 text-plex-light">crime drama → both words</div>
+                                </div>
+                                <div class="bg-plex-gray rounded p-3">
+                                    <div class="font-semibold text-plex-orange">OR</div>
+                                    <div data-lang="en" class="active">Any term can match</div>
+                                    <div data-lang="de">Jeder Begriff kann übereinstimmen</div>
+                                    <div class="text-xs mt-1 text-plex-light">comedy horror → either word</div>
+                                </div>
+                                <div class="bg-plex-gray rounded p-3">
+                                    <div class="font-semibold text-plex-orange">NOT</div>
+                                    <div data-lang="en" class="active">Exclude matching terms</div>
+                                    <div data-lang="de">Übereinstimmende Begriffe ausschließen</div>
+                                    <div class="text-xs mt-1 text-plex-light">drama → exclude dramas</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Advanced Query Syntax</span>
+                                <span data-lang="de">Erweiterte Abfragesyntax</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Use special operators in your search queries:</span>
+                                <span data-lang="de">Verwenden Sie spezielle Operatoren in Ihren Suchanfragen:</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Exact Phrases</span>
+                                        <span data-lang="de">Exakte Phrasen</span>
+                                    </div>
+                                    <code class="bg-plex-gray px-2 py-1 rounded block">"Example Series"</code>
+                                    <div class="text-xs mt-1 text-plex-light">
+                                        <span data-lang="en" class="active">Searches for exact phrase in quotes</span>
+                                        <span data-lang="de">Sucht nach exakter Phrase in Anführungszeichen</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Must Include</span>
+                                        <span data-lang="de">Muss enthalten</span>
+                                    </div>
+                                    <code class="bg-plex-gray px-2 py-1 rounded block">+detective</code>
+                                    <div class="text-xs mt-1 text-plex-light">
+                                        <span data-lang="en" class="active">Term must be present</span>
+                                        <span data-lang="de">Begriff muss vorhanden sein</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Must Exclude</span>
+                                        <span data-lang="de">Muss ausschließen</span>
+                                    </div>
+                                    <code class="bg-plex-gray px-2 py-1 rounded block">-reality</code>
+                                    <div class="text-xs mt-1 text-plex-light">
+                                        <span data-lang="en" class="active">Excludes term from results</span>
+                                        <span data-lang="de">Schließt Begriff aus Ergebnissen aus</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Field Search</span>
+                                        <span data-lang="de">Feldsuche</span>
+                                    </div>
+                                    <code class="bg-plex-gray px-2 py-1 rounded block">title:sherlock</code>
+                                    <div class="text-xs mt-1 text-plex-light">
+                                        <span data-lang="en" class="active">Search specific fields only</span>
+                                        <span data-lang="de">Nur bestimmte Felder durchsuchen</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Smart Filters</span>
+                                <span data-lang="de">Intelligente Filter</span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Content Filters</span>
+                                        <span data-lang="de">Inhaltsfilter</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active"><strong>Genres:</strong> Filter by multiple genres</li>
+                                        <li data-lang="de"><strong>Genres:</strong> Nach mehreren Genres filtern</li>
+                                        <li data-lang="en" class="active"><strong>Networks:</strong> TV network/channel filtering</li>
+                                        <li data-lang="de"><strong>Netzwerke:</strong> TV-Netzwerk-/Kanalfilterung</li>
+                                        <li data-lang="en" class="active"><strong>Year Range:</strong> From/to year filtering</li>
+                                        <li data-lang="de"><strong>Jahresbereich:</strong> Von/bis Jahr filtern</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Completion Filters</span>
+                                        <span data-lang="de">Vervollständigungsfilter</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active"><strong>Complete:</strong> 100% of episodes available</li>
+                                        <li data-lang="de"><strong>Vollständig:</strong> 100% der Episoden verfügbar</li>
+                                        <li data-lang="en" class="active"><strong>Incomplete:</strong> Missing some episodes</li>
+                                        <li data-lang="de"><strong>Unvollständig:</strong> Einige Episoden fehlen</li>
+                                        <li data-lang="en" class="active"><strong>Minimum %:</strong> At least X% complete</li>
+                                        <li data-lang="de"><strong>Minimum %:</strong> Mindestens X% vollständig</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Regex Pattern Matching</span>
+                                <span data-lang="de">Regex-Musterabgleich</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">For advanced users, use regular expressions for complex pattern matching:</span>
+                                <span data-lang="de">Für fortgeschrittene Benutzer: Verwenden Sie reguläre Ausdrücke für komplexe Musterabgleiche:</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold mb-1">
+                                        <span data-lang="en" class="active">Common Patterns:</span>
+                                        <span data-lang="de">Häufige Muster:</span>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <code class="bg-plex-gray px-2 py-1 rounded">S\\d{2}E\\d{2}</code>
+                                            <div class="text-xs text-plex-light">
+                                                <span data-lang="en" class="active">Season/Episode format (S01E01)</span>
+                                                <span data-lang="de">Staffel/Episode-Format (S01E01)</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <code class="bg-plex-gray px-2 py-1 rounded">\\b20(1|2)\\d\\b</code>
+                                            <div class="text-xs text-plex-light">
+                                                <span data-lang="en" class="active">Years 2010-2029</span>
+                                                <span data-lang="de">Jahre 2010-2029</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold mb-1">
+                                        <span data-lang="en" class="active">Options:</span>
+                                        <span data-lang="de">Optionen:</span>
+                                    </div>
+                                    <div class="space-y-1">
+                                        <label class="flex items-center space-x-2">
+                                            <input type="checkbox" class="rounded">
+                                            <span data-lang="en" class="active">Case Sensitive</span>
+                                            <span data-lang="de">Groß-/Kleinschreibung beachten</span>
+                                        </label>
+                                        <div class="text-xs text-plex-light">
+                                            <span data-lang="en" class="active">Enable for exact case matching</span>
+                                            <span data-lang="de">Für exakte Groß-/Kleinschreibung aktivieren</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Filter Presets & History</span>
+                                <span data-lang="de">Filter-Voreinstellungen & Verlauf</span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Saved Presets</span>
+                                        <span data-lang="de">Gespeicherte Voreinstellungen</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Save frequently used filter combinations</li>
+                                        <li data-lang="de">Häufig verwendete Filterkombinationen speichern</li>
+                                        <li data-lang="en" class="active">Quick access via preset buttons</li>
+                                        <li data-lang="de">Schnellzugriff über Voreinstellungsschaltflächen</li>
+                                        <li data-lang="en" class="active">Default presets included (Complete Series, Recent, etc.)</li>
+                                        <li data-lang="de">Standard-Voreinstellungen enthalten (Vollständige Serien, Aktuell, etc.)</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Search History</span>
+                                        <span data-lang="de">Suchverlauf</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Last 10 searches automatically saved</li>
+                                        <li data-lang="de">Letzte 10 Suchen automatisch gespeichert</li>
+                                        <li data-lang="en" class="active">Click to reuse previous searches</li>
+                                        <li data-lang="de">Klicken, um vorherige Suchen zu wiederholen</li>
+                                        <li data-lang="en" class="active">Stored locally in your browser</li>
+                                        <li data-lang="de">Lokal in Ihrem Browser gespeichert</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Search Fields</span>
+                                <span data-lang="de">Suchfelder</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Choose which content areas to search in:</span>
+                                <span data-lang="de">Wählen Sie aus, in welchen Inhaltsbereichen gesucht werden soll:</span>
+                            </p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                                <div class="bg-plex-gray rounded p-2 text-center">
+                                    <div class="font-semibold">Title</div>
+                                    <div data-lang="en" class="active">Series names</div>
+                                    <div data-lang="de">Seriennamen</div>
+                                </div>
+                                <div class="bg-plex-gray rounded p-2 text-center">
+                                    <div class="font-semibold">Description</div>
+                                    <div data-lang="en" class="active">Plot summaries</div>
+                                    <div data-lang="de">Handlungszusammenfassungen</div>
+                                </div>
+                                <div class="bg-plex-gray rounded p-2 text-center">
+                                    <div class="font-semibold">Episodes</div>
+                                    <div data-lang="en" class="active">Episode titles</div>
+                                    <div data-lang="de">Episodentitel</div>
+                                </div>
+                                <div class="bg-plex-gray rounded p-2 text-center">
+                                    <div class="font-semibold">Path</div>
+                                    <div data-lang="en" class="active">File paths</div>
+                                    <div data-lang="de">Dateipfade</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Keyboard Shortcuts -->
+                <section id="keyboard" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">⌨️ Keyboard Shortcuts</span>
+                        <span data-lang="de">⌨️ Tastenkürzel</span>
+                    </h2>
+                    
+                    <div class="bg-plex-darker rounded-lg p-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-plex-gray">
+                                    <th class="text-left py-2">
+                                        <span data-lang="en" class="active">Key</span>
+                                        <span data-lang="de">Taste</span>
+                                    </th>
+                                    <th class="text-left py-2">
+                                        <span data-lang="en" class="active">Function</span>
+                                        <span data-lang="de">Funktion</span>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-plex-gray">
+                                    <td class="py-2"><kbd class="px-2 py-1 bg-plex-dark rounded">Ctrl + S</kbd></td>
+                                    <td class="py-2">
+                                        <span data-lang="en" class="active">Scan library</span>
+                                        <span data-lang="de">Bibliothek scannen</span>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-plex-gray">
+                                    <td class="py-2"><kbd class="px-2 py-1 bg-plex-dark rounded">Ctrl + A</kbd></td>
+                                    <td class="py-2">
+                                        <span data-lang="en" class="active">Analyze all series</span>
+                                        <span data-lang="de">Alle Serien analysieren</span>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-plex-gray">
+                                    <td class="py-2"><kbd class="px-2 py-1 bg-plex-dark rounded">Ctrl + F</kbd></td>
+                                    <td class="py-2">
+                                        <span data-lang="en" class="active">Focus search field</span>
+                                        <span data-lang="de">Suchfeld fokussieren</span>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-plex-gray">
+                                    <td class="py-2"><kbd class="px-2 py-1 bg-plex-dark rounded">Ctrl + E</kbd></td>
+                                    <td class="py-2">
+                                        <span data-lang="en" class="active">Export PDF</span>
+                                        <span data-lang="de">PDF exportieren</span>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-plex-gray">
+                                    <td class="py-2"><kbd class="px-2 py-1 bg-plex-dark rounded">Ctrl + ,</kbd></td>
+                                    <td class="py-2">
+                                        <span data-lang="en" class="active">Open settings</span>
+                                        <span data-lang="de">Einstellungen öffnen</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2"><kbd class="px-2 py-1 bg-plex-dark rounded">Esc</kbd></td>
+                                    <td class="py-2">
+                                        <span data-lang="en" class="active">Close modal/dialog</span>
+                                        <span data-lang="de">Modal/Dialog schließen</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Smart Retry System -->
+                <section id="retry-system" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">🔄 Smart Retry System</span>
+                        <span data-lang="de">🔄 Intelligentes Wiederholungssystem</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Automatic Failure Recovery</span>
+                                <span data-lang="de">Automatische Fehlerbehebung</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">PlexComplete automatically retries failed operations using intelligent exponential backoff:</span>
+                                <span data-lang="de">PlexComplete wiederholt fehlgeschlagene Operationen automatisch mit intelligentem exponentiellen Backoff:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">API requests: Up to 3 retries with exponential backoff</li>
+                                <li data-lang="de">API-Anfragen: Bis zu 3 Wiederholungen mit exponentiellem Backoff</li>
+                                <li data-lang="en" class="active">Network requests: Up to 5 retries for connection issues</li>
+                                <li data-lang="de">Netzwerkanfragen: Bis zu 5 Wiederholungen bei Verbindungsproblemen</li>
+                                <li data-lang="en" class="active">Database operations: Up to 2 retries with longer delays</li>
+                                <li data-lang="de">Datenbankoperationen: Bis zu 2 Wiederholungen mit längeren Verzögerungen</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Circuit Breaker Protection</span>
+                                <span data-lang="de">Circuit-Breaker-Schutz</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Prevents cascading failures by temporarily disabling problematic endpoints:</span>
+                                <span data-lang="de">Verhindert kaskadierende Fehler durch temporäre Deaktivierung problematischer Endpunkte:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Opens circuit after 5 consecutive failures</li>
+                                <li data-lang="de">Öffnet Circuit nach 5 aufeinanderfolgenden Fehlern</li>
+                                <li data-lang="en" class="active">Automatically resets after 1 minute cooling period</li>
+                                <li data-lang="de">Setzt sich nach 1-minütiger Abkühlphase automatisch zurück</li>
+                                <li data-lang="en" class="active">Half-open state tests endpoint before full recovery</li>
+                                <li data-lang="de">Halboffener Zustand testet Endpunkt vor vollständiger Wiederherstellung</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Configurable Settings</span>
+                                <span data-lang="de">Konfigurierbare Einstellungen</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Access retry configuration via the "⚙️ Retry Settings" button (bottom-left corner):</span>
+                                <span data-lang="de">Greifen Sie über die Schaltfläche "⚙️ Retry Settings" auf die Wiederholungskonfiguration zu (unten links):</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">Configuration Tab</div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Adjust retry counts per operation type</li>
+                                        <li data-lang="de">Wiederholungszähler pro Operationstyp anpassen</li>
+                                        <li data-lang="en" class="active">Configure delays and timeouts</li>
+                                        <li data-lang="de">Verzögerungen und Timeouts konfigurieren</li>
+                                        <li data-lang="en" class="active">Enable/disable jitter</li>
+                                        <li data-lang="de">Jitter aktivieren/deaktivieren</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">Monitoring Tab</div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">View active retry operations</li>
+                                        <li data-lang="de">Aktive Wiederholungsoperationen anzeigen</li>
+                                        <li data-lang="en" class="active">Monitor circuit breaker states</li>
+                                        <li data-lang="de">Circuit-Breaker-Zustände überwachen</li>
+                                        <li data-lang="en" class="active">Review retry statistics</li>
+                                        <li data-lang="de">Wiederholungsstatistiken überprüfen</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Statistics & Analytics -->
+                <section id="statistics" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">📊 Statistics & Analytics</span>
+                        <span data-lang="de">📊 Statistiken & Analysen</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Overview Statistics Bar</span>
+                                <span data-lang="de">Übersichts-Statistikleiste</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Located above the search bar, provides quick insights into your library:</span>
+                                <span data-lang="de">Über der Suchleiste gelegen, bietet schnelle Einblicke in Ihre Bibliothek:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Overall completion percentage with visual progress bar</li>
+                                <li data-lang="de">Gesamtvollständigkeitsprozentsatz mit visuellem Fortschrittsbalken</li>
+                                <li data-lang="en" class="active">Total episode count across all series</li>
+                                <li data-lang="de">Gesamtanzahl der Episoden aller Serien</li>
+                                <li data-lang="en" class="active">Video quality distribution (4K, HD, SD)</li>
+                                <li data-lang="de">Videoqualitätsverteilung (4K, HD, SD)</li>
+                                <li data-lang="en" class="active">HDR and HEVC codec percentages</li>
+                                <li data-lang="de">HDR- und HEVC-Codec-Prozentsätze</li>
+                                <li data-lang="en" class="active">Estimated total library size</li>
+                                <li data-lang="de">Geschätzte Gesamtbibliotheksgröße</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Detailed Analytics Dashboard</span>
+                                <span data-lang="de">Detailliertes Analyse-Dashboard</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Click the statistics bar to access comprehensive analytics:</span>
+                                <span data-lang="de">Klicken Sie auf die Statistikleiste für umfassende Analysen:</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Overview Cards</span>
+                                        <span data-lang="de">Übersichtskarten</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Total series and episodes</li>
+                                        <li data-lang="de">Gesamtserien und -episoden</li>
+                                        <li data-lang="en" class="active">Library completion rate</li>
+                                        <li data-lang="de">Bibliotheksvollständigkeitsrate</li>
+                                        <li data-lang="en" class="active">Estimated storage usage</li>
+                                        <li data-lang="de">Geschätzte Speichernutzung</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Interactive Charts</span>
+                                        <span data-lang="de">Interaktive Diagramme</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Completion status donut chart</li>
+                                        <li data-lang="de">Vollständigkeitsstatus-Donut-Diagramm</li>
+                                        <li data-lang="en" class="active">Quality distribution bar chart</li>
+                                        <li data-lang="de">Qualitätsverteilungs-Balkendiagramm</li>
+                                        <li data-lang="en" class="active">Series by decade timeline</li>
+                                        <li data-lang="de">Serien nach Jahrzehnten Zeitachse</li>
+                                        <li data-lang="en" class="active">Video features radar chart</li>
+                                        <li data-lang="de">Video-Features-Radar-Diagramm</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Analytics Dashboard</span>
+                                <span data-lang="de">Analyse-Dashboard</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Real-time monitoring and insights for your library:</span>
+                                <span data-lang="de">Echtzeit-Überwachung und Einblicke für Ihre Bibliothek:</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Library Growth</span>
+                                        <span data-lang="de">Bibliothekswachstum</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Series added over time</li>
+                                        <li data-lang="de">Hinzugefügte Serien im Zeitverlauf</li>
+                                        <li data-lang="en" class="active">Latest additions</li>
+                                        <li data-lang="de">Neueste Ergänzungen</li>
+                                        <li data-lang="en" class="active">Growth comparison</li>
+                                        <li data-lang="de">Wachstumsvergleich</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">API Usage</span>
+                                        <span data-lang="de">API-Nutzung</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Daily API calls</li>
+                                        <li data-lang="de">Tägliche API-Aufrufe</li>
+                                        <li data-lang="en" class="active">Analyzed series</li>
+                                        <li data-lang="de">Analysierte Serien</li>
+                                        <li data-lang="en" class="active">Service breakdown</li>
+                                        <li data-lang="de">Service-Aufschlüsselung</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Performance</span>
+                                        <span data-lang="de">Leistung</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li data-lang="en" class="active">Load times</li>
+                                        <li data-lang="de">Ladezeiten</li>
+                                        <li data-lang="en" class="active">Cache efficiency</li>
+                                        <li data-lang="de">Cache-Effizienz</li>
+                                        <li data-lang="en" class="active">Memory usage</li>
+                                        <li data-lang="de">Speichernutzung</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Interesting Facts</span>
+                                <span data-lang="de">Interessante Fakten</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Discover unique insights about your library:</span>
+                                <span data-lang="de">Entdecken Sie einzigartige Einblicke in Ihre Bibliothek:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Average episodes per series</li>
+                                <li data-lang="de">Durchschnittliche Episoden pro Serie</li>
+                                <li data-lang="en" class="active">Storage per episode (GB)</li>
+                                <li data-lang="de">Speicher pro Episode (GB)</li>
+                                <li data-lang="en" class="active">Most popular decade</li>
+                                <li data-lang="de">Beliebtestes Jahrzehnt</li>
+                                <li data-lang="en" class="active">4K to HD ratio</li>
+                                <li data-lang="de">4K zu HD Verhältnis</li>
+                                <li data-lang="en" class="active">Complete vs incomplete</li>
+                                <li data-lang="de">Vollständig vs. unvollständig</li>
+                                <li data-lang="en" class="active">HDR/DV availability</li>
+                                <li data-lang="de">HDR/DV Verfügbarkeit</li>
+                                <li data-lang="en" class="active">Missing episodes count</li>
+                                <li data-lang="de">Anzahl fehlender Episoden</li>
+                                <li data-lang="en" class="active">Newest series</li>
+                                <li data-lang="de">Neueste Serie</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Enhanced Video Quality Detection</span>
+                                <span data-lang="de">Erweiterte Videoqualitätserkennung</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Multi-layer detection system analyzes file paths, names, and media metadata for accurate quality identification:</span>
+                                <span data-lang="de">Mehrschichtiges Erkennungssystem analysiert Dateipfade, Namen und Medien-Metadaten für genaue Qualitätsidentifikation:</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Resolution Detection</span>
+                                        <span data-lang="de">Auflösungserkennung</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">2160p, 4K, UHD</code> → 4K</li>
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">3840x2160+</code> → 4K (from database)</li>
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">1080p, FHD, 1920x1080</code> → HD</li>
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">720p, HD, 1280x720</code> → HD</li>
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">480p, SD, DVD</code> → SD</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Feature Detection</span>
+                                        <span data-lang="de">Feature-Erkennung</span>
+                                    </div>
+                                    <ul class="space-y-1 list-disc list-inside">
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">HDR, HDR10</code> → HDR</li>
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">Dolby Vision</code> → DV + HDR</li>
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">x265, HEVC</code> → HEVC</li>
+                                        <li><code class="bg-plex-gray px-1 rounded text-xs">x264, H264</code> → H.264</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Data Tables & Rankings</span>
+                                <span data-lang="de">Datentabellen & Rankings</span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Top Networks</span>
+                                        <span data-lang="de">Top-Netzwerke</span>
+                                    </div>
+                                    <p class="text-plex-light">
+                                        <span data-lang="en" class="active">Shows the most represented TV networks in your library</span>
+                                        <span data-lang="de">Zeigt die am häufigsten vertretenen TV-Netzwerke in Ihrer Bibliothek</span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-plex-orange mb-2">
+                                        <span data-lang="en" class="active">Top Genres</span>
+                                        <span data-lang="de">Top-Genres</span>
+                                    </div>
+                                    <p class="text-plex-light">
+                                        <span data-lang="en" class="active">Most popular genres based on series count</span>
+                                        <span data-lang="de">Beliebteste Genres basierend auf Serienanzahl</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Smart Caching & Updates</span>
+                                <span data-lang="de">Intelligentes Caching & Updates</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Statistics are automatically cached and updated efficiently:</span>
+                                <span data-lang="de">Statistiken werden automatisch zwischengespeichert und effizient aktualisiert:</span>
+                            </p>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Real-time updates when series are analyzed</li>
+                                <li data-lang="de">Echtzeit-Updates beim Analysieren von Serien</li>
+                                <li data-lang="en" class="active">1-hour cache for performance optimization</li>
+                                <li data-lang="de">1-Stunden-Cache für Leistungsoptimierung</li>
+                                <li data-lang="en" class="active">Automatic refresh on data changes</li>
+                                <li data-lang="de">Automatische Aktualisierung bei Datenänderungen</li>
+                                <li data-lang="en" class="active">Background processing for large libraries</li>
+                                <li data-lang="de">Hintergrundverarbeitung für große Bibliotheken</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Keyboard Shortcuts</span>
+                                <span data-lang="de">Tastenkombinationen</span>
+                            </h3>
+                            <ul class="space-y-1 text-sm">
+                                <li>
+                                    <kbd class="px-2 py-1 bg-plex-dark rounded text-xs">Ctrl + Shift + A</kbd>
+                                    <span class="ml-2" data-lang="en">Open analytics dashboard</span>
+                                    <span class="ml-2" data-lang="de">Analyse-Dashboard öffnen</span>
+                                </li>
+                                <li class="text-plex-light text-xs">
+                                    <span data-lang="en" class="active">Click the statistics bar for quick access</span>
+                                    <span data-lang="de">Klicken Sie auf die Statistikleiste für schnellen Zugriff</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Multi-Format Export Suite -->
+                <section id="export-suite" class="glass-effect rounded-xl p-6">
+                    <h2 class="text-2xl font-bold mb-4">
+                        <span data-lang="en" class="active">📤 Multi-Format Export Suite</span>
+                        <span data-lang="de">📤 Multi-Format Export Suite</span>
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Export Options</span>
+                                <span data-lang="de">Export-Optionen</span>
+                            </h3>
+                            <p class="text-sm mb-3">
+                                <span data-lang="en" class="active">Access via the blue "Export" button in the filter row. Choose from multiple professional formats:</span>
+                                <span data-lang="de">Zugriff über die blaue "Export"-Schaltfläche in der Filterzeile. Wählen Sie aus mehreren professionellen Formaten:</span>
+                            </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div class="bg-plex-gray rounded p-3">
+                                    <div class="font-semibold text-green-400 mb-2">📊 CSV Export</div>
+                                    <ul class="space-y-1 list-disc list-inside text-xs">
+                                        <li data-lang="en" class="active">Spreadsheet-ready format</li>
+                                        <li data-lang="de">Tabellenkalkulationsfertiges Format</li>
+                                        <li data-lang="en" class="active">Missing episodes inclusion</li>
+                                        <li data-lang="de">Einbeziehung fehlender Episoden</li>
+                                        <li data-lang="en" class="active">Summary statistics</li>
+                                        <li data-lang="de">Zusammenfassungsstatistiken</li>
+                                        <li data-lang="en" class="active">Excel/Google Sheets compatible</li>
+                                        <li data-lang="de">Excel/Google Sheets kompatibel</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-plex-gray rounded p-3">
+                                    <div class="font-semibold text-blue-400 mb-2">💻 JSON Export</div>
+                                    <ul class="space-y-1 list-disc list-inside text-xs">
+                                        <li data-lang="en" class="active">API and automation ready</li>
+                                        <li data-lang="de">API- und automatisierungsbereit</li>
+                                        <li data-lang="en" class="active">Pretty print formatting</li>
+                                        <li data-lang="de">Pretty-Print-Formatierung</li>
+                                        <li data-lang="en" class="active">Export metadata included</li>
+                                        <li data-lang="de">Export-Metadaten enthalten</li>
+                                        <li data-lang="en" class="active">Machine-readable structure</li>
+                                        <li data-lang="de">Maschinenlesbare Struktur</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-plex-gray rounded p-3">
+                                    <div class="font-semibold text-purple-400 mb-2">📈 HTML Report</div>
+                                    <ul class="space-y-1 list-disc list-inside text-xs">
+                                        <li data-lang="en" class="active">Interactive charts (Chart.js)</li>
+                                        <li data-lang="de">Interaktive Diagramme (Chart.js)</li>
+                                        <li data-lang="en" class="active">Dark/light theme options</li>
+                                        <li data-lang="de">Dunkle/helle Theme-Optionen</li>
+                                        <li data-lang="en" class="active">Progress bars and visuals</li>
+                                        <li data-lang="de">Fortschrittsbalken und Visualisierungen</li>
+                                        <li data-lang="en" class="active">Professional presentation</li>
+                                        <li data-lang="de">Professionelle Präsentation</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-plex-gray rounded p-3">
+                                    <div class="font-semibold text-orange-400 mb-2">📝 Markdown Export</div>
+                                    <ul class="space-y-1 list-disc list-inside text-xs">
+                                        <li data-lang="en" class="active">GitHub/documentation ready</li>
+                                        <li data-lang="de">GitHub/dokumentationsbereit</li>
+                                        <li data-lang="en" class="active">Table of contents generation</li>
+                                        <li data-lang="de">Inhaltsverzeichnis-Generierung</li>
+                                        <li data-lang="en" class="active">GitHub Flavored Markdown</li>
+                                        <li data-lang="de">GitHub Flavored Markdown</li>
+                                        <li data-lang="en" class="active">Missing episodes breakdown</li>
+                                        <li data-lang="de">Aufschlüsselung fehlender Episoden</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-plex-darker rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-2">
+                                <span data-lang="en" class="active">Export Features</span>
+                                <span data-lang="de">Export-Features</span>
+                            </h3>
+                            <ul class="space-y-1 list-disc list-inside text-sm">
+                                <li data-lang="en" class="active">Respects current filters and search results</li>
+                                <li data-lang="de">Respektiert aktuelle Filter und Suchergebnisse</li>
+                                <li data-lang="en" class="active">Real-time preview of export content</li>
+                                <li data-lang="de">Echzeit-Vorschau des Export-Inhalts</li>
+                                <li data-lang="en" class="active">Configurable options per format</li>
+                                <li data-lang="de">Konfigurierbare Optionen pro Format</li>
+                                <li data-lang="en" class="active">"Export All" batch functionality</li>
+                                <li data-lang="de">"Alles exportieren" Stapelfunktionalität</li>
+                                <li data-lang="en" class="active">Download notifications and progress</li>
+                                <li data-lang="de">Download-Benachrichtigungen und -fortschritt</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer -->
+                <div class="glass-effect rounded-xl p-6 text-center">
+                    <p class="text-plex-light">
+                        PlexComplete v1.0.0 - <span data-lang="en" class="active">A tool by Akustikrausch</span><span data-lang="de">Ein Tool von Akustikrausch</span><br>
+                        <span class="text-xs">
+                            <span data-lang="en" class="active">For questions and support visit our project page</span>
+                            <span data-lang="de">Für Fragen und Support besuchen Sie unsere Projektseite</span>
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language management
+        function setLanguage(lang) {
+            // Update active language elements
+            document.querySelectorAll('[data-lang]').forEach(el => {
+                if (el.getAttribute('data-lang') === lang) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+            
+            // Update button styles
+            const enBtn = document.getElementById('lang-en');
+            const deBtn = document.getElementById('lang-de');
+            
+            if (lang === 'en') {
+                enBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-plex-orange text-plex-dark';
+                deBtn.className = 'px-3 py-1 rounded text-sm font-medium text-plex-light hover:text-white';
+            } else {
+                deBtn.className = 'px-3 py-1 rounded text-sm font-medium bg-plex-orange text-plex-dark';
+                enBtn.className = 'px-3 py-1 rounded text-sm font-medium text-plex-light hover:text-white';
+            }
+            
+            // Save preference
+            localStorage.setItem('plexcomplete-doc-lang', lang);
+        }
+        
+        // Load saved language preference
+        const savedLang = localStorage.getItem('plexcomplete-doc-lang') || 'en';
+        setLanguage(savedLang);
+        
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Highlight active section
+        const sections = document.querySelectorAll('section[id]');
+        const navItems = document.querySelectorAll('.toc-item');
+        
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (scrollY >= (sectionTop - 100)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navItems.forEach(item => {
+                item.classList.remove('text-plex-orange');
+                if (item.getAttribute('href') === `#${current}`) {
+                    item.classList.add('text-plex-orange');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

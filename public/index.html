@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PlexComplete - Series Analyzer</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="favicon.svg">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Heroicons -->
+    <link rel="stylesheet" href="https://unpkg.com/heroicons@2.0.18/24/outline/style.css">
+    
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Plex-inspired styling -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'plex-orange': '#E5A00D',
+                        'plex-dark': '#1F2127',
+                        'plex-darker': '#171A1F',
+                        'plex-gray': '#3F4045',
+                        'plex-light': '#999999',
+                        'plex-white': '#FFFFFF'
+                    },
+                    fontFamily: {
+                        'plex': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Plex-inspired custom styles */
+        body {
+            background: linear-gradient(135deg, #1a1c22 0%, #282a36 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(31, 33, 39, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .plex-button {
+            background: linear-gradient(135deg, #E5A00D 0%, #cc8f0c 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .plex-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(229, 160, 13, 0.3);
+        }
+        
+        /* Performance optimizations */
+        .series-card {
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            border: 1px solid transparent;
+            will-change: transform;
+            contain: layout style paint;
+        }
+        
+        .series-card:hover {
+            transform: scale(1.02);
+            border-color: #E5A00D;
+            box-shadow: 0 0 20px rgba(229, 160, 13, 0.2);
+        }
+        
+        /* Virtual scrolling container */
+        #series-grid {
+            contain: layout style;
+        }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .series-card:hover {
+                transform: none;
+            }
+            .plex-button:hover {
+                transform: none;
+            }
+            
+            /* Mobile header adjustments */
+            header .container {
+                padding: 0.75rem;
+            }
+            
+            header h1 {
+                font-size: 1.25rem;
+            }
+            
+            /* Hide stats on mobile */
+            #stat-series, #stat-complete, #stat-incomplete {
+                font-size: 1rem;
+            }
+            
+            /* Mobile-friendly buttons */
+            .plex-button {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.875rem;
+            }
+            
+            /* Stack search and filters on mobile */
+            .search-filter-container {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+            
+            /* Full width search on mobile */
+            #search-input {
+                width: 100%;
+            }
+            
+            /* Horizontal scroll for filter buttons */
+            .filter-buttons {
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+            
+            .filter-buttons::-webkit-scrollbar {
+                display: none;
+            }
+            
+            /* Mobile card adjustments */
+            .series-card {
+                padding: 1rem;
+            }
+            
+            /* Pagination mobile friendly */
+            #pagination-controls {
+                font-size: 0.875rem;
+                padding: 0 0.5rem;
+            }
+            
+            #pagination-controls button {
+                padding: 0.5rem;
+                min-width: 2.5rem;
+            }
+        }
+        
+        /* Tablet responsive */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            header .container {
+                padding: 1rem;
+            }
+            
+            .series-card {
+                padding: 1.25rem;
+            }
+        }
+        
+        .status-complete { color: #4ade80; }
+        .status-warning { color: #fbbf24; }
+        .status-critical { color: #f87171; }
+        .status-unknown { color: #999999; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1F2127;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #3F4045;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #E5A00D;
+        }
+    </style>
+</head>
+<body class="font-plex text-plex-white min-h-screen">
+    <!-- Header -->
+    <header class="glass-effect sticky top-0 z-50 border-b border-plex-gray">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-4">
+                    <svg class="w-10 h-10 text-plex-orange" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                    </svg>
+                    <div>
+                        <h1 class="text-2xl font-bold text-plex-white">PlexComplete</h1>
+                        <p class="text-xs text-plex-light">Series Completeness Analyzer</p>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="hidden sm:flex items-center space-x-4 md:space-x-8">
+                    <div class="text-center">
+                        <div class="text-xl md:text-2xl font-bold text-plex-orange" id="stat-series">0</div>
+                        <div class="text-xs text-plex-light">Series</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl md:text-2xl font-bold text-green-500" id="stat-complete">0</div>
+                        <div class="text-xs text-plex-light">Complete</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xl md:text-2xl font-bold text-yellow-500" id="stat-incomplete">0</div>
+                        <div class="text-xs text-plex-light">Incomplete</div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <button id="scan-library-btn" class="plex-button px-3 sm:px-6 py-2 sm:py-2.5 rounded-lg text-plex-dark font-semibold flex items-center space-x-1 sm:space-x-2">
+                        <svg id="scan-icon" class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                        </svg>
+                        <div id="scan-spinner" class="hidden animate-spin rounded-full h-4 sm:h-5 w-4 sm:w-5 border-b-2 border-plex-dark"></div>
+                        <span id="scan-text" class="hidden sm:inline">Scan Library</span>
+                        <span id="scan-text-short" class="sm:hidden">Scan</span>
+                    </button>
+                    
+                    <button id="analyze-all-btn" class="px-6 py-2.5 rounded-lg bg-purple-600 text-white font-semibold flex items-center space-x-2 hover:bg-purple-700 transition hidden">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span>Analyze All</span>
+                    </button>
+                    
+                    <button id="refresh-cache-btn" class="p-2.5 rounded-lg bg-plex-gray hover:bg-plex-light hover:bg-opacity-20 transition" title="Reload from cache">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </button>
+                    
+                    <button id="settings-btn" class="p-2.5 rounded-lg bg-plex-gray hover:bg-plex-light hover:bg-opacity-20 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Search and Filters -->
+        <div class="glass-effect rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 search-filter-container">
+                <!-- Search with Advanced Search Button -->
+                <div class="flex-1 relative">
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-plex-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" id="search-input" placeholder="Search series..." 
+                           class="w-full pl-10 pr-20 py-2.5 sm:py-3 bg-plex-darker rounded-lg text-plex-white placeholder-plex-light focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                    <button id="advanced-search-btn" 
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-plex-orange text-plex-dark px-3 py-1.5 rounded text-sm font-semibold hover:bg-orange-500 transition">
+                        🔍+
+                    </button>
+                </div>
+                
+                <!-- Filter Buttons -->
+                <div class="flex space-x-2 filter-buttons overflow-x-auto">
+                    <button data-filter="all" class="filter-btn px-4 py-3 rounded-lg bg-plex-orange text-plex-dark hover:bg-plex-orange hover:text-plex-dark transition">
+                        All
+                    </button>
+                    <button data-filter="complete" class="filter-btn px-4 py-3 rounded-lg bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark transition flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Complete</span>
+                    </button>
+                    <button data-filter="incomplete" class="filter-btn px-4 py-3 rounded-lg bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark transition flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>Incomplete</span>
+                    </button>
+                    <button data-filter="critical" class="filter-btn px-4 py-3 rounded-lg bg-plex-gray text-plex-white hover:bg-plex-orange hover:text-plex-dark transition flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span>Critical</span>
+                    </button>
+                    
+                    <!-- Export Button -->
+                    <button id="export-btn" 
+                        class="filter-btn px-4 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span>Export</span>
+                    </button>
+                </div>
+                
+                <!-- Sorting Controls -->
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                    <div class="flex items-center space-x-2">
+                        <label class="text-plex-light text-sm">Sort by:</label>
+                        <select id="sort-select" 
+                                class="bg-plex-gray text-plex-white px-4 py-2 rounded-lg border border-plex-darker focus:border-plex-orange outline-none">
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="completion-desc">Completion (High to Low)</option>
+                            <option value="completion-asc">Completion (Low to High)</option>
+                            <option value="episodes-desc">Episode Count (Most)</option>
+                            <option value="episodes-asc">Episode Count (Least)</option>
+                            <option value="year-desc">Year (Newest)</option>
+                            <option value="year-asc">Year (Oldest)</option>
+                            <option value="quality-desc">Quality (Best)</option>
+                            <option value="missing-desc">Missing Episodes (Most)</option>
+                            <option value="missing-asc">Missing Episodes (Least)</option>
+                            <option value="size-desc">File Size (Largest)</option>
+                            <option value="size-asc">File Size (Smallest)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Advanced Sort Options -->
+                    <button id="advanced-sort-btn" 
+                            class="px-4 py-2 bg-plex-gray text-plex-white rounded-lg hover:bg-plex-darker transition flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                        </svg>
+                        <span>Advanced</span>
+                    </button>
+                    
+                    <!-- Advanced Sort Panel (Hidden by default) -->
+                    <div id="advanced-sort-panel" class="hidden w-full mt-3 p-4 bg-plex-darker rounded-lg">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-plex-light text-sm block mb-2">Group by:</label>
+                                <select id="group-by-select" 
+                                        class="w-full bg-plex-gray text-plex-white px-3 py-2 rounded border border-plex-gray focus:border-plex-orange outline-none">
+                                    <option value="none">None</option>
+                                    <option value="completion">Completion Status</option>
+                                    <option value="quality">Quality</option>
+                                    <option value="decade">Decade</option>
+                                    <option value="network">Network/Studio</option>
+                                    <option value="folder">Folder Location</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="text-plex-light text-sm block mb-2">Then by:</label>
+                                <select id="secondary-sort-select" 
+                                        class="w-full bg-plex-gray text-plex-white px-3 py-2 rounded border border-plex-gray focus:border-plex-orange outline-none">
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="completion-desc">Completion %</option>
+                                    <option value="year-desc">Year</option>
+                                    <option value="episodes-desc">Episode Count</option>
+                                </select>
+                            </div>
+                            
+                            <div class="flex items-end">
+                                <label class="flex items-center space-x-2 text-plex-light">
+                                    <input type="checkbox" id="reverse-sort" 
+                                           class="rounded border-plex-gray bg-plex-darker text-plex-orange focus:ring-plex-orange">
+                                    <span>Reverse order</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div id="progress-container" class="glass-effect rounded-xl p-6 mb-8 hidden">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-plex-orange"></div>
+                    <span class="text-plex-white font-semibold">Analyzing Library...</span>
+                </div>
+                <span id="progress-text" class="text-plex-light">0%</span>
+            </div>
+            <div class="w-full bg-plex-darker rounded-full h-2">
+                <div id="progress-bar" class="bg-gradient-to-r from-plex-orange to-yellow-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+        
+        <!-- Series Grid -->
+        <div id="series-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Series cards will be inserted here -->
+        </div>
+        
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-20">
+            <svg class="w-24 h-24 mx-auto text-plex-gray mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 16h4m10 0h4"/>
+            </svg>
+            <h3 class="text-xl font-semibold text-plex-white mb-2">No Series Loaded</h3>
+            <p class="text-plex-light">Click "Scan Library" to load your Plex database</p>
+        </div>
+    </main>
+    
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="glass-effect rounded-xl p-8 text-center">
+            <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-plex-orange mx-auto mb-4"></div>
+            <p class="text-plex-white font-semibold">Loading Database...</p>
+            <p class="text-plex-light text-sm mt-2">This may take a few moments</p>
+        </div>
+    </div>
+    
+    <script src="js/retry-manager.js"></script>
+    <script src="js/api-retry-wrapper.js"></script>
+    <script src="js/retry-settings-ui.js"></script>
+    <script src="js/export-manager.js"></script>
+    <script src="js/statistics-manager.js"></script>
+    <script src="js/websocket-client.js"></script>
+    <script src="js/audio-generator.js"></script>
+    <script src="js/advanced-search.js"></script>
+    <script src="js/app.js?v=2.5.1"></script>
+    <script src="js/pdf-export.js"></script>
+</body>
+</html>

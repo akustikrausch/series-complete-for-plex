@@ -1,0 +1,54 @@
+{
+  "app": {
+    "title": "Plex Series Checker",
+    "loadDatabase": "Datenbank laden",
+    "export": "Export",
+    "apiStatus": {
+      "connected": "API verbunden",
+      "disconnected": "API nicht verbunden",
+      "testing": "Teste API..."
+    }
+  },
+  "stats": {
+    "series": "Serien",
+    "episodes": "Episoden",
+    "complete": "Komplett",
+    "ended": "Beendet",
+    "analyzed": "Analysiert"
+  },
+  "filters": {
+    "title": "Filter",
+    "all": "Alle Serien",
+    "complete": "Vollständige Serien",
+    "incomplete": "Unvollständige Serien",
+    "ended": "Beendete Serien",
+    "running": "Laufende Serien",
+    "analyzed": "Analysierte Serien",
+    "notAnalyzed": "Nicht analysierte",
+    "multiLocation": "Mehrere Ordner",
+    "critical": "Kritisch (<50%)"
+  },
+  "series": {
+    "seasons": "Staffeln",
+    "episodes": "Episoden",
+    "locations": "Speicherorte",
+    "status": "Status",
+    "completeness": "Vollständigkeit",
+    "expected": "Erwartet",
+    "available": "Vorhanden",
+    "missing": "Fehlende Episoden",
+    "seriesEnded": "Serie beendet",
+    "seriesRunning": "Serie läuft noch",
+    "aiAnalyzed": "Mit AI analysiert",
+    "noData": "Keine Analysedaten verfügbar"
+  },
+  "messages": {
+    "loading": "Lade Plex Datenbank...",
+    "loadingSeries": "Lade Serien...",
+    "analyzing": "Analysiere {{title}}...",
+    "remaining": "{{count}} verbleibend",
+    "complete": "Analyse abgeschlossen",
+    "error": "Fehler: {{message}}",
+    "noCache": "Kein Cache gefunden"
+  }
+}
