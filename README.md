@@ -153,7 +153,7 @@ The app will still work but with limited accuracy, using basic episode estimatio
 
 ## 🔄 How the Fallback System Works
 
-PlexComplete automatically tries multiple sources in order:
+Serie Complete for Plex automatically tries multiple sources in order:
 
 1. **TMDb** → If configured and finds the series ✅
 2. **TheTVDB** → If TMDb fails or isn't configured 🔄
