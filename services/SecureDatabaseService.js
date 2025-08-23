@@ -258,8 +258,8 @@ class SecureDatabaseService {
             // Get folder paths
             const pathQuery = `
                 SELECT 
-                    item_id as series_id,
-                    file_path
+                    seasons.parent_id as series_id,
+                    mp.file as file_path
                 FROM media_parts mp
                 JOIN media_items mi ON mp.media_item_id = mi.id
                 JOIN metadata_items episodes ON mi.metadata_item_id = episodes.id

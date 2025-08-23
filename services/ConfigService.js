@@ -63,17 +63,6 @@ class ConfigService {
                         "apiKey": "",
                         "baseUrl": "https://api4.thetvdb.com/v4",
                         "enabled": true
-                    },
-                    "openai": {
-                        "apiKey": "",
-                        "baseUrl": "https://api.openai.com/v1",
-                        "model": "gpt-3.5-turbo",
-                        "enabled": false
-                    },
-                    "omdb": {
-                        "apiKey": "",
-                        "baseUrl": "http://www.omdbapi.com",
-                        "enabled": true
                     }
                 },
                 "features": {
@@ -145,9 +134,7 @@ class ConfigService {
             database: { plexDbPath: "auto" },
             apis: {
                 tmdb: { apiKey: "", baseUrl: "https://api.themoviedb.org/3", enabled: true },
-                thetvdb: { apiKey: "", baseUrl: "https://api4.thetvdb.com/v4", enabled: true },
-                openai: { apiKey: "", baseUrl: "https://api.openai.com/v1", model: "gpt-3.5-turbo", enabled: false },
-                omdb: { apiKey: "", baseUrl: "http://www.omdbapi.com", enabled: true }
+                thetvdb: { apiKey: "", baseUrl: "https://api4.thetvdb.com/v4", enabled: true }
             },
             features: { enableCache: true, cacheExpiry: 86400000, enableAnalytics: false, maxConcurrentRequests: 5, requestDelay: 1000 },
             ui: { theme: "dark", language: "en", itemsPerPage: 20, enableNotifications: true },
@@ -163,7 +150,7 @@ class ConfigService {
         }
 
         // Ensure API sections have required fields
-        const apiServices = ['tmdb', 'thetvdb', 'openai', 'omdb'];
+        const apiServices = ['tmdb', 'thetvdb'];
         for (const service of apiServices) {
             if (!this.config.apis[service]) {
                 console.log(`🔄 Adding missing API config: ${service}`);
@@ -246,16 +233,23 @@ class ConfigService {
         
         // Update each provided API config
         Object.keys(apiConfigs).forEach(apiName => {
-            if (currentApis[apiName]) {
-                // Only update provided fields
-                Object.keys(apiConfigs[apiName]).forEach(key => {
-                    currentApis[apiName][key] = apiConfigs[apiName][key];
-                });
+            if (!currentApis[apiName]) {
+                // Initialize if doesn't exist
+                currentApis[apiName] = {
+                    apiKey: '',
+                    enabled: true
+                };
             }
+            
+            // Update provided fields
+            Object.keys(apiConfigs[apiName]).forEach(key => {
+                currentApis[apiName][key] = apiConfigs[apiName][key];
+            });
         });
 
         this.set('apis', currentApis);
         await this.save();
+        console.log(`✅ Saved API configs to ${this.configPath}`);
         return currentApis;
     }
 
@@ -266,9 +260,7 @@ class ConfigService {
         const apis = this.get('apis') || {};
         return {
             tmdb: !!(apis.tmdb?.apiKey && apis.tmdb.apiKey.trim()),
-            thetvdb: !!(apis.thetvdb?.apiKey && apis.thetvdb.apiKey.trim()),
-            openai: !!(apis.openai?.apiKey && apis.openai.apiKey.trim()),
-            omdb: !!(apis.omdb?.apiKey && apis.omdb.apiKey.trim())
+            thetvdb: !!(apis.thetvdb?.apiKey && apis.thetvdb.apiKey.trim())
         };
     }
 

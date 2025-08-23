@@ -139,3 +139,8 @@ build/
 
 # API cache directory
 api-cache/
+
+# Analysis cache files
+analysis-cache.json
+series-data-cache.json
+api-stats.json

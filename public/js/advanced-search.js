@@ -42,7 +42,7 @@ class AdvancedSearch {
                 <div class="p-6 border-b border-plex-gray">
                     <div class="flex justify-between items-center">
                         <h2 class="text-2xl font-bold text-plex-white">🔍 Advanced Search</h2>
-                        <button onclick="advancedSearch.close()" class="text-plex-light hover:text-plex-white">
+                        <button data-action="close-advanced-search" class="text-plex-light hover:text-plex-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -74,7 +74,7 @@ class AdvancedSearch {
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
                             <label class="text-sm font-semibold text-plex-light">Filter Presets</label>
-                            <button onclick="advancedSearch.savePreset()" class="text-xs text-plex-orange hover:text-plex-white">
+                            <button data-action="save-search-preset" class="text-xs text-purple-500 hover:text-plex-white">
                                 + Save Current
                             </button>
                         </div>
@@ -135,7 +135,7 @@ class AdvancedSearch {
                     <!-- Advanced Options -->
                     <div class="space-y-3">
                         <details class="group">
-                            <summary class="cursor-pointer text-sm font-semibold text-plex-light hover:text-plex-orange">
+                            <summary class="cursor-pointer text-sm font-semibold text-plex-light hover:text-purple-500">
                                 ⚙️ Advanced Options
                             </summary>
                             <div class="mt-3 space-y-3">
@@ -193,12 +193,12 @@ class AdvancedSearch {
                             <span id="result-count">0 results</span>
                         </div>
                         <div class="flex space-x-3">
-                            <button onclick="advancedSearch.reset()" 
+                            <button data-action="reset-search" 
                                 class="px-4 py-2 text-plex-light hover:text-plex-white transition">
                                 Reset
                             </button>
-                            <button onclick="advancedSearch.search()" 
-                                class="px-6 py-2 bg-plex-orange text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
+                            <button data-action="perform-search" 
+                                class="px-6 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
                                 Search
                             </button>
                         </div>
@@ -237,7 +237,8 @@ class AdvancedSearch {
             // Use the correct API endpoint
             const response = await fetch('/api/get-series', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({})
             });
             const data = await response.json();
             this.allSeries = data.series || [];
@@ -264,7 +265,7 @@ class AdvancedSearch {
         if (genreContainer) {
             genreContainer.innerHTML = Array.from(this.genres).sort().map(genre => `
                 <label class="flex items-center space-x-2 text-xs text-plex-light hover:text-plex-white cursor-pointer">
-                    <input type="checkbox" name="genre" value="${genre}" class="rounded text-plex-orange">
+                    <input type="checkbox" name="genre" value="${genre}" class="rounded text-purple-500">
                     <span>${genre}</span>
                 </label>
             `).join('');
@@ -275,7 +276,7 @@ class AdvancedSearch {
         if (networkContainer) {
             networkContainer.innerHTML = Array.from(this.networks).sort().map(network => `
                 <label class="flex items-center space-x-2 text-xs text-plex-light hover:text-plex-white cursor-pointer">
-                    <input type="checkbox" name="network" value="${network}" class="rounded text-plex-orange">
+                    <input type="checkbox" name="network" value="${network}" class="rounded text-purple-500">
                     <span>${network}</span>
                 </label>
             `).join('');
@@ -582,11 +583,11 @@ class AdvancedSearch {
 
         container.innerHTML = this.presets.map((preset, index) => `
             <div class="flex items-center space-x-1 bg-plex-dark rounded-lg px-3 py-1">
-                <button onclick="advancedSearch.loadPreset(${index})" 
-                    class="text-xs text-plex-light hover:text-plex-orange">
+                <button data-action="load-search-preset" data-preset-index="${index}" 
+                    class="text-xs text-plex-light hover:text-purple-500">
                     ${preset.name}
                 </button>
-                <button onclick="advancedSearch.deletePreset(${index})" 
+                <button data-action="delete-search-preset" data-preset-index="${index}" 
                     class="text-xs text-plex-gray hover:text-red-500">
                     ×
                 </button>
@@ -610,8 +611,7 @@ class AdvancedSearch {
         if (!container) return;
 
         container.innerHTML = this.searchHistory.slice(0, 5).map(query => `
-            <button onclick="document.getElementById('search-query').value='${query.replace(/'/g, "\\'")
-            }'; advancedSearch.updateResultCount()" 
+            <button data-action="apply-search-history" data-query="${query.replace(/"/g, '&quot;')}" 
                 class="text-xs bg-plex-dark text-plex-light px-3 py-1 rounded-lg hover:bg-plex-gray">
                 ${query}
             </button>

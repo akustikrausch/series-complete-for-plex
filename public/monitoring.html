@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlexComplete - Monitoring Dashboard</title>
+    <title>Series Complete for Plex - Monitoring Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -12,7 +12,7 @@
             theme: {
                 extend: {
                     colors: {
-                        plex: '#E5A00D',
+                        plex: '#9B59B6',
                     }
                 }
             }
@@ -24,7 +24,7 @@
     <header class="bg-gray-800 border-b border-gray-700">
         <div class="px-6 py-4">
             <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold text-plex">PlexComplete Monitoring</h1>
+                <h1 class="text-2xl font-bold text-plex">Series Complete for Plex Monitoring</h1>
                 <div class="flex gap-4">
                     <button onclick="refreshData()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
                         Aktualisieren
@@ -164,7 +164,7 @@
                     datasets: [{
                         label: 'Memory (MB)',
                         data: memoryData,
-                        borderColor: '#E5A00D',
+                        borderColor: '#9B59B6',
                         backgroundColor: 'rgba(229, 160, 13, 0.1)',
                         tension: 0.3
                     }]
