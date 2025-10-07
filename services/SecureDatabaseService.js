@@ -23,6 +23,7 @@ class SecureDatabaseService {
         // Security check: ensure path is within allowed directories
         const allowedPaths = [
             path.resolve(process.env.APPDATA || '', 'Local', 'Plex Media Server'),
+            path.resolve(process.env.LOCALAPPDATA || '', 'Plex Media Server'),
             path.resolve(process.env.HOME || '', 'Library', 'Application Support', 'Plex Media Server'),
             path.resolve('/var/lib/plexmediaserver'),
             path.resolve(__dirname, '..', 'test-databases'), // For testing
