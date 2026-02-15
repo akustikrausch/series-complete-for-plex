@@ -7,6 +7,9 @@ RUN apk add --no-cache nodejs npm wget \
 
 WORKDIR /app
 
+# Cache bust: BUILD_VERSION changes with each addon version
+ARG BUILD_VERSION
+
 # Clone application from public repository
 RUN git clone --depth 1 --branch main \
     https://github.com/akustikrausch/series-complete-for-plex.git . \
@@ -19,12 +22,14 @@ RUN npm ci --omit=dev --ignore-scripts --no-optional \
 # Remove build dependencies
 RUN apk del .build-deps
 
-# Copy run script from build context (addon directory)
-COPY run.sh /run.sh
-RUN chmod a+x /run.sh
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV NODE_OPTIONS="--max-old-space-size=256"
 
-# Health check - lightweight root page check (no Plex connection needed)
+# Health check
 HEALTHCHECK --interval=60s --timeout=5s --start-period=45s --retries=3 \
     CMD wget -q --spider http://localhost:3000/ || exit 1
 
-CMD [ "/run.sh" ]
+# Bypass S6 overlay - run Node.js directly as PID 1
+ENTRYPOINT []
+CMD ["node", "server-crossplatform.js"]
