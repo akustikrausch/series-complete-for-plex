@@ -89,6 +89,11 @@ function isHomeAssistant() {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy in HA mode (Ingress reverse proxy sets X-Forwarded-For)
+if (isHomeAssistant()) {
+    app.set('trust proxy', true);
+}
+
 // Security Middleware - FIRST!
 app.use(helmet({
     contentSecurityPolicy: false,  // Temporarily disable CSP completely
