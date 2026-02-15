@@ -8,7 +8,7 @@ Analyze your Plex TV library for missing episodes. Connects to your Plex server 
 |--------|-------------|----------|
 | **Plex URL** | Your Plex server URL, e.g. `http://192.168.1.100:32400` | Yes |
 | **Plex Token** | Your Plex authentication token | Yes |
-| **TMDb API Key** | Primary source for episode metadata lookup | Yes |
+| **TMDb API Key** | Primary source for episode metadata lookup | Recommended |
 | **TheTVDB API Key** | Additional metadata source for TV series | No |
 | **TheTVDB PIN** | Subscriber PIN for TheTVDB (if you have one) | No |
 

@@ -357,7 +357,6 @@ class ConfigService {
 
         this.set('apis', currentApis);
         await this.save();
-        console.log(`[OK] Saved API configs to ${this.configPath}`);
         return currentApis;
     }
 
