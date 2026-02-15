@@ -1,6 +1,6 @@
 # Series Complete for Plex - TV Series Completeness Analyzer
 
-[![Version](https://img.shields.io/badge/version-2.6.5-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
+[![Version](https://img.shields.io/badge/version-2.6.6-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 [![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Home%20Assistant-lightgrey.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 
@@ -43,7 +43,7 @@ cd series-complete-for-plex
 # Install dependencies
 npm install
 
-# Configure API keys in config.json (or create config.local.json for private keys)
+# Copy config.default.json to config.json and add your API keys
 # Edit the "apis" section with your TMDb and TheTVDB API keys
 
 # Start the server
@@ -96,7 +96,7 @@ See [INSTALL.md](INSTALL.md) for detailed step-by-step instructions.
 
 ## Configuration
 
-API keys are configured in `config.json` (defaults) or `config.local.json` (private overrides):
+Copy `config.default.json` to `config.json` and add your API keys (or create `config.local.json` for private overrides):
 
 ```json
 {
@@ -139,7 +139,7 @@ See [INSTALL.md](INSTALL.md) for detailed setup instructions.
 - **Integration**: Home Assistant App + HACS Integration (sensors)
 - **Security**: Helmet, express-validator, rate limiting, DOMPurify
 
-## Recent Changes (v2.6.5)
+## Recent Changes (v2.6.6)
 
 - **Integration Info in Settings**: Hostname and port shown in Settings for easy HACS integration setup
 - **Analysis Cache Fix**: Analysis results persist across HA restarts and browser cache expiry

@@ -40,5 +40,5 @@ send_discovery() {
 # Send discovery in background so it doesn't block startup
 send_discovery &
 
-bashio::log.info "Starting Series Complete for Plex v2.6.5..."
+bashio::log.info "Starting Series Complete for Plex v2.6.6..."
 exec node server-crossplatform.js

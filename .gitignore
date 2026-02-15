@@ -5,6 +5,7 @@
 .env.development
 
 # Local configuration (contains API keys)
+config.json
 config.local.json
 
 # Dependencies
