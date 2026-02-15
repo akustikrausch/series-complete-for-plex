@@ -1,6 +1,6 @@
 # Series Complete for Plex - TV Series Completeness Analyzer
 
-[![Version](https://img.shields.io/badge/version-2.6.3-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
+[![Version](https://img.shields.io/badge/version-2.6.4-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 [![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Home%20Assistant-lightgrey.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 
@@ -78,7 +78,7 @@ The HACS integration provides Home Assistant sensors for your Plex library stats
 3. Search for "Series Complete for Plex" and click **Download**
 4. **Restart Home Assistant**
 5. Go to **Settings** > **Devices & Services** > **Add Integration** > search "Series Complete"
-6. The app is auto-detected, or enter manually: Host `local-series-complete-plex`, Port `3000`
+6. The app is auto-detected, or enter manually: Host `e81ba94f-series-complete-plex`, Port `3000`
 
 **Sensors:** Total Series, Complete Series, Incomplete Series, Critical Series, Completion Rate (%)
 
@@ -139,14 +139,13 @@ See [INSTALL.md](INSTALL.md) for detailed setup instructions.
 - **Integration**: Home Assistant App + HACS Integration (sensors)
 - **Security**: Helmet, express-validator, rate limiting, DOMPurify
 
-## Recent Changes (v2.6.3)
+## Recent Changes (v2.6.4)
 
+- **Analysis Cache Fix**: Analysis results now persist across HA restarts and browser cache expiry
+- **Hostname Fix**: Correct hash-based hostname detection for HA third-party apps
 - **HACS Integration**: Custom component with 5 sensors (total, complete, incomplete, critical, completion rate)
-- **Home Assistant App**: Run as HA app with sidebar integration (ingress)
-- **Pre-built Docker Images**: Automated multi-arch builds via GitHub Container Registry
-- **Plex REST API**: Connect to any Plex server over the network
+- **Plex REST API**: Connect to any Plex server over the network (no local DB access needed)
 - **Dual Mode**: Automatic SQLite (local) / REST API (network) detection
-- **HTML Entity Fix**: Correct handling of special characters in series titles
 
 ## Contributing
 

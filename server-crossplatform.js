@@ -534,7 +534,7 @@ async function saveCache() {
     } catch (error) {
       console.error('Error saving cache:', error);
     }
-  }, 5000);
+  }, 2000);
 }
 
 async function saveCacheImmediate() {
@@ -548,6 +548,34 @@ async function saveCacheImmediate() {
   } catch (error) {
     console.error('Error saving cache:', error);
   }
+}
+
+// Merge cached analysis results into series data so the frontend
+// doesn't lose analysis info when localStorage expires
+function mergeAnalysisCache(seriesList) {
+  if (analysisCache.size === 0) return seriesList;
+  let merged = 0;
+  for (const series of seriesList) {
+    const cached = analysisCache.get(series.id);
+    if (cached && cached.metadata) {
+      const meta = cached.metadata;
+      const totalEpisodes = meta.totalEpisodes || 0;
+      const localEpisodes = series.episode_count || 0;
+      series.totalSeasons = meta.totalSeasons || series.totalSeasons;
+      series.totalEpisodes = totalEpisodes;
+      series.completionPercentage = totalEpisodes > 0
+        ? Math.round((localEpisodes / totalEpisodes) * 100)
+        : 0;
+      series.seriesStatus = meta.status || series.seriesStatus;
+      series.endYear = meta.lastAired ? new Date(meta.lastAired).getFullYear() : series.endYear;
+      series.analyzedAt = cached.analyzedAt;
+      merged++;
+    }
+  }
+  if (merged > 0) {
+    console.log(`[Cache] Merged ${merged} cached analysis results into series data`);
+  }
+  return seriesList;
 }
 
 // Lightweight health check (no external calls)
@@ -599,6 +627,7 @@ app.post('/api/load-database', validateDatabasePath('dbPath'), async (req, res) 
             allSeries = allSeries.concat(series);
         }
         const consolidated = consolidateSeriesByTitle(allSeries);
+        mergeAnalysisCache(consolidated);
         return res.json({
             success: true,
             series: consolidated,
@@ -704,9 +733,10 @@ app.post('/api/load-database', validateDatabasePath('dbPath'), async (req, res) 
     const consolidatedSeries = consolidateSeriesByTitle(result.series);
     
     console.log(`Securely loaded and consolidated ${consolidatedSeries.length} unique series`);
-    
-    res.json({ 
-      success: true, 
+    mergeAnalysisCache(consolidatedSeries);
+
+    res.json({
+      success: true,
       series: consolidatedSeries,
       count: consolidatedSeries.length,
       dbPath: path.basename(dbPath) // Only return filename for security
@@ -736,9 +766,11 @@ app.post('/api/get-series', async (req, res) => {
                 allSeries = allSeries.concat(series);
             }
             const consolidated = consolidateSeriesByTitle(allSeries);
+            mergeAnalysisCache(consolidated);
             res.json(consolidated);
         } else {
             const series = await getSeriesFromDatabase();
+            mergeAnalysisCache(series);
             res.json(series);
         }
     } catch (error) {

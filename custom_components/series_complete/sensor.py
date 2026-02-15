@@ -105,7 +105,7 @@ class SeriesCompleteSensor(
             "name": "Series Complete for Plex",
             "manufacturer": "Andreas Wendorf",
             "model": "Series Complete",
-            "sw_version": "2.6.3",
+            "sw_version": "2.6.4",
             "configuration_url": f"http://{coordinator._host}:{coordinator._port}",
         }
 

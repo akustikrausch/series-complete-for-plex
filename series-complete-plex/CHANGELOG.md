@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.6.4
+
+- Fix analysis cache persistence: analysis results no longer lost after HA restart or browser cache expiry
+- Server-side analysis cache is now merged into all series API responses
+- Fix HA hostname detection: use correct hash-based hostname (`e81ba94f-series-complete-plex`) for third-party apps
+- Update integration config flow with correct fallback hostnames
+- Reduce cache save debounce from 5s to 2s for faster persistence
+
 ## 2.6.3
 
 - Fix HTML entity encoding in Plex API series titles (e.g. `&#x27;` in "Jupiter's Legacy", `&amp;` in "Locke & Key")

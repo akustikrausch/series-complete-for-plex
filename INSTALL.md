@@ -97,12 +97,12 @@ If the integration does not auto-detect the app, you will be asked for Host and 
 
 | Field | Value | When to use |
 |-------|-------|-------------|
-| **Host** | `local-series-complete-plex` | Running as HA app (default) |
+| **Host** | `e81ba94f-series-complete-plex` | Running as HA app (recommended) |
 | **Host** | `192.168.x.x` | Running standalone on another machine |
 | **Port** | `3000` | Default port (all setups) |
 | **Update interval** | `1800` | Seconds between sensor updates (default: 30 min) |
 
-**Tip:** If `local-series-complete-plex` does not work, try `series-complete-plex` as host.
+**Tip:** Home Assistant uses a hash-based hostname for third-party apps. If auto-detection does not work, use `e81ba94f-series-complete-plex` as the host.
 
 #### Sensors provided
 
