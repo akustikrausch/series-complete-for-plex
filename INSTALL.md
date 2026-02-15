@@ -6,7 +6,7 @@ This guide will walk you through setting up Series Complete for Plex on your sys
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-  - [Home Assistant Addon](#method-3-home-assistant-addon)
+  - [Home Assistant App](#method-3-home-assistant-app)
 - [API Key Configuration](#api-key-configuration)
 - [Database Configuration](#database-configuration)
 - [Plex API Configuration](#plex-api-configuration)
@@ -55,20 +55,34 @@ npm install -g pm2
 pm2 start server-crossplatform.js --name series-complete
 ```
 
-### Method 3: Home Assistant Addon
+### Method 3: Home Assistant App
 
 1. Open your Home Assistant instance
-2. Navigate to **Settings** > **Add-ons** > **Add-on Store**
+2. Navigate to **Settings** > **Apps** > **App Store**
 3. Click the three-dot menu (top right) > **Repositories**
 4. Add: `https://github.com/akustikrausch/series-complete-for-plex`
 5. Find "Series Complete for Plex" in the store and click **Install**
-6. Configure the addon settings:
+6. Configure the app settings:
    - `plex_url`: Your Plex server URL (e.g., `http://192.168.1.100:32400`)
    - `plex_token`: Your Plex authentication token
    - `tmdb_api_key`: Your TMDb API key
    - `thetvdb_api_key`: Your TheTVDB v4 API key (optional)
-7. Start the addon
+7. Start the app
 8. Access via the Home Assistant sidebar ("Series Complete")
+
+### Method 4: HACS Integration (optional sensors)
+
+The HACS integration adds Home Assistant sensors for your Plex library statistics. **Install the app (Method 3) first**, then:
+
+1. Open HACS in Home Assistant
+2. Click the three-dot menu > **Custom repositories**
+3. Add `https://github.com/akustikrausch/series-complete-for-plex` with category **Integration**
+4. Search for "Series Complete for Plex" and install
+5. Restart Home Assistant
+6. Go to **Settings** > **Integrations** - the app is auto-detected, or add manually
+
+**Sensors provided:**
+- Total Series, Complete Series, Incomplete Series, Critical Series, Completion Rate (%)
 
 **Finding your Plex Token:**
 1. Sign in to Plex Web App
@@ -76,7 +90,7 @@ pm2 start server-crossplatform.js --name series-complete
 3. Click "Get Info" > "View XML"
 4. Look for `X-Plex-Token=` in the URL
 
-**Note:** The addon uses the Plex REST API over the network. No local database access or SQLite is required.
+**Note:** The app uses the Plex REST API over the network. No local database access or SQLite is required.
 
 ## API Key Configuration
 
@@ -317,7 +331,7 @@ Check console output for detailed error messages. Browser console (F12) prefixes
 
 ### Docker (Experimental)
 
-For Home Assistant users, the [Home Assistant Addon](#method-3-home-assistant-addon) is the recommended alternative.
+For Home Assistant users, the [Home Assistant App](#method-3-home-assistant-app) is the recommended alternative.
 
 ```bash
 # Build image

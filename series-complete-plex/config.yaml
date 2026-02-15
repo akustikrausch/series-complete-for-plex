@@ -1,9 +1,10 @@
 name: "Series Complete for Plex"
 description: "Analyze your Plex TV library for missing episodes"
-version: "2.6.2"
+version: "2.6.3"
 slug: "series-complete-plex"
 url: "https://github.com/akustikrausch/series-complete-for-plex"
-stage: experimental
+image: "ghcr.io/akustikrausch/series-complete-plex-{arch}"
+stage: stable
 watchdog: "http://[HOST]:[PORT:3000]/"
 homeassistant: "2024.1.0"
 arch:

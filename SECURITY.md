@@ -4,16 +4,12 @@
 
 If you discover a security vulnerability, please report it responsibly.
 
-**Do not open a public GitHub issue for security vulnerabilities.**
-
-Instead, please email: **security@akustikrausch.de**
+Please open a [GitHub Issue](https://github.com/akustikrausch/series-complete-for-plex/issues) with the label **security**. For critical vulnerabilities, use GitHub's private vulnerability reporting feature (Security tab > Report a vulnerability).
 
 Include:
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
-
-You will receive a response within 72 hours. We will work with you to understand and address the issue before any public disclosure.
 
 ## Supported Versions
 

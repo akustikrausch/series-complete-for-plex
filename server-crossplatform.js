@@ -1416,7 +1416,7 @@ async function startServer() {
     server.listen(PORT, HOST, () => {
       const url = `http://${HOST}:${PORT}`;
       console.log('╔═══════════════════════════════════════════════════════════════╗');
-      console.log(`║  Series Complete for Plex by Akustikrausch runs on ${url}  ║`);
+      console.log(`║  Series Complete for Plex by Andreas Wendorf runs on ${url}  ║`);
       console.log('╚═══════════════════════════════════════════════════════════════╝');
       if (!isHomeAssistant()) {
         console.log('\nDer Browser sollte sich automatisch öffnen...\n');

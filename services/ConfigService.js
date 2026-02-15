@@ -65,12 +65,12 @@ class ConfigService {
             const plexToken = (options.plex_token || '').trim();
 
             if (!plexUrl) {
-                console.warn('[HA Config] Plex URL not configured - please set in addon settings');
+                console.warn('[HA Config] Plex URL not configured - please set in app settings');
             } else if (!plexUrl.startsWith('http://') && !plexUrl.startsWith('https://')) {
                 console.warn(`[HA Config] Plex URL should start with http:// or https:// (got: ${plexUrl})`);
             }
             if (!plexToken) {
-                console.warn('[HA Config] Plex Token not configured - please set in addon settings');
+                console.warn('[HA Config] Plex Token not configured - please set in app settings');
             }
 
             // Map HA options to config structure

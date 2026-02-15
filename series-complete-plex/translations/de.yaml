@@ -1,0 +1,25 @@
+configuration:
+  plex_url:
+    name: Plex Server URL
+    description: >-
+      Die URL deines Plex Media Servers, z.B. http://192.168.1.100:32400
+  plex_token:
+    name: Plex Token
+    description: >-
+      Dein Plex-Authentifizierungstoken (X-Plex-Token).
+      Findest du in der Plex Web App: Info abrufen > XML anzeigen > X-Plex-Token in der URL.
+  tmdb_api_key:
+    name: TMDb API Key
+    description: >-
+      API-Key von The Movie Database (themoviedb.org).
+      Wird fuer die Episoden-Metadaten-Suche benoetigt.
+  thetvdb_api_key:
+    name: TheTVDB API Key
+    description: >-
+      API-Key von TheTVDB (nur v4, alte v2/v3-Keys funktionieren nicht).
+      Optional aber empfohlen fuer bessere Metadaten-Abdeckung.
+  thetvdb_pin:
+    name: TheTVDB Subscriber PIN
+    description: >-
+      Deine TheTVDB Subscriber-PIN. Nur noetig bei user-supported API-Keys.
+      Leer lassen wenn nicht zutreffend.

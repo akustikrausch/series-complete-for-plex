@@ -1,0 +1,83 @@
+name: Build App
+
+on:
+  release:
+    types: [published]
+  push:
+    branches: [main]
+    paths:
+      - "series-complete-plex/**"
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, amd64, armv7]
+        include:
+          - arch: aarch64
+            platform: linux/arm64
+          - arch: amd64
+            platform: linux/amd64
+          - arch: armv7
+            platform: linux/arm/v7
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract version from config.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' series-complete-plex/config.yaml | sed 's/version: *"\{0,1\}\([^"]*\)"\{0,1\}/\1/')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Determine base image
+        id: base
+        run: |
+          BASE=$(python3 -c "
+          import yaml
+          with open('series-complete-plex/build.yaml') as f:
+              data = yaml.safe_load(f)
+          print(data['build_from']['${{ matrix.arch }}'])
+          ")
+          echo "image=${BASE}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: series-complete-plex
+          file: series-complete-plex/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/series-complete-plex-${{ matrix.arch }}:${{ steps.version.outputs.version }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/series-complete-plex-${{ matrix.arch }}:latest
+          build-args: |
+            BUILD_FROM=${{ steps.base.outputs.image }}
+            BUILD_ARCH=${{ matrix.arch }}
+            BUILD_VERSION=${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

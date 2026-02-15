@@ -85,7 +85,7 @@ function exportMissingEpisodesPDF(seriesData) {
         doc.setFontSize(8);
         doc.setTextColor(...lightGray);
         doc.setFont(undefined, 'italic');
-        doc.text('© 2025-2026 by Akustikrausch', pageWidth / 2, footerY, { align: 'center' });
+        doc.text('© 2025-2026 by Andreas Wendorf', pageWidth / 2, footerY, { align: 'center' });
         doc.text('Generated with Series Complete for Plex', pageWidth / 2, footerY + 3, { align: 'center' });
     }
     

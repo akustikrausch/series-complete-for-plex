@@ -37,18 +37,18 @@ Alternatively, check [this Plex support article](https://support.plex.tv/article
 Used as a fallback when TMDb and TheTVDB cannot identify a series.
 1. Sign up at [platform.openai.com](https://platform.openai.com/signup)
 2. Create an API key
-3. Configure via the Settings panel in the web interface (not available in addon options)
+3. Configure via the Settings panel in the web interface (not available in app options)
 
 ## Usage
 
-1. Open the addon from the Home Assistant sidebar
+1. Open the app from the Home Assistant sidebar
 2. Click **Scan Library** to load your TV series
 3. Click **Analyze** on any series to check for missing episodes
 4. Use batch analysis to check multiple series at once
 
 ## Data Persistence
 
-Analysis results and cache data are stored in the `/data/` directory, which persists across addon restarts and updates.
+Analysis results and cache data are stored in the `/data/` directory, which persists across app restarts and updates.
 
 ## Support
 
