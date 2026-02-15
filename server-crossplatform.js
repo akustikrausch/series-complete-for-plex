@@ -107,7 +107,7 @@ app.use('/api/', apiLimiter);
 
 // Basic middleware
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+    origin: isHomeAssistant() ? true : (process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000']),
     credentials: true
 }));
 
@@ -489,7 +489,8 @@ async function testApiConfiguration() {
 
 // Cache management
 let analysisCache = new Map();
-const CACHE_FILE = 'analysis-cache.json';
+const HA_DATA_DIR = isHomeAssistant() ? '/data' : __dirname;
+const CACHE_FILE = path.join(HA_DATA_DIR, 'analysis-cache.json');
 
 async function loadCache() {
   try {
@@ -971,7 +972,7 @@ app.post('/api/save-analysis', validateSaveAnalysis, async (req, res) => {
   const results = req.body;
   
   try {
-    await fs.writeFile('analysis-results.json', JSON.stringify(results, null, 2));
+    await fs.writeFile(path.join(HA_DATA_DIR, 'analysis-results.json'), JSON.stringify(results, null, 2));
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -983,10 +984,10 @@ app.post('/api/rebuild-cache', async (req, res) => {
   try {
     analysisCache.clear();
     await fs.unlink(CACHE_FILE).catch(() => {});
-    
+
     metadataCache.clear();
-    
-    const apiCacheDir = path.join(__dirname, 'api-cache');
+
+    const apiCacheDir = path.join(HA_DATA_DIR, 'api-cache');
     try {
       const files = await fs.readdir(apiCacheDir);
       for (const file of files) {
@@ -1057,14 +1058,14 @@ app.post('/api/cleanup-database', async (req, res) => {
     console.log('Starting cache cleanup...');
     
     // Clear all caches
-    const apiCacheDir = path.join(__dirname, 'api-cache');
+    const apiCacheDir = path.join(HA_DATA_DIR, 'api-cache');
     if (require('fs').existsSync(apiCacheDir)) {
       await fs.rm(apiCacheDir, { recursive: true, force: true });
     }
     await fs.mkdir(apiCacheDir, { recursive: true });
-    
+
     // Clear analysis cache
-    const cacheFile = path.join(__dirname, 'analysis-cache.json');
+    const cacheFile = CACHE_FILE;
     let removedAnalyses = 0;
     if (require('fs').existsSync(cacheFile)) {
       try {

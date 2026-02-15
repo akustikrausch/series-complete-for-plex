@@ -2,7 +2,7 @@ ARG BUILD_FROM
 FROM ${BUILD_FROM}
 
 # Install Node.js and git
-RUN apk add --no-cache nodejs npm git
+RUN apk add --no-cache nodejs npm git wget
 
 # Set working directory
 WORKDIR /app
