@@ -14,7 +14,7 @@ window.openSettings = function() {
                     </svg>
                     Settings
                 </h2>
-                <button data-action="close-modal" class="text-plex-light hover:text-purple-500 transition" title="Close settings">
+                <button data-action="close-modal" class="text-plex-light hover:text-primary-500 transition" title="Close settings">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
@@ -23,7 +23,7 @@ window.openSettings = function() {
             
             <!-- Configuration -->
             <div class="mb-6">
-                <h3 class="text-lg font-semibold text-purple-500 mb-3">Configuration</h3>
+                <h3 class="text-lg font-semibold text-primary-500 mb-3">Configuration</h3>
                 <div class="space-y-3">
                     <button id="manage-api-keys-btn" title="Configure API keys for enhanced metadata" 
                             class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
@@ -34,7 +34,7 @@ window.openSettings = function() {
                     </button>
                     
                     <button id="database-settings-btn" 
-                            class="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:bg-orange-600 transition flex items-center">
+                            class="w-full py-3 px-4 bg-gradient-to-r from-warning to-amber-600 text-white rounded-lg hover:bg-amber-600 transition flex items-center">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7M3 7l9 9 9-9"/>
                         </svg>
@@ -53,7 +53,7 @@ window.openSettings = function() {
             
             <!-- Library Actions -->
             <div class="mb-6">
-                <h3 class="text-lg font-semibold text-purple-500 mb-3">Library</h3>
+                <h3 class="text-lg font-semibold text-primary-500 mb-3">Library</h3>
                 <div class="space-y-3">
                     <button id="settings-scan-btn" 
                             class="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center">
@@ -64,7 +64,7 @@ window.openSettings = function() {
                     </button>
                     
                     <button id="settings-analyze-all-btn" 
-                            class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transition shadow-md flex items-center">
+                            class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg hover:from-warning hover:to-amber-600 transition shadow-md flex items-center">
                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                         </svg>
@@ -83,7 +83,7 @@ window.openSettings = function() {
             
             <!-- System -->
             <div class="mb-6">
-                <h3 class="text-lg font-semibold text-purple-500 mb-3">System</h3>
+                <h3 class="text-lg font-semibold text-primary-500 mb-3">System</h3>
                 <div class="space-y-3">
                     <button id="settings-clear-cache-btn" 
                             class="w-full py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center">
@@ -97,7 +97,7 @@ window.openSettings = function() {
             
             <div class="pt-4 border-t border-plex-gray text-center">
                 <p class="text-xs text-plex-light mb-4">
-                    <span class="text-purple-500 font-semibold">Series Complete for Plex</span> v2.5.1
+                    <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v2.5.1
                 </p>
             </div>
         </div>

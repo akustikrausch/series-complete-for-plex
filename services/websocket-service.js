@@ -335,7 +335,13 @@ class WebSocketService {
     }
 }
 
-// Singleton instance
-const websocketService = new WebSocketService();
-
-module.exports = websocketService;
+// Export singleton from DI Container for backwards compatibility
+// The actual implementation is now in src/infrastructure/services/WebSocketService.js
+try {
+  const container = require('../src/infrastructure/DIContainer');
+  module.exports = container.get('webSocketService');
+} catch (error) {
+  // Fallback to legacy implementation if container not available
+  const websocketService = new WebSocketService();
+  module.exports = websocketService;
+}

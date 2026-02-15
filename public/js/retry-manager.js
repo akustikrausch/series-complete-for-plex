@@ -331,7 +331,7 @@ class RetryManager {
         indicators.forEach(indicator => {
             indicator.innerHTML = `
                 <div class="flex items-center space-x-2 text-xs">
-                    <div class="animate-spin w-3 h-3 border border-plex-orange border-t-transparent rounded-full"></div>
+                    <div class="animate-spin w-3 h-3 border border-primary-500 border-t-transparent rounded-full"></div>
                     <span>Retry ${attempt}/${maxRetries} in ${Math.ceil(delay / 1000)}s</span>
                 </div>
             `;
@@ -402,7 +402,7 @@ class RetryManager {
     createRetryIndicator(operationId, container) {
         const indicator = document.createElement('div');
         indicator.setAttribute('data-retry-operation', operationId);
-        indicator.className = 'retry-indicator text-purple-500 text-xs';
+        indicator.className = 'retry-indicator text-primary-500 text-xs';
         
         if (container) {
             container.appendChild(indicator);

@@ -32,7 +32,7 @@ app.use((req, res, next) => {
 app.use(express.static('public'));
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'DEMO_KEY_REPLACE_IN_PRODUCTION'
+  apiKey: process.env.OPENAI_API_KEY || ''
 });
 
 if (process.env.NODE_ENV !== 'test') {
@@ -630,9 +630,15 @@ app.post('/api/analyze-series', async (req, res) => {
         }
       });
       
-      const totalExpected = metadata.totalEpisodes || 1;
-      const totalAvailable = details.reduce((sum, s) => sum + s.episodes.length, 0);
-      completionPercentage = totalExpected > 0 ? Math.round((totalAvailable / totalExpected) * 100) : 0;
+      // Only calculate completion if we have valid API data
+      if (metadata.totalEpisodes && metadata.totalEpisodes > 0) {
+        const totalExpected = metadata.totalEpisodes;
+        const totalAvailable = details.reduce((sum, s) => sum + s.episodes.length, 0);
+        completionPercentage = Math.round((totalAvailable / totalExpected) * 100);
+      } else {
+        // Without API data, we can't determine completion percentage
+        completionPercentage = -1; // Unknown
+      }
       
       // Cap at 100% if we have more episodes than expected
       if (completionPercentage > 100) completionPercentage = 100;

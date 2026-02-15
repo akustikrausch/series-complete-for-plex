@@ -167,7 +167,8 @@
             const analyzeBtnInit = document.getElementById('analyze-all-btn');
             if (analyzeBtnInit) {
                 console.log('[Init] Showing Analyze All button - series count:', state.series.length);
-                analyzeBtnInit.classList.remove('hidden'); analyzeBtn.setAttribute('title', 'Analyze all series for missing episodes');
+                analyzeBtnInit.classList.remove('hidden');
+                analyzeBtnInit.setAttribute('title', 'Analyze all series for missing episodes');
             }
         }
         
@@ -292,7 +293,7 @@
         // Previous button
         paginationHTML += `
             <button data-page="${state.currentPage - 1}" 
-                    class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition ${state.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" 
+                    class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-primary-500 hover:to-primary-700 hover:text-white transition ${state.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" 
                     ${state.currentPage === 1 ? 'disabled' : ''}>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
@@ -312,7 +313,7 @@
         
         if (startPage > 1) {
             paginationHTML += `
-                <button data-page="1" class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition">1</button>
+                <button data-page="1" class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-primary-500 hover:to-primary-700 hover:text-white transition">1</button>
                 ${startPage > 2 ? '<span class="text-plex-light px-2">...</span>' : ''}
             `;
         }
@@ -320,7 +321,7 @@
         for (let i = startPage; i <= endPage; i++) {
             paginationHTML += `
                 <button data-page="${i}" 
-                        class="page-btn px-3 py-2 rounded-lg ${i === state.currentPage ? 'bg-gradient-to-r from-purple-500 to-purple-700 text-white' : 'bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white'} transition">
+                        class="page-btn px-3 py-2 rounded-lg ${i === state.currentPage ? 'bg-gradient-to-r from-primary-500 to-primary-700 text-white' : 'bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-primary-500 hover:to-primary-700 hover:text-white'} transition">
                     ${i}
                 </button>
             `;
@@ -329,14 +330,14 @@
         if (endPage < state.totalPages) {
             paginationHTML += `
                 ${endPage < state.totalPages - 1 ? '<span class="text-plex-light px-2">...</span>' : ''}
-                <button data-page="${state.totalPages}" class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition">${state.totalPages}</button>
+                <button data-page="${state.totalPages}" class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-primary-500 hover:to-primary-700 hover:text-white transition">${state.totalPages}</button>
             `;
         }
         
         // Next button
         paginationHTML += `
             <button data-page="${state.currentPage + 1}" 
-                    class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-purple-500 hover:to-purple-700 hover:text-white transition ${state.currentPage === state.totalPages ? 'opacity-50 cursor-not-allowed' : ''}" 
+                    class="page-btn px-3 py-2 rounded-lg bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-primary-500 hover:to-primary-700 hover:text-white transition ${state.currentPage === state.totalPages ? 'opacity-50 cursor-not-allowed' : ''}" 
                     ${state.currentPage === state.totalPages ? 'disabled' : ''}>
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -802,7 +803,7 @@
                 if (series._groupKey && series._groupKey !== lastGroup) {
                     cards.push(`
                         <div class="col-span-full mb-4 mt-6 first:mt-0">
-                            <h3 class="text-xl font-bold text-purple-500 flex items-center space-x-2">
+                            <h3 class="text-xl font-bold text-primary-500 flex items-center space-x-2">
                                 <span>${series._groupKey}</span>
                                 <span class="text-sm text-plex-light ml-2">
                                     (${state.filteredSeries.filter(s => s._groupKey === series._groupKey).length} series)
@@ -906,7 +907,7 @@
                 
                 <div class="mt-4 pt-4 border-t border-plex-gray">
                     <div class="flex space-x-2">
-                        <button data-action="analyze" data-series-id="${series.id}" class="series-analyze-btn flex-1 py-2 px-3 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold text-sm hover:from-purple-600 hover:to-purple-800 transition shadow-md flex items-center justify-center space-x-1" title="Analyze for missing episodes">
+                        <button data-action="analyze" data-series-id="${series.id}" class="series-analyze-btn flex-1 py-2 px-3 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold text-sm hover:from-primary-600 hover:to-primary-800 transition shadow-md flex items-center justify-center space-x-1" title="Analyze for missing episodes">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                             </svg>
@@ -1002,7 +1003,7 @@
             analysisDiv.classList.remove('hidden');
             analysisDiv.innerHTML = `
                 <div class="flex items-center space-x-2 text-plex-light">
-                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-500"></div>
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500"></div>
                     <span>Analyzing...</span>
                 </div>
             `;
@@ -1269,22 +1270,22 @@
             switch(groupBy) {
                 case 'completion':
                     const comp = calculateCompletion(s);
-                    if (comp === 100) key = '✅ Complete';
-                    else if (comp >= 50) key = '⚠️ Partial';
-                    else if (comp === -1) key = '❓ Unknown';
-                    else key = '❌ Incomplete';
+                    if (comp === 100) key = 'Complete';
+                    else if (comp >= 50) key = 'Partial';
+                    else if (comp === -1) key = 'Unknown';
+                    else key = 'Incomplete';
                     break;
                 case 'quality':
                     const qualityScore = getQualityScore(s);
-                    if (qualityScore >= 4) key = '🎬 4K/2160p';
-                    else if (qualityScore >= 3) key = '📺 1080p/HD';
-                    else if (qualityScore >= 2) key = '📻 720p';
-                    else if (qualityScore >= 1) key = '📱 SD/480p';
-                    else key = '❓ Unknown Quality';
+                    if (qualityScore >= 4) key = '4K/2160p';
+                    else if (qualityScore >= 3) key = '1080p/HD';
+                    else if (qualityScore >= 2) key = '720p';
+                    else if (qualityScore >= 1) key = 'SD/480p';
+                    else key = 'Unknown Quality';
                     break;
                 case 'decade':
                     const year = s.year || (s.originally_available_at ? new Date(s.originally_available_at).getFullYear() : null);
-                    key = year ? `📅 ${Math.floor(year / 10) * 10}s` : '❓ Unknown Year';
+                    key = year ? `${Math.floor(year / 10) * 10}s` : 'Unknown Year';
                     break;
                 case 'network':
                     key = s.studio || s.network || 'Unknown Network';
@@ -1382,13 +1383,13 @@
         
         // Update button states
         document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('bg-purple-600', 'text-white');
+            btn.classList.remove('bg-primary-600', 'text-white');
             btn.classList.add('bg-plex-gray', 'text-plex-white');
         });
         
         if (event && event.target) {
             event.target.classList.remove('bg-plex-gray', 'text-plex-white');
-            event.target.classList.add('bg-purple-600', 'text-white');
+            event.target.classList.add('bg-primary-600', 'text-white');
         }
         
         filterSeries();
@@ -1438,15 +1439,18 @@
     window.showDetails = function(seriesId) {
         const series = state.series.find(s => s.id === seriesId);
         if (!series) return;
-        
+
         // Auto-analyze if not done yet (silently in background)
         if (!series.totalEpisodes) {
             quickAnalyze(seriesId);
         }
-        
+
+        // Remove any existing detail modals first
+        document.querySelectorAll('.series-detail-modal').forEach(m => m.remove());
+
         // Create detail modal
         const modal = document.createElement('div');
-        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+        modal.className = 'series-detail-modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.onclick = function(e) {
             if (e.target === modal) modal.remove();
         };
@@ -1539,7 +1543,7 @@
                             <div class="space-y-1">
                                 ${series.folders.map(folder => `
                                     <div class="flex items-center text-sm text-plex-white">
-                                        <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                                         </svg>
                                         <span class="font-mono">${escapeHtml(folder)}</span>
@@ -1547,8 +1551,9 @@
                                 `).join('')}
                             </div>
                             ${series.folders.length > 1 ? `
-                                <div class="mt-2 text-xs text-yellow-500">
-                                    ⚠️ Series is split across ${series.folders.length} folders
+                                <div class="mt-2 text-xs text-yellow-500 flex items-center space-x-1">
+                                    <i data-lucide="alert-triangle" class="w-3 h-3"></i>
+                                    <span>Series is split across ${series.folders.length} folders</span>
                                 </div>
                             ` : ''}
                         </div>
@@ -1575,17 +1580,17 @@
                                         <button data-action="toggle-season" data-series-id="${series.id}" data-season="${season.season_number || idx}"
                                                 class="w-full flex justify-between items-center p-3 hover:bg-plex-gray/20 transition">
                                             <div class="flex items-center space-x-2">
-                                                <svg class="w-4 h-4 text-purple-500 season-arrow-${series.id}-${season.season_number || idx} transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-4 h-4 text-primary-500 season-arrow-${series.id}-${season.season_number || idx} transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                                 </svg>
                                                 <span class="text-plex-white font-semibold">Season ${season.season_number || '?'}</span>
                                             </div>
                                             <div class="flex items-center space-x-3">
                                                 <span class="text-plex-light text-sm">${season.episode_count || 0} episodes</span>
-                                                ${season.episode_count === season.total_episodes ? 
-                                                    '<span class="text-green-400 text-xs">✓ Complete</span>' : 
-                                                    season.total_episodes ? 
-                                                        `<span class="text-yellow-400 text-xs">${season.episode_count}/${season.total_episodes}</span>` : 
+                                                ${season.episode_count === season.total_episodes ?
+                                                    '<span class="text-emerald-400 text-xs flex items-center"><i data-lucide="check" class="w-3 h-3 mr-1"></i>Complete</span>' :
+                                                    season.total_episodes ?
+                                                        `<span class="text-amber-400 text-xs">${season.episode_count}/${season.total_episodes}</span>` :
                                                         ''}
                                             </div>
                                         </button>
@@ -1607,7 +1612,7 @@
                                             ` : `
                                                 <div class="text-center py-4 text-plex-light text-sm">
                                                     <p>Episode details not available</p>
-                                                    <button title="Analyze this series" data-action="analyze-series" data-series-id="${series.id}" class="mt-2 text-xs text-purple-500 hover:text-plex-white">
+                                                    <button title="Analyze this series" data-action="analyze-series" data-series-id="${series.id}" class="mt-2 text-xs text-primary-500 hover:text-plex-white">
                                                         Analyze to get episode details
                                                     </button>
                                                 </div>
@@ -1621,7 +1626,7 @@
                     
                     <div class="flex">
                         <button data-action="analyze-series-modal" data-series-id="${series.id}"
-                                class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-purple-800 transition shadow-md" title="Analyze this series for missing episodes">
+                                class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-800 transition shadow-md" title="Analyze this series for missing episodes">
                             Analyze Series
                         </button>
                     </div>
@@ -1630,6 +1635,16 @@
         `;
         
         document.body.appendChild(modal);
+
+        // Direct close button handler (more reliable than delegated)
+        const closeBtn = modal.querySelector('[data-action="close-modal"]');
+        if (closeBtn) {
+            closeBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                modal.remove();
+            };
+        }
     };
 
     // Refresh series card after analysis
@@ -1680,8 +1695,8 @@
         modal.innerHTML = `
             <div class="glass-effect rounded-xl p-8 max-w-md mx-4 transform transition-all animate-slide-up">
                 <div class="flex items-center justify-center mb-6">
-                    <div class="w-16 h-16 bg-purple-600 bg-opacity-20 rounded-full flex items-center justify-center">
-                        <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-16 h-16 bg-primary-600 bg-opacity-20 rounded-full flex items-center justify-center">
+                        <svg class="w-10 h-10 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                     </div>
@@ -1694,7 +1709,7 @@
                 </p>
                 
                 <div class="bg-plex-dark rounded-lg p-4 mb-6">
-                    <h3 class="text-sm font-semibold text-purple-500 mb-3">Re-analysis will:</h3>
+                    <h3 class="text-sm font-semibold text-primary-500 mb-3">Re-analysis will:</h3>
                     <ul class="space-y-2 text-sm text-plex-light">
                         <li class="flex items-start">
                             <svg class="w-4 h-4 text-green-400 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1728,14 +1743,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <p class="text-xs text-plex-light">
-                        This will analyze <span class="font-semibold text-purple-500">${state.series.length} series</span> 
+                        This will analyze <span class="font-semibold text-primary-500">${state.series.length} series</span> 
                         and may take several minutes
                     </p>
                 </div>
                 
                 <div class="flex space-x-3">
                     <button data-action="analyze-all-series" data-force="true" 
-                            class="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
+                            class="flex-1 py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
@@ -1871,7 +1886,7 @@
                     
                     <div class="flex space-x-3">
                         <button data-action="close-and-run" data-function="openSettings" 
-                                class="flex-1 py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
+                                class="flex-1 py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
                             Go to Settings
                         </button>
                         <button data-action="close"
@@ -1921,7 +1936,7 @@
                 </svg>
                 <span>Stop Analysis</span>
             `;
-            analyzeBtnMain.classList.remove('bg-orange-500', 'hover:bg-orange-600');
+            analyzeBtnMain.classList.remove('bg-warning', 'hover:bg-amber-600');
             analyzeBtnMain.classList.add('bg-red-600', 'hover:bg-red-700');
         }
         
@@ -1940,7 +1955,7 @@
                     </button>
                 </div>
                 <div class="relative w-full h-2 bg-plex-darker rounded-full overflow-hidden mt-3">
-                    <div id="analysis-progress" class="absolute left-0 top-0 h-full bg-purple-600 transition-all duration-300" style="width: 0%"></div>
+                    <div id="analysis-progress" class="absolute left-0 top-0 h-full bg-primary-600 transition-all duration-300" style="width: 0%"></div>
                 </div>
                 <div id="current-series" class="text-xs text-plex-light mt-2"></div>
             `;
@@ -2028,7 +2043,7 @@
                 </svg>
                 <span>Analyze All</span>
             `;
-            analyzeBtnRestore.classList.add('bg-orange-500', 'hover:bg-orange-600');
+            analyzeBtnRestore.classList.add('bg-warning', 'hover:bg-amber-600');
             analyzeBtnRestore.classList.remove('bg-red-600', 'hover:bg-red-700');
         }
     };
@@ -2055,7 +2070,7 @@
         const button = document.querySelector('[title="Analyze all series in library" onclick="window.analyzeAllSeries()"]');
         if (button) {
             button.textContent = 'Stop Analysis';
-            button.classList.remove('bg-purple-600');
+            button.classList.remove('bg-primary-600');
             button.classList.add('bg-red-600');
         }
         
@@ -2126,7 +2141,7 @@
         if (button) {
             button.textContent = 'Analyze All Series';
             button.classList.remove('bg-red-600');
-            button.classList.add('bg-purple-600');
+            button.classList.add('bg-primary-600');
         }
         const progressContainer = document.getElementById('progress-container');
         if (progressContainer) {
@@ -2154,7 +2169,7 @@
             <div class="glass-effect rounded-xl p-6 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-xl font-bold text-plex-white">API Settings</h2>
-                    <button data-action="close-modal" class="text-plex-light hover:text-purple-500 transition" title="Close API settings">
+                    <button data-action="close-modal" class="text-plex-light hover:text-primary-500 transition" title="Close API settings">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -2163,7 +2178,7 @@
                 
                 <!-- API Configuration Section -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-purple-500 mb-3 flex items-center">
+                    <h3 class="text-lg font-semibold text-primary-500 mb-3 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                         </svg>
@@ -2186,16 +2201,17 @@
                                 <input type="password" id="api-tmdb" placeholder="Enter TMDb API Key" 
                                        value="${apiSettings.tmdb?.key || ''}" 
                                        data-original="${apiSettings.tmdb?.key || ''}"
-                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-purple-500 focus:outline-none api-key-input">
-                                <button type="button" data-input="api-tmdb" class="toggle-visibility-btn absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-purple-500">
+                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-primary-500 focus:outline-none api-key-input">
+                                <button type="button" data-input="api-tmdb" class="toggle-visibility-btn absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-primary-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                 </button>
                             </div>
-                            <div class="text-xs text-plex-light mt-1">
-                                Status: <span class="api-status-tmdb">${apiSettings.tmdb?.status === 'active' ? '✅ Connected' : apiSettings.tmdb?.status === 'error' ? '❌ Error' : '🟡 Not tested'}</span>
+                            <div class="text-xs text-surface-400 mt-1 flex items-center space-x-1">
+                                <span>Status:</span>
+                                <span class="api-status-tmdb flex items-center">${apiSettings.tmdb?.status === 'active' ? '<i data-lucide="check-circle" class="w-3 h-3 text-emerald-400 mr-1"></i>Connected' : apiSettings.tmdb?.status === 'error' ? '<i data-lucide="x-circle" class="w-3 h-3 text-red-400 mr-1"></i>Error' : '<i data-lucide="circle" class="w-3 h-3 text-amber-400 mr-1"></i>Not tested'}</span>
                             </div>
                         </div>
                         
@@ -2214,16 +2230,17 @@
                                 <input type="password" id="api-thetvdb" placeholder="Enter TheTVDB API Key" 
                                        value="${apiSettings.thetvdb?.key || ''}" 
                                        data-original="${apiSettings.thetvdb?.key || ''}"
-                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-purple-500 focus:outline-none api-key-input">
-                                <button type="button" data-input="api-thetvdb" class="toggle-visibility-btn absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-purple-500">
+                                       class="w-full px-3 py-2 pr-10 bg-plex-dark text-white rounded border border-plex-gray focus:border-primary-500 focus:outline-none api-key-input">
+                                <button type="button" data-input="api-thetvdb" class="toggle-visibility-btn absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-primary-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                 </button>
                             </div>
-                            <div class="text-xs text-plex-light mt-1">
-                                Status: <span class="api-status-thetvdb">${apiSettings.thetvdb?.status === 'active' ? '✅ Connected' : apiSettings.thetvdb?.status === 'error' ? '❌ Error' : '🟡 Not tested'}</span>
+                            <div class="text-xs text-surface-400 mt-1 flex items-center space-x-1">
+                                <span>Status:</span>
+                                <span class="api-status-thetvdb flex items-center">${apiSettings.thetvdb?.status === 'active' ? '<i data-lucide="check-circle" class="w-3 h-3 text-emerald-400 mr-1"></i>Connected' : apiSettings.thetvdb?.status === 'error' ? '<i data-lucide="x-circle" class="w-3 h-3 text-red-400 mr-1"></i>Error' : '<i data-lucide="circle" class="w-3 h-3 text-amber-400 mr-1"></i>Not tested'}</span>
                             </div>
                         </div>
                         
@@ -2246,7 +2263,7 @@
                         User Manual öffnen
                     </button>
                     
-                    <button id="analyze-all-settings-btn" class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-purple-800 transition shadow-md" title="Analyze this series for missing episodes">
+                    <button id="analyze-all-settings-btn" class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-800 transition shadow-md" title="Analyze this series for missing episodes">
                         Analyze All Series
                     </button>
                     
@@ -2254,7 +2271,7 @@
                         Clear Cache
                     </button>
                     
-                    <button id="cleanup-database-settings-btn" class="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
+                    <button id="cleanup-database-settings-btn" class="w-full py-3 px-4 bg-gradient-to-r from-warning to-amber-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7m-1-3h-3.5l-1-1h-5l-1 1H5m14 0v-.5A1.5 1.5 0 0017.5 2h-11A1.5 1.5 0 005 3.5V4"/>
                         </svg>
@@ -2273,7 +2290,7 @@
                             Series Complete for Plex v1.0.1<br>
                             Series: ${state.stats.total}<br>
                             Analyzed: ${state.series.filter(s => s.totalEpisodes).length}<br>
-                            <span class="text-xs text-purple-500 mt-2 block">© 2025 by Akustikrausch</span>
+                            <span class="text-xs text-primary-500 mt-2 block">© 2025 by Akustikrausch</span>
                         </p>
                     </div>
                 </div>
@@ -2296,7 +2313,7 @@
                         </svg>
                         Settings
                     </h2>
-                    <button data-action="close-modal" class="text-plex-light hover:text-purple-500 transition" title="Close settings">
+                    <button data-action="close-modal" class="text-plex-light hover:text-primary-500 transition" title="Close settings">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
@@ -2305,7 +2322,7 @@
                 
                 <!-- Configuration -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-purple-500 mb-3">Configuration</h3>
+                    <h3 class="text-lg font-semibold text-primary-500 mb-3">Configuration</h3>
                     <div class="space-y-3">
                         <button id="manage-api-keys-btn" title="Configure API keys for enhanced metadata" 
                                 class="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center">
@@ -2316,7 +2333,7 @@
                         </button>
                         
                         <button id="database-settings-btn" 
-                                class="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:bg-orange-600 transition flex items-center">
+                                class="w-full py-3 px-4 bg-gradient-to-r from-warning to-amber-600 text-white rounded-lg hover:bg-amber-600 transition flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7M3 7l9 9 9-9"/>
                             </svg>
@@ -2335,7 +2352,7 @@
                 
                 <!-- Library Actions -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-purple-500 mb-3">Library</h3>
+                    <h3 class="text-lg font-semibold text-primary-500 mb-3">Library</h3>
                     <div class="space-y-3">
                         <button id="settings-scan-btn" 
                                 class="w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center">
@@ -2346,7 +2363,7 @@
                         </button>
                         
                         <button id="settings-analyze-all-btn" 
-                                class="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg hover:from-orange-500 hover:to-orange-600 transition shadow-md flex items-center">
+                                class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg hover:from-primary-600 hover:to-primary-800 transition shadow-md flex items-center">
                             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                             </svg>
@@ -2365,7 +2382,7 @@
                 
                 <!-- System -->
                 <div class="mb-6">
-                    <h3 class="text-lg font-semibold text-purple-500 mb-3">System</h3>
+                    <h3 class="text-lg font-semibold text-primary-500 mb-3">System</h3>
                     <div class="space-y-3">
                         <button id="settings-clear-cache-btn" 
                                 class="w-full py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center">
@@ -2379,7 +2396,7 @@
                 
                 <div class="pt-4 border-t border-plex-gray text-center">
                     <p class="text-xs text-plex-light mb-4">
-                        <span class="text-purple-500 font-semibold">Series Complete for Plex</span> v1.0.1
+                        <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v1.0.1
                     </p>
                 </div>
             </div>
@@ -2581,7 +2598,7 @@
                             </svg>
                             Plex Database Settings
                         </h2>
-                        <button id="db-settings-close-btn" class="text-plex-light hover:text-purple-500 transition">
+                        <button id="db-settings-close-btn" class="text-plex-light hover:text-primary-500 transition">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
@@ -2590,7 +2607,7 @@
                     
                     <!-- Database Status -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-purple-500 mb-3">Current Database Status</h3>
+                        <h3 class="text-lg font-semibold text-primary-500 mb-3">Current Database Status</h3>
                         <div class="bg-plex-darker rounded-lg p-4">
                             <div class="flex items-center mb-3">
                                 <span class="status-indicator ${dbData.foundPaths?.length > 0 ? 'bg-green-500' : 'bg-red-500'} w-3 h-3 rounded-full mr-2"></span>
@@ -2602,7 +2619,7 @@
                             ${dbData.foundPaths?.length > 0 ? `
                                 <div class="text-sm text-plex-light">
                                     <strong>Current Path:</strong><br>
-                                    <code class="bg-plex-gray px-2 py-1 rounded text-purple-500 break-all">
+                                    <code class="bg-plex-gray px-2 py-1 rounded text-primary-500 break-all">
                                         ${dbData.foundPaths[0]}
                                     </code>
                                 </div>
@@ -2617,7 +2634,7 @@
                     
                     <!-- Custom Path Configuration -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-purple-500 mb-3">Custom Database Path</h3>
+                        <h3 class="text-lg font-semibold text-primary-500 mb-3">Custom Database Path</h3>
                         <div class="bg-plex-darker rounded-lg p-4">
                             <p class="text-sm text-plex-light mb-3">
                                 Geben Sie einen benutzerdefinierten Pfad zur Plex-Datenbank ein, wenn die automatische Erkennung fehlschlägt:
@@ -2628,9 +2645,9 @@
                                        id="custom-db-path" 
                                        placeholder="z.B. /mnt/c/Users/USERNAME/AppData/Local/Plex Media Server/..."
                                        value="${dbData.currentConfig?.customPath || ''}"
-                                       class="w-full px-3 py-2 bg-plex-dark text-white rounded border border-plex-gray focus:border-purple-500 focus:outline-none text-sm">
+                                       class="w-full px-3 py-2 bg-plex-dark text-white rounded border border-plex-gray focus:border-primary-500 focus:outline-none text-sm">
                                 <button id="browse-db-path-btn" 
-                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-purple-500">
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-plex-light hover:text-primary-500">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                                     </svg>
@@ -2657,7 +2674,7 @@
                     <!-- Detected Paths -->
                     ${dbData.possiblePaths?.length > 0 ? `
                         <div class="mb-6">
-                            <h3 class="text-lg font-semibold text-purple-500 mb-3">Detected Paths</h3>
+                            <h3 class="text-lg font-semibold text-primary-500 mb-3">Detected Paths</h3>
                             <div class="bg-plex-darker rounded-lg p-4">
                                 ${dbData.possiblePaths.map(path => `
                                     <div class="flex items-center justify-between py-2 border-b border-plex-gray last:border-b-0">
@@ -2665,7 +2682,7 @@
                                         <div class="flex items-center ml-3">
                                             <span class="status-indicator ${dbData.foundPaths?.includes(path) ? 'bg-green-500' : 'bg-red-500'} w-2 h-2 rounded-full"></span>
                                             ${dbData.foundPaths?.includes(path) ? 
-                                                '<button class="ml-2 px-2 py-1 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded text-xs use-path-btn" data-path="' + path + '">Use</button>' : 
+                                                '<button class="ml-2 px-2 py-1 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded text-xs use-path-btn" data-path="' + path + '">Use</button>' : 
                                                 '<span class="ml-2 text-xs text-red-400">Not Found</span>'
                                             }
                                         </div>
@@ -2677,11 +2694,11 @@
                     
                     <!-- Instructions -->
                     <div class="mb-6">
-                        <h3 class="text-lg font-semibold text-purple-500 mb-3">Instructions</h3>
+                        <h3 class="text-lg font-semibold text-primary-500 mb-3">Instructions</h3>
                         <div class="bg-plex-darker rounded-lg p-4">
                             <div class="text-sm text-plex-light space-y-2">
                                 ${dbData.instructions?.map(instruction => 
-                                    `<div class="flex items-start"><span class="text-purple-500 mr-2">•</span><span>${instruction}</span></div>`
+                                    `<div class="flex items-start"><span class="text-primary-500 mr-2">•</span><span>${instruction}</span></div>`
                                 ).join('') || ''}
                             </div>
                         </div>
@@ -2968,7 +2985,7 @@
         modal.innerHTML = `
             <div class="glass-effect rounded-xl p-8 max-w-md mx-4 transform transition-all animate-slide-up">
                 <div class="flex items-center justify-center mb-6">
-                    <div class="w-16 h-16 bg-orange-500 bg-opacity-20 rounded-full flex items-center justify-center">
+                    <div class="w-16 h-16 bg-warning bg-opacity-20 rounded-full flex items-center justify-center">
                         <svg class="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7m-1-3h-3.5l-1-1h-5l-1 1H5m14 0v-.5A1.5 1.5 0 0017.5 2h-11A1.5 1.5 0 005 3.5V4"/>
                         </svg>
@@ -3032,7 +3049,7 @@
                 
                 <div class="flex space-x-3">
                     <button id="confirm-cleanup-btn" 
-                            class="flex-1 py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
+                            class="flex-1 py-3 px-4 bg-gradient-to-r from-warning to-amber-600 text-white rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7m-1-3h-3.5l-1-1h-5l-1 1H5m14 0v-.5A1.5 1.5 0 0017.5 2h-11A1.5 1.5 0 005 3.5V4"/>
                         </svg>

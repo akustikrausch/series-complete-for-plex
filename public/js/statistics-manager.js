@@ -444,7 +444,7 @@ class StatisticsManager {
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center space-x-6">
                         <div class="flex items-center space-x-2">
-                            <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                             <span class="text-sm font-semibold text-plex-white">Library Overview</span>
@@ -462,7 +462,7 @@ class StatisticsManager {
                         </div>
                     </div>
                     
-                    <div class="text-xs text-purple-500 font-semibold flex items-center space-x-1">
+                    <div class="text-xs text-primary-500 font-semibold flex items-center space-x-1">
                         <span>Click for detailed analytics</span>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -473,7 +473,7 @@ class StatisticsManager {
                 <!-- Progress Bar -->
                 <div class="flex items-center space-x-3">
                     <div class="flex-1 bg-plex-gray rounded-full h-2 overflow-hidden">
-                        <div id="completion-progress" class="h-full bg-gradient-to-r from-plex-orange to-green-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        <div id="completion-progress" class="h-full bg-gradient-to-r from-primary-500 to-green-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
                     </div>
                     <span id="completion-percentage" class="text-sm font-semibold text-plex-white min-w-12">0%</span>
                 </div>
@@ -597,7 +597,7 @@ class StatisticsManager {
                 </div>
             ` : ''}
             <div class="flex items-center space-x-1 bg-plex-gray/50 rounded px-2 py-1">
-                <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <div class="w-2 h-2 bg-warning rounded-full"></div>
                 <span class="text-xs text-plex-light">Size</span>
                 <span class="text-xs font-semibold text-plex-white">${this.formatFileSize(this.statistics.overview.totalFileSize)}</span>
             </div>
@@ -625,14 +625,14 @@ class StatisticsManager {
                             </div>
                             <div class="flex items-center space-x-4">
                                 <button data-action="refresh-statistics" 
-                                    class="px-4 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center space-x-2">
+                                    class="px-4 py-2 bg-primary-600 text-plex-dark rounded-lg font-semibold hover:bg-opacity-90 transition flex items-center space-x-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                                     </svg>
                                     <span>Refresh Stats</span>
                                 </button>
                                 <button data-action="close-analytics" 
-                                    class="text-plex-light hover:text-purple-500 transition" title="Close analytics">
+                                    class="text-plex-light hover:text-primary-500 transition" title="Close analytics">
                                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                     </svg>
@@ -652,7 +652,7 @@ class StatisticsManager {
                             <div class="text-plex-light">Total Episodes</div>
                         </div>
                         <div class="glass-effect rounded-xl p-6 text-center">
-                            <div class="text-3xl font-bold text-purple-500 mb-2" id="analytics-completion-rate">0%</div>
+                            <div class="text-3xl font-bold text-primary-500 mb-2" id="analytics-completion-rate">0%</div>
                             <div class="text-plex-light">Completion Rate</div>
                         </div>
                         <div class="glass-effect rounded-xl p-6 text-center">
@@ -747,6 +747,19 @@ class StatisticsManager {
                     </div>
 
                     <!-- Detailed Tables -->
+                    <!-- Networks/Studios Chart -->
+                    <div class="glass-effect rounded-xl p-6 mb-8">
+                        <h3 class="text-xl font-semibold text-plex-white mb-4">📺 Networks & Studios</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="relative h-64">
+                                <canvas id="networks-chart"></canvas>
+                            </div>
+                            <div id="networks-table" class="space-y-2 max-h-64 overflow-y-auto">
+                                <!-- Network data will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Interesting Facts -->
                         <div class="glass-effect rounded-xl p-6">
@@ -758,7 +771,7 @@ class StatisticsManager {
 
                         <!-- Top Genres -->
                         <div class="glass-effect rounded-xl p-6">
-                            <h3 class="text-xl font-semibold text-plex-white mb-4">Top Genres</h3>
+                            <h3 class="text-xl font-semibold text-plex-white mb-4">🎭 Top Genres</h3>
                             <div id="genres-table" class="space-y-2">
                                 <!-- Genre data will be populated here -->
                             </div>
@@ -768,18 +781,18 @@ class StatisticsManager {
                     <!-- Statistics Info Footer -->
                     <div class="glass-effect rounded-xl p-6 mt-8">
                         <div class="flex items-start space-x-3">
-                            <svg class="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <div class="text-sm text-plex-light">
                                 <h4 class="font-semibold text-plex-white mb-2">When are statistics generated?</h4>
                                 <div class="space-y-2">
                                     <div class="flex items-start">
-                                        <span class="text-purple-500 font-semibold mr-2">During Scan:</span>
+                                        <span class="text-primary-500 font-semibold mr-2">During Scan:</span>
                                         <span>Basic statistics are collected - series count, episode count, folder paths for quality detection, library structure</span>
                                     </div>
                                     <div class="flex items-start">
-                                        <span class="text-purple-500 font-semibold mr-2">During Analysis:</span>
+                                        <span class="text-primary-500 font-semibold mr-2">During Analysis:</span>
                                         <span>Detailed metadata is added - exact episode counts, missing episodes, completion status, series end dates, studios/genres</span>
                                     </div>
                                     <div class="flex items-start">
@@ -817,10 +830,12 @@ class StatisticsManager {
         this.createQualityChart();
         this.createDecadeChart();
         this.createFeaturesChart();
+        this.createNetworksChart();
 
         // Populate tables and dashboard
         this.populateInterestingFacts();
         this.populateGenresTable();
+        this.populateNetworksTable();
         this.populateAnalyticsDashboard();
     }
 
@@ -978,6 +993,98 @@ class StatisticsManager {
         });
     }
 
+    createNetworksChart() {
+        const ctx = document.getElementById('networks-chart')?.getContext('2d');
+        if (!ctx || !window.Chart) return;
+
+        // Destroy existing chart if it exists
+        if (this.chartInstances.networks) {
+            this.chartInstances.networks.destroy();
+        }
+
+        // Get top 10 networks/studios
+        const networks = this.statistics.networks || {};
+        const sortedNetworks = Object.entries(networks)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 10);
+
+        if (sortedNetworks.length === 0) return;
+
+        const colors = [
+            '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444',
+            '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1'
+        ];
+
+        this.chartInstances.networks = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: sortedNetworks.map(([name]) => name.length > 15 ? name.substring(0, 15) + '...' : name),
+                datasets: [{
+                    data: sortedNetworks.map(([, count]) => count),
+                    backgroundColor: colors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const fullName = sortedNetworks[context.dataIndex][0];
+                                return `${fullName}: ${context.raw} series`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    populateNetworksTable() {
+        const container = document.getElementById('networks-table');
+        if (!container) return;
+
+        const networks = this.statistics.networks || {};
+        const sortedNetworks = Object.entries(networks)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 15);
+
+        if (sortedNetworks.length === 0) {
+            container.innerHTML = '<div class="text-plex-light text-sm">No network data available. Run "Analyze All" to gather studio information.</div>';
+            return;
+        }
+
+        const total = sortedNetworks.reduce((sum, [, count]) => sum + count, 0);
+
+        const colors = [
+            '#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444',
+            '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
+            '#14b8a6', '#a855f7', '#22c55e', '#eab308', '#f43f5e'
+        ];
+
+        container.innerHTML = sortedNetworks.map(([name, count], index) => {
+            const percentage = Math.round((count / total) * 100);
+            const color = colors[index % colors.length];
+            return `
+                <div class="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-plex-gray/20 transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-3 h-3 rounded-full" style="background-color: ${color}"></div>
+                        <span class="text-plex-white text-sm truncate max-w-[150px]" title="${name}">${name}</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span class="text-plex-light text-sm">${count}</span>
+                        <span class="text-plex-light text-xs w-10 text-right">${percentage}%</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
     // Populate Data Tables
     populateInterestingFacts() {
         const container = document.getElementById('interesting-facts');
@@ -1081,7 +1188,7 @@ class StatisticsManager {
                     <span class="text-2xl">${fact.icon}</span>
                     <span class="text-plex-light text-sm">${fact.label}</span>
                 </div>
-                <span class="text-purple-500 font-semibold">${fact.value}</span>
+                <span class="text-primary-500 font-semibold">${fact.value}</span>
             </div>
         `).join('');
     }
@@ -1135,7 +1242,7 @@ class StatisticsManager {
                 growthHTML += `
                     <div class="text-sm mt-2 pt-2 border-t border-plex-gray">
                         <span class="text-plex-light">Latest:</span>
-                        <div class="text-xs text-purple-500 mt-1">${recentSeries.title}</div>
+                        <div class="text-xs text-primary-500 mt-1">${recentSeries.title}</div>
                         <div class="text-xs text-plex-light">${daysAgo} days ago</div>
                     </div>
                 `;
@@ -1172,10 +1279,10 @@ class StatisticsManager {
                 <div class="text-sm mt-2 pt-2 border-t border-plex-gray">
                     <span class="text-plex-light">Today's Calls:</span>
                     <div class="text-xs mt-1">
-                        <span class="text-plex-light">TMDb:</span> <span class="text-purple-500">${apiUsage[today]?.tmdb || 0}</span>
+                        <span class="text-plex-light">TMDb:</span> <span class="text-primary-500">${apiUsage[today]?.tmdb || 0}</span>
                     </div>
                     <div class="text-xs">
-                        <span class="text-plex-light">TVDB:</span> <span class="text-purple-500">${apiUsage[today]?.thetvdb || 0}</span>
+                        <span class="text-plex-light">TVDB:</span> <span class="text-primary-500">${apiUsage[today]?.thetvdb || 0}</span>
                     </div>
                 </div>
             `;
@@ -1203,7 +1310,7 @@ class StatisticsManager {
                             <span class="text-plex-light">Speed:</span> <span class="text-green-400">${seriesPerSec} series/sec</span>
                         </div>
                         <div class="text-xs">
-                            <span class="text-plex-light">Duration:</span> <span class="text-purple-500">${(parseInt(lastScanTime) / 1000).toFixed(1)}s</span>
+                            <span class="text-plex-light">Duration:</span> <span class="text-primary-500">${(parseInt(lastScanTime) / 1000).toFixed(1)}s</span>
                         </div>
                     </div>
                 `;
@@ -1248,7 +1355,7 @@ class StatisticsManager {
         container.innerHTML = genres.map(([genre, count]) => `
             <div class="flex justify-between items-center p-3 bg-plex-dark rounded-lg">
                 <span class="text-plex-white">${genre}</span>
-                <span class="text-purple-500 font-semibold">${count}</span>
+                <span class="text-primary-500 font-semibold">${count}</span>
             </div>
         `).join('');
     }

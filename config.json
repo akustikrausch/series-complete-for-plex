@@ -4,12 +4,7 @@
     "host": "localhost"
   },
   "database": {
-    "plexDbPath": "auto",
-    "windowsPath": "C:\\Users\\%USERNAME%\\AppData\\Local\\Plex Media Server\\Plug-in Support\\Databases\\com.plexapp.plugins.library.db",
-    "macPath": "/Users/%USER%/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
-    "linuxPath": "/var/lib/plexmediaserver/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
-    "wslPath": "/mnt/c/Users/%USERNAME%/AppData/Local/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db",
-    "customPath": ""
+    "plexDbPath": "auto"
   },
   "apis": {
     "tmdb": {
