@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.1
+
+- Fix HA addon startup (S6 overlay permissions)
+- Fix AppArmor profile for S6 overlay v3 compatibility
+- Add trademark disclaimers and security policy
+
 ## 2.6.0
 
 - Initial Home Assistant addon release

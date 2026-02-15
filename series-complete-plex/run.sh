@@ -13,5 +13,5 @@ if ! bashio::config.has_value 'plex_token'; then
 fi
 
 cd /app
-bashio::log.info "Starting Series Complete for Plex v2.6.0..."
+bashio::log.info "Starting Series Complete for Plex v2.6.1..."
 exec node server-crossplatform.js

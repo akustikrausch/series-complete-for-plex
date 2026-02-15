@@ -1,6 +1,6 @@
 # Series Complete for Plex - TV Series Completeness Analyzer
 
-[![Version](https://img.shields.io/badge/version-2.6.0-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
+[![Version](https://img.shields.io/badge/version-2.6.1-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 [![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Home%20Assistant-lightgrey.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 
@@ -122,7 +122,7 @@ See [INSTALL.md](INSTALL.md) for detailed setup instructions.
 - **Integration**: Home Assistant Addon with ingress support
 - **Security**: Helmet, express-validator, rate limiting, DOMPurify
 
-## Recent Changes (v2.6.0)
+## Recent Changes (v2.6.1)
 
 - **Home Assistant Addon**: Run as HA addon with ingress support
 - **Plex REST API**: Connect to Plex over the network without local database access
