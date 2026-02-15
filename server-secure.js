@@ -9,7 +9,8 @@ const SecurityConfig = require('./src/security/SecurityConfig');
 
 // Import custom modules
 const tvApiService = require('./tv-api-service');
-const { extractSeriesFoldersSimple } = require('./extract-folders-simple');
+// extract-folders-simple was a no-op stub (returned []), inlined as empty array
+const extractSeriesFoldersSimple = () => [];
 const secureDb = require('./services/SecureDatabaseService');
 const config = require('./services/ConfigService');
 
