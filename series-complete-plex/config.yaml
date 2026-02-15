@@ -3,6 +3,8 @@ description: "Analyze your Plex TV library for missing episodes"
 version: "2.6.0"
 slug: "series-complete-plex"
 url: "https://github.com/akustikrausch/series-complete-for-plex"
+stage: experimental
+watchdog: "http://[HOST]:[PORT:3000]/"
 homeassistant: "2024.1.0"
 arch:
   - amd64
@@ -22,10 +24,10 @@ options:
   thetvdb_api_key: ""
   thetvdb_pin: ""
 schema:
-  plex_url: url
-  plex_token: password
+  plex_url: str
+  plex_token: str
   tmdb_api_key: str?
-  thetvdb_api_key: str?
-  thetvdb_pin: str?
+  thetvdb_api_key: password?
+  thetvdb_pin: password?
 map:
   - data:rw

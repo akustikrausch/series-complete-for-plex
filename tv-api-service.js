@@ -78,8 +78,16 @@ const monitor = {
             if (dates.length > 30) {
                 dates.slice(0, dates.length - 30).forEach(date => delete allStats[date]);
             }
-            
-            await fs.writeFile(statsFile, JSON.stringify(allStats, null, 2));
+
+            // Debounce the actual file write (5 second delay)
+            if (statsWriteTimer) clearTimeout(statsWriteTimer);
+            statsWriteTimer = setTimeout(async () => {
+                try {
+                    await fs.writeFile(statsFile, JSON.stringify(allStats, null, 2));
+                } catch (writeError) {
+                    console.error('[API Stats] Error writing stats:', writeError.message);
+                }
+            }, 5000);
         } catch (error) {
             // Don't break on stats save failure
             console.error('Failed to save API stats:', error.message);
@@ -155,8 +163,12 @@ function isOpenaiEnabled() {
     return apiConfig.openai?.enabled && apiConfig.openai?.apiKey;
 }
 
+// Stats write debounce timer
+let statsWriteTimer = null;
+
 // Cache settings
-const CACHE_DIR = path.join(__dirname, 'api-cache');
+const HA_MODE = require('fs').existsSync('/data/options.json');
+const CACHE_DIR = path.join(HA_MODE ? '/data' : __dirname, 'api-cache');
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Token storage

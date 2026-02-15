@@ -95,6 +95,29 @@ class ConfigService {
             this.config.server.port = parseInt(process.env.PORT) || 3000;
 
             console.log('[OK] Configuration loaded from Home Assistant options');
+
+            // Merge additional settings from web UI (OpenAI, OMDb keys not in HA schema)
+            try {
+                const savedConfig = await fs.readFile(this.localConfigPath, 'utf8');
+                const saved = JSON.parse(savedConfig);
+                if (saved.apis) {
+                    // Only merge API keys not managed by HA options
+                    if (saved.apis.openai?.apiKey) {
+                        if (!this.config.apis.openai) this.config.apis.openai = {};
+                        this.config.apis.openai.apiKey = saved.apis.openai.apiKey;
+                        this.config.apis.openai.enabled = true;
+                    }
+                    if (saved.apis.omdb?.apiKey) {
+                        if (!this.config.apis.omdb) this.config.apis.omdb = {};
+                        this.config.apis.omdb.apiKey = saved.apis.omdb.apiKey;
+                        this.config.apis.omdb.enabled = true;
+                    }
+                }
+                console.log('[HA Config] Merged additional settings from web UI');
+            } catch (e) {
+                // No saved config, that's fine
+            }
+
             if (plexUrl) console.log(`[HA Config] Plex server: ${plexUrl}`);
         } catch (error) {
             console.error('[Error] Failed to load HA config:', error.message);

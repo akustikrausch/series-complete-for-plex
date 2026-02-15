@@ -519,7 +519,24 @@ async function loadCache() {
   }
 }
 
+let saveCacheTimer = null;
 async function saveCache() {
+  if (saveCacheTimer) clearTimeout(saveCacheTimer);
+  saveCacheTimer = setTimeout(async () => {
+    try {
+      const cacheArray = Array.from(analysisCache.values());
+      await fs.writeFile(CACHE_FILE, JSON.stringify(cacheArray, null, 2));
+    } catch (error) {
+      console.error('Error saving cache:', error);
+    }
+  }, 5000);
+}
+
+async function saveCacheImmediate() {
+  if (saveCacheTimer) {
+    clearTimeout(saveCacheTimer);
+    saveCacheTimer = null;
+  }
   try {
     const cacheArray = Array.from(analysisCache.values());
     await fs.writeFile(CACHE_FILE, JSON.stringify(cacheArray, null, 2));
@@ -527,6 +544,11 @@ async function saveCache() {
     console.error('Error saving cache:', error);
   }
 }
+
+// Lightweight health check (no external calls)
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', uptime: process.uptime() });
+});
 
 // API endpoints
 app.get('/api/test-connection', async (req, res) => {
@@ -1343,7 +1365,11 @@ async function startServer() {
     console.log(`- OMDb: ${apiConfigs.omdb?.apiKey ? '[OK] Configured' : '[Missing] Not configured (Optional)'}`);
     
     // Test APIs
-    await testApiConfiguration();
+    if (!isHomeAssistant()) {
+        await testApiConfiguration();
+    } else {
+        console.log('[HA] Skipping startup API tests (use Settings to test APIs)');
+    }
     
     // Load cache
     await loadCache();
@@ -1410,7 +1436,7 @@ async function gracefulShutdown(signal) {
 
   try {
     // Save legacy cache
-    await saveCache();
+    await saveCacheImmediate();
     console.log('[Server] Legacy cache saved');
 
     // Flush Clean Architecture CacheRepository
