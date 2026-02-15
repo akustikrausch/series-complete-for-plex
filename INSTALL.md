@@ -102,7 +102,7 @@ If the integration does not auto-detect the app, you will be asked for Host and 
 | **Port** | `3000` | Default port (all setups) |
 | **Update interval** | `1800` | Seconds between sensor updates (default: 30 min) |
 
-**Tip:** Home Assistant uses a hash-based hostname for third-party apps. If auto-detection does not work, use `e81ba94f-series-complete-plex` as the host.
+**Tip:** Open the app's **Settings** menu to find your exact hostname and port under "HACS Integration". You can copy them directly from there.
 
 #### Sensors provided
 

@@ -1381,9 +1381,12 @@ app.post('/api/plex/test', async (req, res) => {
 });
 
 app.get('/api/config/mode', async (req, res) => {
+    const hostname = os.hostname();
     res.json({
         mode: isApiMode() ? 'api' : 'sqlite',
-        isHomeAssistant: isHomeAssistant()
+        isHomeAssistant: isHomeAssistant(),
+        hostname: hostname,
+        port: parseInt(PORT, 10)
     });
 });
 
