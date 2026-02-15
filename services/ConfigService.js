@@ -57,10 +57,23 @@ class ConfigService {
 
             this.config = this.getDefaultConfigBase();
 
+            // Validate required HA options
+            const plexUrl = (options.plex_url || '').trim();
+            const plexToken = (options.plex_token || '').trim();
+
+            if (!plexUrl) {
+                console.warn('[HA Config] Plex URL not configured - please set in addon settings');
+            } else if (!plexUrl.startsWith('http://') && !plexUrl.startsWith('https://')) {
+                console.warn(`[HA Config] Plex URL should start with http:// or https:// (got: ${plexUrl})`);
+            }
+            if (!plexToken) {
+                console.warn('[HA Config] Plex Token not configured - please set in addon settings');
+            }
+
             // Map HA options to config structure
             this.config.plex = {
-                url: options.plex_url || '',
-                token: options.plex_token || '',
+                url: plexUrl,
+                token: plexToken,
                 libraryIds: options.library_ids || []
             };
 
@@ -79,6 +92,7 @@ class ConfigService {
             this.config.server.port = parseInt(process.env.PORT) || 3000;
 
             console.log('[OK] Configuration loaded from Home Assistant options');
+            if (plexUrl) console.log(`[HA Config] Plex server: ${plexUrl}`);
         } catch (error) {
             console.error('[Error] Failed to load HA config:', error.message);
             throw error;

@@ -145,9 +145,10 @@ app.get('/', async (req, res, next) => {
     try {
         const indexPath = path.join(__dirname, 'public', 'index.html');
         let html = await fs.readFile(indexPath, 'utf8');
+        const safeIngressPath = ingressPath.replace(/["'<>&]/g, '');
         html = html.replace(
             '<meta name="ingress-path" content="">',
-            `<meta name="ingress-path" content="${ingressPath}">`
+            `<meta name="ingress-path" content="${safeIngressPath}">`
         );
         res.type('html').send(html);
     } catch (error) {
