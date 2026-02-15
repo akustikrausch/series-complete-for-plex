@@ -1,6 +1,6 @@
 {
   "name": "plex-series-checker-web",
-  "version": "2.6.7",
+  "version": "2.6.8",
   "description": "Cross-platform Plex Series Checker",
   "license": "CC-BY-NC-4.0",
   "main": "server-crossplatform.js",

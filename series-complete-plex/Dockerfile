@@ -1,32 +1,34 @@
 ARG BUILD_FROM
-FROM ${BUILD_FROM}
 
-# Install runtime and build dependencies
-RUN apk add --no-cache nodejs npm wget \
-    && apk add --no-cache --virtual .build-deps git
+# Stage 1: Install dependencies on native x86 (avoids QEMU npm crash)
+FROM --platform=$BUILDPLATFORM node:22-alpine AS deps
 
 WORKDIR /app
 
-# Cache bust: BUILD_VERSION changes with each addon version
 ARG BUILD_VERSION
 
-# Clone application from public repository
-RUN git clone --depth 1 --branch main \
-    https://github.com/akustikrausch/series-complete-for-plex.git . \
-    && rm -rf .git .github series-complete-plex/
-
-# Install production dependencies, skip native builds
-RUN npm ci --omit=dev --ignore-scripts --no-optional \
+# Clone and install deps natively (no QEMU emulation needed)
+RUN apk add --no-cache git \
+    && git clone --depth 1 --branch main \
+       https://github.com/akustikrausch/series-complete-for-plex.git . \
+    && rm -rf .git .github series-complete-plex/ \
+    && npm ci --omit=dev --ignore-scripts \
     && npm cache clean --force
 
-# Remove build dependencies
-RUN apk del .build-deps
+# Stage 2: Target architecture runtime
+FROM ${BUILD_FROM}
+
+RUN apk add --no-cache nodejs
+
+WORKDIR /app
+
+# Copy pre-built app from native stage
+COPY --from=deps /app /app
 
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV NODE_OPTIONS="--max-old-space-size=256"
 
-# Health check
 HEALTHCHECK --interval=60s --timeout=5s --start-period=45s --retries=3 \
     CMD wget -q --spider http://localhost:3000/ || exit 1
 

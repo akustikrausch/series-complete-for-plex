@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.8
+
+- Fix Docker build for aarch64: use multi-stage build to avoid QEMU npm crash (Illegal instruction)
+- npm dependencies now install natively on x86, node_modules copied to target arch
+
 ## 2.6.7
 
 - Fix HACS integration sensors showing 0: coordinator was using GET instead of POST for `/api/get-series`
