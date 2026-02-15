@@ -3,8 +3,11 @@ const path = require('path');
 
 class ConfigService {
     constructor() {
-        this.configPath = path.join(__dirname, '..', 'config.json');
-        this.localConfigPath = path.join(__dirname, '..', 'config.local.json');
+        const { existsSync } = require('fs');
+        const isHA = existsSync('/data/options.json');
+        const baseDir = isHA ? '/data' : path.join(__dirname, '..');
+        this.configPath = path.join(baseDir, 'config.json');
+        this.localConfigPath = path.join(baseDir, 'config.local.json');
         this.config = null;
         this.initialized = false;
     }
@@ -149,7 +152,7 @@ class ConfigService {
                 },
                 "cors": {
                     "enabled": true,
-                    "origin": "http://localhost:3000"
+                    "origin": this.isHomeAssistant() ? "*" : "http://localhost:3000"
                 }
             }
         };
@@ -220,7 +223,7 @@ class ConfigService {
             },
             features: { enableCache: true, cacheExpiry: 86400000, enableAnalytics: false, maxConcurrentRequests: 5, requestDelay: 1000 },
             ui: { theme: "dark", language: "en", itemsPerPage: 20, enableNotifications: true },
-            security: { rateLimit: { windowMs: 900000, maxRequests: 100 }, cors: { enabled: true, origin: "http://localhost:3000" } }
+            security: { rateLimit: { windowMs: 900000, maxRequests: 100 }, cors: { enabled: true, origin: this.isHomeAssistant() ? "*" : "http://localhost:3000" } }
         };
 
         for (const [section, defaultValue] of Object.entries(defaultSections)) {

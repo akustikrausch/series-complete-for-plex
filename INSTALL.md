@@ -91,7 +91,7 @@ Series Complete for Plex requires API keys from external services to fetch TV se
 4. Request an API key (select "Personal Use")
 5. Copy your **API Key (v3 auth)**
 
-#### TheTVDB - Required
+#### TheTVDB - Optional
 1. Register at [thetvdb.com/signup](https://thetvdb.com/signup)
 2. Go to **Dashboard** > **API Keys**
 3. Generate a new **v4 API key** (legacy v2/v3 keys will not work)
@@ -130,7 +130,7 @@ Edit `config.json` in the project root, or create `config.local.json` to keep yo
 |---------|-------------|---------|
 | `apis.tmdb.apiKey` | TMDb API key for movie/TV metadata | Required |
 | `apis.tmdb.enabled` | Enable TMDb API | `true` |
-| `apis.thetvdb.apiKey` | TheTVDB v4 API key for TV series data | Required |
+| `apis.thetvdb.apiKey` | TheTVDB v4 API key for TV series data | Optional |
 | `apis.thetvdb.pin` | TheTVDB subscriber PIN | Optional |
 | `apis.thetvdb.enabled` | Enable TheTVDB API | `true` |
 | `plex.url` | Plex server URL (enables API mode) | `""` (disabled) |
