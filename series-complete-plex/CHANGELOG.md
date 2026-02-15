@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.2
+
+- Fix HA addon startup: bypass S6 overlay, run Node.js directly
+- Add trademark disclaimers and security policy
+
 ## 2.6.1
 
 - Fix HA addon startup (S6 overlay permissions)
