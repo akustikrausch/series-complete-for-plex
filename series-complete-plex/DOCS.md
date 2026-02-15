@@ -46,6 +46,39 @@ Used as a fallback when TMDb and TheTVDB cannot identify a series.
 3. Click **Analyze** on any series to check for missing episodes
 4. Use batch analysis to check multiple series at once
 
+## HACS Integration (optional sensors)
+
+You can optionally install a HACS integration that adds Home Assistant sensors for your library statistics. This is separate from the app itself.
+
+### Installation
+
+1. Open **HACS** in the HA sidebar
+2. Three-dot menu (top right) > **Custom repositories**
+3. Enter `https://github.com/akustikrausch/series-complete-for-plex`, category **Integration**, click **Add**
+4. Search for "Series Complete for Plex" in HACS and click **Download**
+5. **Restart Home Assistant** (Settings > System > Restart)
+
+### Setup
+
+After restart, go to **Settings** > **Devices & Services**:
+
+- **Auto-detected**: If the app is running, HA will show a notification "New device discovered". Click **Configure** and confirm.
+- **Manual setup**: Click **+ Add Integration**, search "Series Complete", and enter:
+  - **Host**: `local-series-complete-plex` (if running as HA app) or `192.168.x.x` (if standalone)
+  - **Port**: `3000`
+
+### Sensors
+
+| Sensor | Description |
+|--------|-------------|
+| Total Series | Number of TV series in your Plex library |
+| Complete Series | Series with 100% of episodes |
+| Incomplete Series | Series with 50-99% of episodes |
+| Critical Series | Series with less than 50% of episodes |
+| Completion Rate | Overall library completion percentage |
+
+Sensors update every 30 minutes by default. You can change the interval during setup.
+
 ## Data Persistence
 
 Analysis results and cache data are stored in the `/data/` directory, which persists across app restarts and updates.

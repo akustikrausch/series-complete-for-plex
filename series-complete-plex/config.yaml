@@ -30,5 +30,7 @@ schema:
   tmdb_api_key: str?
   thetvdb_api_key: password?
   thetvdb_pin: password?
+discovery:
+  - series_complete
 map:
   - data:rw

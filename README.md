@@ -69,14 +69,20 @@ npm run dev
    - **TheTVDB API Key**: Your TheTVDB v4 API key (optional)
 4. Start the app and open the Web UI via the sidebar
 
-### HACS Integration (optional)
+### HACS Integration (optional sensors)
 
-The HACS integration provides Home Assistant sensors for your Plex library stats (total series, complete, incomplete, critical, completion rate). Install the app first, then add the integration:
+The HACS integration provides Home Assistant sensors for your Plex library stats. **Install the app (above) first**, then:
 
-1. Add this repository as a custom repository in HACS (category: Integration)
-2. Search for "Series Complete for Plex" and install
-3. Restart Home Assistant
-4. The integration auto-detects the app, or configure manually via Settings > Integrations
+1. Open **HACS** > three-dot menu > **Custom repositories**
+2. Add `https://github.com/akustikrausch/series-complete-for-plex` with category **Integration**
+3. Search for "Series Complete for Plex" and click **Download**
+4. **Restart Home Assistant**
+5. Go to **Settings** > **Devices & Services** > **Add Integration** > search "Series Complete"
+6. The app is auto-detected, or enter manually: Host `local-series-complete-plex`, Port `3000`
+
+**Sensors:** Total Series, Complete Series, Incomplete Series, Critical Series, Completion Rate (%)
+
+See [INSTALL.md](INSTALL.md) for detailed step-by-step instructions.
 
 ## Requirements
 
