@@ -64,7 +64,7 @@ After restart, go to **Settings** > **Devices & Services**:
 
 - **Auto-detected**: If the app is running, HA will show a notification "New device discovered". Click **Configure** and confirm.
 - **Manual setup**: Click **+ Add Integration**, search "Series Complete", and enter:
-  - **Host**: `e81ba94f-series-complete-plex` (if running as HA app) or `192.168.x.x` (if standalone)
+  - **Host**: Check the app's Settings menu under "HACS Integration" for your hostname, or enter `192.168.x.x` (if standalone)
   - **Port**: `3000`
 
 ### Sensors

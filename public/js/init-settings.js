@@ -136,6 +136,34 @@ window.openSettings = function() {
                     </button>
                 </div>
 
+                <!-- Integration Info (loaded dynamically for HA mode) -->
+                <div id="settings-integration-info" class="hidden">
+                    <h3 class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider mb-2.5">HACS Integration</h3>
+                    <div class="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3.5 space-y-2.5">
+                        <p class="text-xs text-surface-400">Use these values when adding the HACS integration in Home Assistant:</p>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-surface-500 uppercase tracking-wider w-10 flex-shrink-0">Host</span>
+                                <code id="settings-hostname" class="flex-1 text-xs text-primary-400 bg-black/30 rounded-lg px-2.5 py-1.5 font-mono select-all cursor-pointer border border-white/[0.06]" title="Click to copy"></code>
+                                <button id="copy-hostname-btn" class="p-1.5 rounded-lg text-surface-500 hover:text-primary-400 hover:bg-white/[0.06] transition-all" aria-label="Copy hostname">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-surface-500 uppercase tracking-wider w-10 flex-shrink-0">Port</span>
+                                <code id="settings-port" class="flex-1 text-xs text-primary-400 bg-black/30 rounded-lg px-2.5 py-1.5 font-mono select-all cursor-pointer border border-white/[0.06]" title="Click to copy"></code>
+                                <button id="copy-port-btn" class="p-1.5 rounded-lg text-surface-500 hover:text-primary-400 hover:bg-white/[0.06] transition-all" aria-label="Copy port">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Footer -->
                 <div class="pt-3 border-t border-white/[0.06] text-center space-y-1.5">
                     <a href="https://github.com/akustikrausch/series-complete-for-plex" target="_blank" rel="noopener noreferrer"
@@ -146,13 +174,44 @@ window.openSettings = function() {
                     <p class="text-[11px] text-surface-600">
                         <span class="text-primary-500/70 font-medium">Series Complete for Plex</span>
                         <span class="mx-1.5 text-surface-700">&middot;</span>
-                        v2.6.4
+                        v2.6.5
                     </p>
                 </div>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
+
+    // Load integration info (hostname/port) for HA mode
+    fetch('/api/config/mode')
+        .then(r => r.json())
+        .then(data => {
+            if (data.hostname) {
+                const infoSection = document.getElementById('settings-integration-info');
+                const hostnameEl = document.getElementById('settings-hostname');
+                const portEl = document.getElementById('settings-port');
+                if (infoSection && hostnameEl && portEl) {
+                    hostnameEl.textContent = data.hostname;
+                    portEl.textContent = String(data.port || 3000);
+                    infoSection.classList.remove('hidden');
+
+                    const copyToClipboard = (text, btn) => {
+                        navigator.clipboard.writeText(text).then(() => {
+                            const orig = btn.innerHTML;
+                            btn.innerHTML = '<svg class="w-3.5 h-3.5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+                            setTimeout(() => { btn.innerHTML = orig; }, 1500);
+                        });
+                    };
+                    document.getElementById('copy-hostname-btn')?.addEventListener('click', function() {
+                        copyToClipboard(data.hostname, this);
+                    });
+                    document.getElementById('copy-port-btn')?.addEventListener('click', function() {
+                        copyToClipboard(String(data.port || 3000), this);
+                    });
+                }
+            }
+        })
+        .catch(() => {});
 
     // Cleanup function to remove modal and event listener
     const closeModal = () => {

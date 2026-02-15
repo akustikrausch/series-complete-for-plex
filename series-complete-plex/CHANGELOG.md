@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.5
+
+- Show hostname and port in Settings for HACS integration setup (copy to clipboard)
+- Expose hostname/port via `/api/config/mode` endpoint
+
 ## 2.6.4
 
 - Fix analysis cache persistence: analysis results no longer lost after HA restart or browser cache expiry
