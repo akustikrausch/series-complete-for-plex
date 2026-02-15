@@ -12,13 +12,14 @@ RUN apk add --no-cache git \
     && git clone --depth 1 --branch main \
        https://github.com/akustikrausch/series-complete-for-plex.git . \
     && rm -rf .git .github series-complete-plex/ \
+    && rm -f config.default.json \
     && npm ci --omit=dev --ignore-scripts \
     && npm cache clean --force
 
 # Stage 2: Target architecture runtime
 FROM ${BUILD_FROM}
 
-RUN apk add --no-cache nodejs
+RUN apk add --no-cache nodejs wget
 
 WORKDIR /app
 

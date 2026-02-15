@@ -2266,7 +2266,7 @@
                     
                     <div class="pt-4 border-t border-plex-gray">
                         <p class="text-sm text-plex-light text-center">
-                            Series Complete for Plex v2.6.8<br>
+                            Series Complete for Plex v2.6.9<br>
                             Series: ${state.stats.total}<br>
                             Analyzed: ${state.series.filter(s => s.totalEpisodes).length}<br>
                             <span class="text-xs text-primary-500 mt-2 block">© 2025-2026 by Andreas Wendorf</span>
@@ -2376,7 +2376,7 @@
                 
                 <div class="pt-4 border-t border-plex-gray text-center">
                     <p class="text-xs text-plex-light mb-4">
-                        <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v2.6.8
+                        <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v2.6.9
                     </p>
                 </div>
             </div>

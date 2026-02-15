@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.9
+
+- Fix addon restart loop: add missing `wget` to Docker image (required by healthcheck)
+- Remove `config.default.json` from Docker image to avoid Supervisor config warning
+
 ## 2.6.8
 
 - Fix Docker build for aarch64: use multi-stage build to avoid QEMU npm crash (Illegal instruction)
