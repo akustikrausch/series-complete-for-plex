@@ -22,10 +22,13 @@ _LOGGER = logging.getLogger(__name__)
 
 ADDON_PORT = 3000
 ADDON_SLUG = "series-complete-plex"
+# Third-party HA apps get a hash-based hostname: {sha1(repo_url)[:8]}-{slug}
+# Hash for https://github.com/akustikrausch/series-complete-for-plex = e81ba94f
+ADDON_HASH_PREFIX = "e81ba94f"
 FALLBACK_HOSTNAMES = [
+    f"{ADDON_HASH_PREFIX}-{ADDON_SLUG}",
     f"local-{ADDON_SLUG}",
-    "local-series-complete-plex",
-    "series-complete-plex",
+    ADDON_SLUG,
 ]
 
 
