@@ -2,25 +2,15 @@ name: Validate
 
 on:
   push:
-    branches: [main]
-    paths:
-      - "custom_components/**"
   pull_request:
-    branches: [main]
-    paths:
-      - "custom_components/**"
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions: {}
 
 jobs:
-  hassfest:
-    name: Hassfest
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Hassfest validation
-        uses: home-assistant/actions/hassfest@master
-
-  hacs:
+  validate-hacs:
     name: HACS
     runs-on: ubuntu-latest
     steps:
@@ -30,3 +20,12 @@ jobs:
         uses: hacs/action@main
         with:
           category: integration
+
+  validate-hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Hassfest validation
+        uses: home-assistant/actions/hassfest@master
