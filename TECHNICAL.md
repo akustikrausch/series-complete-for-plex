@@ -361,14 +361,17 @@ Configuration is provided via Home Assistant's addon options UI. The `ConfigServ
 ```
 series-complete-plex/
 +-- config.yaml      - Addon metadata (name, schema, ingress config)
-+-- Dockerfile       - Multi-arch build (amd64, aarch64, armv7)
-+-- build.yaml       - Base image references
++-- Dockerfile       - Multi-arch build (clones repo, installs deps)
++-- build.yaml       - Base image references (Alpine 3.21)
 +-- run.sh           - Startup script (bashio)
 +-- DOCS.md          - Documentation shown in HA addon panel
 +-- CHANGELOG.md     - Version history shown in HA addon panel
++-- README.md        - Addon readme for addon store
++-- icon.png         - Addon icon (128x128)
++-- logo.png         - Addon logo (250x100)
 +-- translations/
 |   +-- en.yaml      - English labels for addon options UI
-repository.yaml      - HA addon store / HACS repository metadata
+repository.yaml      - HA addon store repository metadata
 ```
 
 ## Deployment
