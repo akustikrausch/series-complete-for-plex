@@ -146,6 +146,10 @@ This project is licensed under the **Creative Commons Attribution-NonCommercial 
 - [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework
 - [Lucide](https://lucide.dev/) for the icon library
 
+## Disclaimer
+
+This project is not affiliated with, endorsed by, or certified by Plex Inc., The Movie Database (TMDb), or TheTVDB. All product names, trademarks, and registered trademarks are property of their respective owners. This product uses the TMDb API but is not endorsed or certified by TMDb.
+
 ---
 
 **Series Complete for Plex** - Making your Plex TV library complete, one series at a time.
