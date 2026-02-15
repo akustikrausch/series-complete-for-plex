@@ -1381,16 +1381,19 @@ async function startServer() {
     // Start listening
     const HOST = isHomeAssistant() ? '0.0.0.0' : 'localhost';
     server.listen(PORT, HOST, () => {
-      console.log('╔═══════════════════════════════════════════════════════╗');
-      console.log('║  Series Complete for Plex by Akustikrausch läuft auf http://localhost:3000  ║');
-      console.log('╚═══════════════════════════════════════════════════════╝');
-      console.log('\nDer Browser sollte sich automatisch öffnen...\n');
+      const url = `http://${HOST}:${PORT}`;
+      console.log('╔═══════════════════════════════════════════════════════════════╗');
+      console.log(`║  Series Complete for Plex by Akustikrausch runs on ${url}  ║`);
+      console.log('╚═══════════════════════════════════════════════════════════════╝');
+      if (!isHomeAssistant()) {
+        console.log('\nDer Browser sollte sich automatisch öffnen...\n');
+      }
       console.log('Monitoring active at /api/monitoring/dashboard');
-      console.log('WebSocket active at ws://localhost:3000/ws');
+      console.log(`WebSocket active at ws://${HOST}:${PORT}/ws`);
 
       // Open browser on Windows (not in HA mode)
       if (process.platform === 'win32' && !isHomeAssistant()) {
-        require('child_process').exec('start http://localhost:3000');
+        require('child_process').exec(`start ${url}`);
       }
     });
   } catch (error) {
