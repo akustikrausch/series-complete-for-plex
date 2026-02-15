@@ -62,8 +62,8 @@ class SeriesCompleteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         }
 
         try:
-            # Fetch cached series data
-            async with session.get(
+            # Fetch cached series data (POST endpoint)
+            async with session.post(
                 f"{self._base_url}/api/get-series",
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as resp:
