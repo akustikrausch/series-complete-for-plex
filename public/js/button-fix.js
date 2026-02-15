@@ -107,7 +107,22 @@
             };
             console.log('[ButtonFix] Settings button handler attached');
         }
-        
+
+        // Insights button
+        const insightsBtn = document.getElementById('insights-btn');
+        if (insightsBtn) {
+            insightsBtn.onclick = function(e) {
+                e.preventDefault();
+                console.log('[ButtonFix] Insights button clicked');
+                if (window.statisticsManager && window.statisticsManager.openAnalytics) {
+                    window.statisticsManager.openAnalytics();
+                } else {
+                    console.error('[ButtonFix] statisticsManager.openAnalytics not found');
+                }
+            };
+            console.log('[ButtonFix] Insights button handler attached');
+        }
+
         // Analyze all button
         const analyzeBtn = document.getElementById('analyze-all-btn');
         if (analyzeBtn) {
@@ -292,7 +307,7 @@
                             
                             <!-- Current Status -->
                             <div class="bg-plex-darker rounded-lg p-4 mb-6">
-                                <h3 class="text-lg font-semibold text-purple-500 mb-3">Current Configuration</h3>
+                                <h3 class="text-lg font-semibold text-primary-500 mb-3">Current Configuration</h3>
                                 <div class="space-y-2">
                                     <div class="flex items-center justify-between">
                                         <span class="text-plex-light">TMDb API:</span>
@@ -312,7 +327,7 @@
                             
                             <!-- Configuration Instructions -->
                             <div class="bg-plex-darker rounded-lg p-4 mb-6">
-                                <h3 class="text-lg font-semibold text-purple-500 mb-3">How to Configure API Keys</h3>
+                                <h3 class="text-lg font-semibold text-primary-500 mb-3">How to Configure API Keys</h3>
                                 <div class="text-plex-light space-y-3">
                                     <p>API keys must be configured in the <code class="bg-black px-2 py-1 rounded">config.json</code> file:</p>
                                     
@@ -332,12 +347,12 @@
                             
                             <!-- Getting API Keys -->
                             <div class="bg-plex-darker rounded-lg p-4 mb-6">
-                                <h3 class="text-lg font-semibold text-purple-500 mb-3">Where to Get API Keys</h3>
+                                <h3 class="text-lg font-semibold text-primary-500 mb-3">Where to Get API Keys</h3>
                                 <div class="space-y-4 text-plex-light">
                                     <div>
                                         <h4 class="font-semibold text-plex-white">TMDb (The Movie Database)</h4>
                                         <ol class="list-decimal list-inside ml-2 mt-2 space-y-1">
-                                            <li>Sign up at <a href="https://www.themoviedb.org/signup" target="_blank" class="text-purple-500 hover:text-purple-400">themoviedb.org</a></li>
+                                            <li>Sign up at <a href="https://www.themoviedb.org/signup" target="_blank" class="text-primary-500 hover:text-primary-400">themoviedb.org</a></li>
                                             <li>Go to Settings → API</li>
                                             <li>Request an API key (choose "Personal Use")</li>
                                             <li>Copy your API Key (v3 auth)</li>
@@ -347,7 +362,7 @@
                                     <div>
                                         <h4 class="font-semibold text-plex-white">TheTVDB</h4>
                                         <ol class="list-decimal list-inside ml-2 mt-2 space-y-1">
-                                            <li>Register at <a href="https://thetvdb.com/signup" target="_blank" class="text-purple-500 hover:text-purple-400">thetvdb.com</a></li>
+                                            <li>Register at <a href="https://thetvdb.com/signup" target="_blank" class="text-primary-500 hover:text-primary-400">thetvdb.com</a></li>
                                             <li>Go to Dashboard → API Keys</li>
                                             <li>Generate a new API key</li>
                                             <li>Copy the generated key</li>
@@ -359,8 +374,8 @@
                             </div>
                             
                             <!-- Important Notes -->
-                            <div class="bg-orange-900 bg-opacity-30 border border-orange-600 rounded-lg p-4 mb-6">
-                                <h3 class="text-orange-500 font-semibold mb-2">Important Notes</h3>
+                            <div class="bg-amber-900 bg-opacity-30 border border-amber-600 rounded-lg p-4 mb-6">
+                                <h3 class="text-warning font-semibold mb-2">Important Notes</h3>
                                 <ul class="list-disc list-inside text-plex-light space-y-1">
                                     <li>Keep your config.json file secure and private</li>
                                     <li>Restart the server after updating config.json</li>
@@ -372,7 +387,7 @@
                             <!-- Footer -->
                             <div class="flex justify-between items-center">
                                 <a href="documentation.html#api-setup" target="_blank" 
-                                   class="text-purple-500 hover:text-purple-400 flex items-center">
+                                   class="text-primary-500 hover:text-primary-400 flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                               d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
@@ -380,7 +395,7 @@
                                     View Full Documentation
                                 </a>
                                 <button data-action="close-modal" 
-                                        class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                        class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
                                     Close
                                 </button>
                             </div>
@@ -428,7 +443,7 @@
                                 </div>
                                 <div class="flex justify-end space-x-2">
                                     <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-600 rounded">Cancel</button>
-                                    <button onclick="alert('Database path would be saved here')" class="px-4 py-2 bg-purple-600 rounded">Save</button>
+                                    <button onclick="alert('Database path would be saved here')" class="px-4 py-2 bg-primary-600 rounded">Save</button>
                                 </div>
                             </div>
                         </div>

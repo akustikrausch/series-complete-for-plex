@@ -1,8 +1,8 @@
 # Series Complete for Plex - TV Series Completeness Analyzer
 
-[![Version](https://img.shields.io/badge/version-1.0.1.1-blue.svg)](https://github.com/yourusername/series-complete-for-plex)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/yourusername/series-complete-for-plex)
+[![Version](https://img.shields.io/badge/version-2.5.1-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
+[![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 
 Series Complete for Plex is a powerful web application that analyzes your Plex TV series library to identify missing episodes and track series completion status. It provides a modern, responsive interface with real-time analysis capabilities and comprehensive statistics.
 
@@ -16,11 +16,12 @@ Series Complete for Plex is a powerful web application that analyzes your Plex T
 - **Batch Processing**: Analyze multiple series simultaneously with progress tracking
 
 ### User Interface
-- **Modern Dark Theme**: Plex-inspired design with purple accents
+- **Modern Glass Design**: Apple-inspired "Liquid Glass" UI with emerald green accents
 - **Responsive Layout**: Works seamlessly on desktop, tablet, and mobile devices
 - **Advanced Search**: Filter by completion status, quality, year, genre, and more
 - **Interactive Statistics**: Comprehensive charts and analytics dashboard
 - **Real-time Updates**: WebSocket-powered live notifications
+- **Video Quality Detection**: Automatic 4K/HDR/Dolby Vision detection from file paths
 
 ### Data Management
 - **Multiple Export Formats**: CSV, JSON, HTML, and Markdown
@@ -32,18 +33,18 @@ Series Complete for Plex is a powerful web application that analyzes your Plex T
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/series-complete-for-plex.git
-cd series-complete-for-plex/web-version
+git clone https://github.com/akustikrausch/series-complete-for-plex.git
+cd series-complete-for-plex
 
 # Install dependencies
-bun install  # or npm install
+npm install  # or bun install
 
 # Configure API keys
-cp config.example.json config.json
-# Edit config.json with your API keys
+cp .env.example .env
+# Edit .env with your API keys (TMDb, TheTVDB, optionally OpenAI)
 
 # Start the server
-bun run dev  # or npm run dev
+npm run dev  # or bun run dev
 
 # Open in browser
 # Navigate to http://localhost:3000
@@ -81,11 +82,23 @@ See [INSTALL.md](INSTALL.md) for detailed setup instructions.
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: Vanilla JavaScript, Tailwind CSS
+- **Frontend**: Vanilla JavaScript, Tailwind CSS, Lucide Icons
 - **Backend**: Node.js/Bun, Express.js
 - **Database**: SQLite3 (read-only access to Plex DB)
 - **Real-time**: WebSocket for live updates
 - **APIs**: TMDb, TheTVDB, OpenAI
+- **Security**: Helmet, express-validator, rate limiting
+
+## 📝 Recent Changes (v2.5.1)
+
+- **UI Overhaul**: New "Liquid Glass" design with emerald green theme
+- **Improved Validation**: Robust input validation for edge cases (null years, compound dates)
+- **Bug Fixes**:
+  - Fixed infinite loading issue with Lucide icon observer
+  - Fixed modal close button requiring multiple clicks
+  - Fixed ConfigService method naming (`init()` vs `loadConfig()`)
+  - Fixed Clean Architecture routes middleware errors
+- **Performance**: Debounced icon updates, optimized MutationObserver
 
 ## 🤝 Contributing
 
@@ -93,7 +106,7 @@ Contributions are welcome! Please read our contributing guidelines before submit
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the **Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)** - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 

@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -25,6 +26,10 @@ const {
     validateSeriesId,
     sanitizeStrings
 } = require('./middleware/validators');
+
+// Import Clean Architecture components
+const container = require('./src/infrastructure/DIContainer');
+const configureRoutes = require('./src/presentation/routes/apiRoutes');
 // Inline security helper
 function escapeHtml(unsafe) {
   if (typeof unsafe !== 'string') return '';
@@ -55,36 +60,8 @@ async function exportErrorReport() {
   return JSON.stringify(errorLog, null, 2);
 }
 
-// Simple monitoring
-const monitoring = {
-  metrics: {},
-  init() {
-    console.log('Monitoring initialized');
-  },
-  logPerformance(metric, phase) {
-    if (!this.metrics[metric]) this.metrics[metric] = {};
-    this.metrics[metric][phase] = Date.now();
-  },
-  generateReport() {
-    return {
-      uptime: process.uptime(),
-      metrics: this.metrics
-    };
-  },
-  getDashboardData() {
-    return {
-      uptime: process.uptime(),
-      memory: process.memoryUsage(),
-      metrics: this.metrics
-    };
-  },
-  async reset() {
-    this.metrics = {};
-  },
-  async shutdown() {
-    console.log('Monitoring shutdown');
-  }
-};
+// Get monitoring service from DI Container (Clean Architecture)
+const monitoring = container.get('monitoringService');
 
 // Load environment variables
 require('dotenv').config();
@@ -133,6 +110,16 @@ app.use(sanitizeStrings);
 
 // Static files - AFTER security
 app.use(express.static('public'));
+
+// Clean Architecture API Routes
+try {
+  const apiRoutes = configureRoutes(container);
+  app.use('/api/v2', apiRoutes); // Using v2 to test alongside existing routes
+  console.log('✅ Clean Architecture routes configured successfully');
+} catch (error) {
+  console.error('❌ Failed to configure Clean Architecture routes:', error.message);
+  console.log('Continuing with legacy routes...');
+}
 
 // DEPRECATED: This function has been replaced with SecureDatabaseService
 // Kept for backwards compatibility during migration phase
@@ -265,6 +252,81 @@ async function copyDatabase() {
   return destPath;
 }
 
+// Consolidate duplicate series by title
+function consolidateSeriesByTitle(series) {
+  const consolidatedMap = new Map();
+  
+  for (const s of series) {
+    const title = s.title.toLowerCase().trim();
+    
+    if (consolidatedMap.has(title)) {
+      // Merge with existing series
+      const existing = consolidatedMap.get(title);
+      
+      // Combine episode and season counts (take maximum)
+      existing.episode_count = Math.max(existing.episode_count || 0, s.episode_count || 0);
+      existing.season_count = Math.max(existing.season_count || 0, s.season_count || 0);
+      
+      // Merge folder paths
+      if (s.folders && s.folders.length > 0) {
+        existing.folders = [...(existing.folders || []), ...s.folders];
+      }
+      
+      // Merge seasons data
+      if (s.seasons && s.seasons.length > 0) {
+        const existingSeasons = existing.seasons || [];
+        const seasonMap = new Map();
+        
+        // Add existing seasons to map
+        existingSeasons.forEach(season => {
+          seasonMap.set(season.season_number, season);
+        });
+        
+        // Add new seasons or merge episode counts
+        s.seasons.forEach(season => {
+          const seasonNum = season.season_number;
+          if (seasonMap.has(seasonNum)) {
+            // Update episode count if higher
+            const existingSeason = seasonMap.get(seasonNum);
+            if ((season.episode_count || 0) > (existingSeason.episode_count || 0)) {
+              existingSeason.episode_count = season.episode_count;
+            }
+          } else {
+            seasonMap.set(seasonNum, season);
+          }
+        });
+        
+        existing.seasons = Array.from(seasonMap.values()).sort((a, b) => (a.season_number || 0) - (b.season_number || 0));
+      }
+      
+      // Keep the most recent year and other metadata
+      if (s.year && (!existing.year || s.year > existing.year)) {
+        existing.year = s.year;
+      }
+      
+      // Use the longest summary
+      if (s.summary && (!existing.summary || s.summary.length > existing.summary.length)) {
+        existing.summary = s.summary;
+      }
+      
+      // Keep first studio unless new one is more specific
+      if (s.studio && !existing.studio) {
+        existing.studio = s.studio;
+      }
+      
+      console.log(`Consolidated "${s.title}" - Episodes: ${existing.episode_count}, Seasons: ${existing.season_count}, Folders: ${(existing.folders || []).length}`);
+    } else {
+      // First occurrence of this title
+      consolidatedMap.set(title, { ...s });
+    }
+  }
+  
+  const consolidated = Array.from(consolidatedMap.values());
+  console.log(`Consolidated ${series.length} series entries into ${consolidated.length} unique series`);
+  
+  return consolidated;
+}
+
 // Load series from database using secure service
 async function getSeriesFromDatabase() {
   monitoring.logPerformance('database_read', 'start');
@@ -278,8 +340,11 @@ async function getSeriesFromDatabase() {
       throw new Error('Failed to load series from database');
     }
     
+    // Consolidate duplicate series by title BEFORE quality detection
+    const consolidatedSeries = consolidateSeriesByTitle(result.series);
+    
     // Add video quality detection to each series
-    const seriesWithQuality = result.series.map(series => {
+    const seriesWithQuality = consolidatedSeries.map(series => {
       let videoQuality = 'Unknown';
       let hasHDR = false;
       let hasDolbyVision = false;
@@ -327,7 +392,7 @@ async function getSeriesFromDatabase() {
     
     monitoring.logPerformance('database_read', 'end');
     
-    console.log(`Securely loaded ${seriesWithQuality.length} series`);
+    console.log(`Securely loaded and consolidated ${seriesWithQuality.length} unique series`);
     return seriesWithQuality;
     
   } catch (error) {
@@ -575,10 +640,15 @@ app.post('/api/load-database', validateDatabasePath('dbPath'), async (req, res) 
     
     console.log(`Securely loaded ${result.series.length} series`);
     
+    // Consolidate duplicate series by title (same as /api/get-series)
+    const consolidatedSeries = consolidateSeriesByTitle(result.series);
+    
+    console.log(`Securely loaded and consolidated ${consolidatedSeries.length} unique series`);
+    
     res.json({ 
       success: true, 
-      series: result.series,
-      count: result.count,
+      series: consolidatedSeries,
+      count: consolidatedSeries.length,
       dbPath: path.basename(dbPath) // Only return filename for security
     });
     
@@ -1122,7 +1192,7 @@ app.post('/api/settings', validateApiKeys, async (req, res) => {
 app.get('/api/test-apis', async (req, res) => {
   try {
     // Reload configuration before testing to get latest saved keys
-    await config.loadConfig();
+    await config.init();
     const results = await testApiConfiguration();
     res.json({ success: true, results });
   } catch (error) {
@@ -1152,16 +1222,14 @@ async function startServer() {
     await loadCache();
     
     // Initialize monitoring
-    if (monitoring && typeof monitoring.init === 'function') {
-      monitoring.init();
-    }
-    
+    // Monitoring is already initialized via DI Container
+
     // Create HTTP server
     const http = require('http');
     const server = http.createServer(app);
-    
-    // Initialize WebSocket service
-    const websocketService = require('./services/websocket-service');
+
+    // Initialize WebSocket service from DI Container
+    const websocketService = container.get('webSocketService');
     websocketService.initialize(server);
     
     // WebSocket status endpoint
@@ -1193,19 +1261,37 @@ async function startServer() {
 }
 
 // Graceful shutdown
-process.on('SIGINT', async () => {
-  console.log('\nShutting down gracefully...');
-  await saveCache();
-  await monitoring.shutdown();
-  process.exit(0);
-});
+async function gracefulShutdown(signal) {
+  console.log(`\n[Server] Received ${signal}, shutting down gracefully...`);
 
-process.on('SIGTERM', async () => {
-  console.log('\nShutting down gracefully...');
-  await saveCache();
-  await monitoring.shutdown();
+  try {
+    // Save legacy cache
+    await saveCache();
+    console.log('[Server] Legacy cache saved');
+
+    // Flush Clean Architecture CacheRepository
+    if (container && container.has('cacheRepository')) {
+      const cacheRepository = container.get('cacheRepository');
+      if (cacheRepository && typeof cacheRepository.flush === 'function') {
+        await cacheRepository.flush();
+        console.log('[Server] CacheRepository flushed');
+      }
+    }
+
+    // Shutdown monitoring
+    await monitoring.shutdown();
+    console.log('[Server] Monitoring shutdown complete');
+
+  } catch (error) {
+    console.error('[Server] Error during shutdown:', error.message);
+  }
+
+  console.log('[Server] Graceful shutdown complete');
   process.exit(0);
-});
+}
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 
 // Start the server
 startServer();

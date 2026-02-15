@@ -57,7 +57,7 @@ class AdvancedSearch {
                         <label class="text-sm font-semibold text-plex-light">Search Query</label>
                         <div class="flex space-x-2">
                             <input type="text" id="search-query" 
-                                class="flex-1 bg-plex-dark text-plex-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange"
+                                class="flex-1 bg-plex-dark text-plex-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                                 placeholder="Enter search terms...">
                             <select id="search-boolean" class="bg-plex-dark text-plex-white px-4 py-2 rounded-lg">
                                 <option value="AND">AND</option>
@@ -74,7 +74,7 @@ class AdvancedSearch {
                     <div class="space-y-3">
                         <div class="flex justify-between items-center">
                             <label class="text-sm font-semibold text-plex-light">Filter Presets</label>
-                            <button data-action="save-search-preset" class="text-xs text-purple-500 hover:text-plex-white">
+                            <button data-action="save-search-preset" class="text-xs text-primary-500 hover:text-plex-white">
                                 + Save Current
                             </button>
                         </div>
@@ -135,7 +135,7 @@ class AdvancedSearch {
                     <!-- Advanced Options -->
                     <div class="space-y-3">
                         <details class="group">
-                            <summary class="cursor-pointer text-sm font-semibold text-plex-light hover:text-purple-500">
+                            <summary class="cursor-pointer text-sm font-semibold text-plex-light hover:text-primary-500">
                                 ⚙️ Advanced Options
                             </summary>
                             <div class="mt-3 space-y-3">
@@ -198,7 +198,7 @@ class AdvancedSearch {
                                 Reset
                             </button>
                             <button data-action="perform-search" 
-                                class="px-6 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
+                                class="px-6 py-2 bg-primary-600 text-plex-dark rounded-lg font-semibold hover:bg-warning transition">
                                 Search
                             </button>
                         </div>
@@ -265,7 +265,7 @@ class AdvancedSearch {
         if (genreContainer) {
             genreContainer.innerHTML = Array.from(this.genres).sort().map(genre => `
                 <label class="flex items-center space-x-2 text-xs text-plex-light hover:text-plex-white cursor-pointer">
-                    <input type="checkbox" name="genre" value="${genre}" class="rounded text-purple-500">
+                    <input type="checkbox" name="genre" value="${genre}" class="rounded text-primary-500">
                     <span>${genre}</span>
                 </label>
             `).join('');
@@ -276,7 +276,7 @@ class AdvancedSearch {
         if (networkContainer) {
             networkContainer.innerHTML = Array.from(this.networks).sort().map(network => `
                 <label class="flex items-center space-x-2 text-xs text-plex-light hover:text-plex-white cursor-pointer">
-                    <input type="checkbox" name="network" value="${network}" class="rounded text-purple-500">
+                    <input type="checkbox" name="network" value="${network}" class="rounded text-primary-500">
                     <span>${network}</span>
                 </label>
             `).join('');
@@ -584,7 +584,7 @@ class AdvancedSearch {
         container.innerHTML = this.presets.map((preset, index) => `
             <div class="flex items-center space-x-1 bg-plex-dark rounded-lg px-3 py-1">
                 <button data-action="load-search-preset" data-preset-index="${index}" 
-                    class="text-xs text-plex-light hover:text-purple-500">
+                    class="text-xs text-plex-light hover:text-primary-500">
                     ${preset.name}
                 </button>
                 <button data-action="delete-search-preset" data-preset-index="${index}" 

@@ -44,9 +44,10 @@ Series Complete for Plex follows a modern client-server architecture with real-t
 
 **Frontend:**
 - **Framework**: Vanilla JavaScript (ES6+)
-- **Styling**: Tailwind CSS 3.x
-- **Icons**: Heroicons SVG
+- **Styling**: Tailwind CSS 3.x (CDN)
+- **Icons**: Lucide Icons
 - **Build**: No bundler (native ES modules)
+- **Design**: "Liquid Glass" UI with Emerald Green theme
 
 ## Backend Architecture
 

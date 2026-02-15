@@ -544,7 +544,7 @@ async function searchIMDb(seriesName, year) {
     // Ensure config is loaded
     await initConfig();
     
-    const OMDB_API_KEY = getOmdbApiKey() || '4de86c97'; // Fallback to free tier key
+    const OMDB_API_KEY = getOmdbApiKey() || process.env.OMDB_API_KEY || '';
     const startTime = Date.now();
     
     try {
@@ -859,7 +859,7 @@ async function verifySeriesMetadata(seriesName, year) {
             // Import OpenAI if available
             const OpenAI = require('openai');
             const openai = new OpenAI({
-                apiKey: getOpenaiApiKey() || 'DEMO_KEY_REPLACE_IN_PRODUCTION'
+                apiKey: getOpenaiApiKey() || process.env.OPENAI_API_KEY || ''
             });
             
             const prompt = `TV series: ${seriesName}${year ? ` (${year})` : ''}
@@ -957,7 +957,7 @@ async function testTmdbApi() {
     try {
         // Force reload config to get latest saved keys
         const config = require('./services/ConfigService');
-        await config.loadConfig();
+        await config.init();
         await initConfig();
         
         const apiKey = getTmdbApiKey();

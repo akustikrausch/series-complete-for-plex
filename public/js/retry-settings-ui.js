@@ -29,7 +29,7 @@ class RetrySettingsUI {
                     <!-- Tabs -->
                     <div class="border-b border-plex-gray">
                         <div class="flex space-x-8 px-6">
-                            <button class="retry-tab py-4 px-2 border-b-2 border-plex-orange text-purple-500 font-semibold" data-tab="configuration">
+                            <button class="retry-tab py-4 px-2 border-b-2 border-primary-500 text-primary-500 font-semibold" data-tab="configuration">
                                 Configuration
                             </button>
                             <button class="retry-tab py-4 px-2 border-b-2 border-transparent text-plex-light hover:text-plex-white" data-tab="monitoring">
@@ -84,7 +84,7 @@ class RetrySettingsUI {
                                 <div class="flex justify-between items-center">
                                     <h3 class="text-lg font-semibold text-plex-white">API Health Status</h3>
                                     <button data-action="run-health-check" 
-                                        class="bg-purple-600 text-plex-dark px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 transition">
+                                        class="bg-primary-600 text-plex-dark px-4 py-2 rounded-lg font-semibold hover:bg-warning transition">
                                         Run Health Check
                                     </button>
                                 </div>
@@ -108,7 +108,7 @@ class RetrySettingsUI {
                                 Reset to Defaults
                             </button>
                             <button data-action="close-retry-settings" 
-                                class="px-6 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
+                                class="px-6 py-2 bg-primary-600 text-plex-dark rounded-lg font-semibold hover:bg-warning transition">
                                 Close
                             </button>
                         </div>
@@ -128,31 +128,31 @@ class RetrySettingsUI {
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Max Retries</label>
                         <input type="number" id="${type}-maxRetries" min="0" max="10" 
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Initial Delay (ms)</label>
                         <input type="number" id="${type}-initialDelay" min="100" max="10000" step="100"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Max Delay (ms)</label>
                         <input type="number" id="${type}-maxDelay" min="1000" max="60000" step="1000"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Backoff Multiplier</label>
                         <input type="number" id="${type}-backoffMultiplier" min="1" max="5" step="0.1"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Timeout (ms)</label>
                         <input type="number" id="${type}-timeoutMs" min="5000" max="120000" step="5000"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="flex items-center space-x-2 text-sm text-plex-light">
-                            <input type="checkbox" id="${type}-jitter" class="rounded text-purple-500">
+                            <input type="checkbox" id="${type}-jitter" class="rounded text-primary-500">
                             <span>Enable Jitter</span>
                         </label>
                         <div class="text-xs text-plex-gray mt-1">Adds randomness to prevent thundering herd</div>
@@ -188,10 +188,10 @@ class RetrySettingsUI {
         // Update tab buttons
         document.querySelectorAll('.retry-tab').forEach(tab => {
             if (tab.dataset.tab === tabName) {
-                tab.classList.add('border-plex-orange', 'text-purple-500');
+                tab.classList.add('border-primary-500', 'text-primary-500');
                 tab.classList.remove('border-transparent', 'text-plex-light');
             } else {
-                tab.classList.remove('border-plex-orange', 'text-purple-500');
+                tab.classList.remove('border-primary-500', 'text-primary-500');
                 tab.classList.add('border-transparent', 'text-plex-light');
             }
         });
