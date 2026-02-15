@@ -1,0 +1,44 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Series Complete for Plex",
+        "description": "Verbinde dich mit deiner Series Complete App oder einer Standalone-Instanz.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "scan_interval": "Aktualisierungsintervall (Sekunden)"
+        }
+      },
+      "hassio_confirm": {
+        "title": "Series Complete for Plex",
+        "description": "Die App **{addon}** wurde unter `{host}:{port}` erkannt. Moechtest du es hinzufuegen?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu Series Complete nicht moeglich. Pruefe Host und Port."
+    },
+    "abort": {
+      "already_configured": "Diese Instanz ist bereits konfiguriert."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "total_series": {
+        "name": "Serien gesamt"
+      },
+      "complete_series": {
+        "name": "Vollstaendige Serien"
+      },
+      "incomplete_series": {
+        "name": "Unvollstaendige Serien"
+      },
+      "critical_series": {
+        "name": "Kritische Serien"
+      },
+      "completion_rate": {
+        "name": "Vollstaendigkeitsrate"
+      }
+    }
+  }
+}

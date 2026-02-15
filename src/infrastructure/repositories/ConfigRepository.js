@@ -155,7 +155,7 @@ class ConfigRepository {
 
   /**
    * Check if running in Home Assistant mode
-   * @returns {boolean} True if running as HA add-on
+   * @returns {boolean} True if running as HA app
    */
   isHomeAssistant() {
     return this.configService.isHomeAssistant();

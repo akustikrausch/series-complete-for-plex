@@ -119,6 +119,25 @@ class PlexApiService {
   }
 
   /**
+   * Decode HTML entities that the Plex API returns in text fields
+   * (e.g. &#x27; → ', &amp; → &, &lt; → <, &gt; → >, &quot; → ")
+   * @param {string} str
+   * @returns {string}
+   */
+  _decodeHtmlEntities(str) {
+    if (typeof str !== 'string') return str;
+    return str
+      .replace(/&#x27;/g, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(code))
+      .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+  }
+
+  /**
    * Map a Plex API show object to the internal DTO-compatible format
    * @param {Object} show - Plex API show metadata
    * @returns {Object} Mapped series data matching SeriesDTO fields
@@ -129,12 +148,12 @@ class PlexApiService {
       : '';
 
     return {
-      id: show.ratingKey,
-      title: show.title,
+      id: parseInt(show.ratingKey, 10) || show.ratingKey,
+      title: this._decodeHtmlEntities(show.title),
       year: show.year,
-      studio: show.studio,
+      studio: this._decodeHtmlEntities(show.studio),
       content_rating: show.contentRating,
-      summary: show.summary,
+      summary: this._decodeHtmlEntities(show.summary),
       originally_available_at: show.originallyAvailableAt,
       tags_genre: genres,
       episode_count: show.leafCount || 0,

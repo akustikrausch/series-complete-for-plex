@@ -1,10 +1,12 @@
 # Series Complete for Plex - TV Series Completeness Analyzer
 
-[![Version](https://img.shields.io/badge/version-2.6.2-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
+[![Version](https://img.shields.io/badge/version-2.6.3-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 [![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Home%20Assistant-lightgrey.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 
-Series Complete for Plex is a web application that analyzes your Plex TV series library to identify missing episodes and track series completion status. It works as a standalone application or as a Home Assistant addon, connecting to Plex via REST API over the network or through direct SQLite database access. It provides a modern, responsive interface with real-time analysis capabilities and comprehensive statistics.
+[![Add add-on repository to my Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fakustikrausch%2Fseries-complete-for-plex)
+
+Series Complete for Plex is a web application that analyzes your Plex TV series library to identify missing episodes and track series completion status. It works as a standalone application or as a Home Assistant app, connecting to Plex via REST API over the network or through direct SQLite database access. It provides a modern, responsive interface with real-time analysis capabilities and comprehensive statistics.
 
 ## Features
 
@@ -14,7 +16,7 @@ Series Complete for Plex is a web application that analyzes your Plex TV series 
 - **Real-time Analysis**: Analyzes series metadata using TMDb and TheTVDB APIs (OpenAI as optional fallback)
 - **Smart Caching**: Multi-layer caching (browser, memory, file) to reduce API calls
 - **Batch Processing**: Analyze multiple series simultaneously with progress tracking
-- **Home Assistant Integration**: Run as HA addon with auto-discovery via ingress
+- **Home Assistant Integration**: Run as HA app with auto-discovery via ingress
 - **Plex REST API**: Connect to any Plex server over the network (no local DB access needed)
 - **Dual Mode**: SQLite (local) or API (network) - automatically detected
 
@@ -53,19 +55,28 @@ npm run dev
 
 ## Home Assistant Installation
 
-### As Home Assistant Addon
+### As Home Assistant App
 
-1. Add this repository URL to your Home Assistant addon store:
+1. Click the button above or add this repository URL to your HA app store:
    ```
    https://github.com/akustikrausch/series-complete-for-plex
    ```
-2. Install "Series Complete for Plex" from the addon store
-3. Configure in the addon settings:
+2. Install "Series Complete for Plex" from the app store
+3. Configure in the app settings:
    - **Plex URL**: `http://<plex-server-ip>:32400`
    - **Plex Token**: Your Plex authentication token ([how to find](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/))
    - **TMDb API Key**: Your TMDb API key
    - **TheTVDB API Key**: Your TheTVDB v4 API key (optional)
-4. Start the addon and open the Web UI via the sidebar
+4. Start the app and open the Web UI via the sidebar
+
+### HACS Integration (optional)
+
+The HACS integration provides Home Assistant sensors for your Plex library stats (total series, complete, incomplete, critical, completion rate). Install the app first, then add the integration:
+
+1. Add this repository as a custom repository in HACS (category: Integration)
+2. Search for "Series Complete for Plex" and install
+3. Restart Home Assistant
+4. The integration auto-detects the app, or configure manually via Settings > Integrations
 
 ## Requirements
 
@@ -119,16 +130,17 @@ See [INSTALL.md](INSTALL.md) for detailed setup instructions.
 - **Database**: SQLite3 (standalone) / Plex REST API (network)
 - **Real-time**: WebSocket for live updates
 - **APIs**: TMDb, TheTVDB, Plex REST API, OpenAI (optional)
-- **Integration**: Home Assistant Addon with ingress support
+- **Integration**: Home Assistant App + HACS Integration (sensors)
 - **Security**: Helmet, express-validator, rate limiting, DOMPurify
 
-## Recent Changes (v2.6.2)
+## Recent Changes (v2.6.3)
 
-- **Home Assistant Addon**: Run as HA addon with ingress support
-- **Plex REST API**: Connect to Plex over the network without local database access
-- **Dual Mode Architecture**: Automatic SQLite/API mode detection
-- **Ingress Support**: Transparent proxy path handling for HA integration
-- **Dynamic Configuration**: HA options.json auto-mapping to app config
+- **HACS Integration**: Custom component with 5 sensors (total, complete, incomplete, critical, completion rate)
+- **Home Assistant App**: Run as HA app with sidebar integration (ingress)
+- **Pre-built Docker Images**: Automated multi-arch builds via GitHub Container Registry
+- **Plex REST API**: Connect to any Plex server over the network
+- **Dual Mode**: Automatic SQLite (local) / REST API (network) detection
+- **HTML Entity Fix**: Correct handling of special characters in series titles
 
 ## Contributing
 

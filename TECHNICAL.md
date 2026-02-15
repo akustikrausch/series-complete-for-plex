@@ -12,7 +12,8 @@ This document provides detailed technical information about Series Complete for 
 - [Caching System](#caching-system)
 - [WebSocket Communication](#websocket-communication)
 - [Security Implementation](#security-implementation)
-- [Home Assistant Addon](#home-assistant-addon)
+- [Home Assistant App](#home-assistant-app)
+- [HACS Integration](#hacs-integration)
 - [Deployment](#deployment)
 - [Development](#development)
 
@@ -40,7 +41,7 @@ Series Complete for Plex follows a client-server architecture with real-time com
 - **Data Source**: SQLite3 (standalone) / Plex REST API (network)
 - **WebSocket**: ws library
 - **Caching**: File-based + Memory
-- **Deployment**: Standalone, Docker, Home Assistant Addon
+- **Deployment**: Standalone, Docker, Home Assistant App
 
 **Frontend:**
 - **Framework**: Vanilla JavaScript (ES6+)
@@ -328,11 +329,11 @@ API requests use built-in rate limiting:
 - **CORS**: Configurable origin restrictions
 - **Read-only DB**: Database copied before access, no writes to Plex DB
 
-## Home Assistant Addon
+## Home Assistant App
 
 ### Ingress Architecture
 
-When running as a Home Assistant addon, the app is accessed through HA's ingress proxy:
+When running as a Home Assistant app, the application is accessed through HA's ingress proxy:
 
 ```
 Browser -> HA Ingress Proxy -> /api/hassio/ingress/<slug> -> App (:3000)
@@ -345,9 +346,9 @@ Key adaptations:
 - **Config**: `/data/options.json` auto-mapped to app config structure
 - **Binding**: Server binds to `0.0.0.0` in HA mode
 
-### Addon Configuration
+### App Configuration
 
-Configuration is provided via Home Assistant's addon options UI. The `ConfigService` detects `/data/options.json` and maps HA options to the internal config structure:
+Configuration is provided via Home Assistant's app options UI. The `ConfigService` detects `/data/options.json` and maps HA options to the internal config structure:
 
 | HA Option | Internal Config |
 |-----------|----------------|
@@ -360,19 +361,76 @@ Configuration is provided via Home Assistant's addon options UI. The `ConfigServ
 
 ```
 series-complete-plex/
-+-- config.yaml      - Addon metadata (name, schema, ingress config)
++-- config.yaml      - App metadata (name, schema, ingress config)
 +-- Dockerfile       - Multi-arch build (clones repo, installs deps)
 +-- build.yaml       - Base image references (Alpine 3.21)
 +-- run.sh           - Startup script (bashio)
-+-- DOCS.md          - Documentation shown in HA addon panel
-+-- CHANGELOG.md     - Version history shown in HA addon panel
-+-- README.md        - Addon readme for addon store
-+-- icon.png         - Addon icon (128x128)
-+-- logo.png         - Addon logo (250x100)
++-- DOCS.md          - Documentation shown in HA app panel
++-- CHANGELOG.md     - Version history shown in HA app panel
++-- README.md        - App readme for app store
++-- icon.png         - App icon (128x128)
++-- logo.png         - App logo (250x100)
 +-- translations/
-|   +-- en.yaml      - English labels for addon options UI
-repository.yaml      - HA addon store repository metadata
+|   +-- en.yaml      - English labels for app options UI
+|   +-- de.yaml      - German labels for app options UI
+repository.yaml      - HA app store repository metadata
 ```
+
+## HACS Integration
+
+The HACS (Home Assistant Community Store) integration provides Home Assistant sensors for Plex library statistics. It runs alongside the app and polls the app's API for data.
+
+### Architecture
+
+```
+Home Assistant
++-- Series Complete App (port 3000)
+|   +-- /api/get-series endpoint
+|
++-- HACS Integration (custom_component)
+    +-- DataUpdateCoordinator (polls app every 30 min)
+    +-- 5 Sensor entities
+```
+
+### Sensors
+
+| Sensor | Description | Unit |
+|--------|-------------|------|
+| `total_series` | Total number of TV series | series |
+| `complete_series` | Series with 100% episodes | series |
+| `incomplete_series` | Series with 50-99% episodes | series |
+| `critical_series` | Series with less than 50% episodes | series |
+| `completion_rate` | Overall library completion | % |
+
+### Config Flow
+
+The integration supports two configuration methods:
+- **Auto-discovery**: Detects the app automatically when running on the same HA instance
+- **Manual**: User enters host and port for standalone/remote installations
+
+### File Structure
+
+```
+custom_components/series_complete/
++-- __init__.py       - Integration entry point, platform forwarding
++-- const.py          - Constants (domain, platforms, defaults)
++-- manifest.json     - HACS/HA metadata (domain, version, dependencies)
++-- coordinator.py    - DataUpdateCoordinator (polls /api/get-series)
++-- config_flow.py    - Setup wizard (auto-discovery + manual)
++-- sensor.py         - 5 sensor entities (CoordinatorEntity pattern)
++-- strings.json      - Default UI strings (English)
++-- translations/
+|   +-- en.json       - English translations
+|   +-- de.json       - German translations
++-- icon.png          - Integration icon
+hacs.json             - HACS store metadata
+```
+
+### HACS Store Requirements
+
+- `hacs.json` in repository root with `render_readme: true`
+- `.github/workflows/validate.yaml` running Hassfest + HACS validation
+- `manifest.json` with valid `version`, `config_flow: true`, `iot_class`
 
 ## Deployment
 
