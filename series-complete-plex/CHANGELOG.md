@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.6.7
+
+- Fix HACS integration sensors showing 0: coordinator was using GET instead of POST for `/api/get-series`
+
 ## 2.6.6
 
 - Fix HA Supervisor addon detection: rename `config.json` to `config.default.json` to prevent conflict with addon config schema
