@@ -53,7 +53,7 @@ class SeriesConsolidationService {
 
     const consolidated = Array.from(consolidatedMap.values());
     
-    console.log(`📊 Consolidation completed: ${seriesArray.length} → ${consolidated.length} series`);
+    console.log(`[Done] Consolidation completed: ${seriesArray.length} -> ${consolidated.length} series`);
     this.logConsolidationDetails(consolidationLog);
 
     return consolidated;
@@ -83,7 +83,7 @@ class SeriesConsolidationService {
     try {
       return existingSeries.mergeWith(newSeries);
     } catch (error) {
-      console.warn(`⚠️ Failed to merge series "${existingSeries.title}": ${error.message}`);
+      console.warn(`[Warning] Failed to merge series "${existingSeries.title}": ${error.message}`);
       // Return the series with more episodes as fallback
       return existingSeries.episodeCount >= newSeries.episodeCount ? existingSeries : newSeries;
     }
@@ -153,15 +153,15 @@ class SeriesConsolidationService {
     };
 
     if (report.episodeDifference < 0) {
-      report.messages.push(`⚠️ Episode count decreased by ${Math.abs(report.episodeDifference)}`);
+      report.messages.push(`[Warning] Episode count decreased by ${Math.abs(report.episodeDifference)}`);
     } else if (report.episodeDifference > 0) {
-      report.messages.push(`✅ Episode count increased by ${report.episodeDifference} through consolidation`);
+      report.messages.push(`[OK] Episode count increased by ${report.episodeDifference} through consolidation`);
     }
 
     if (report.reduction === 0) {
-      report.messages.push('ℹ️ No duplicates found to consolidate');
+      report.messages.push('[Info] No duplicates found to consolidate');
     } else {
-      report.messages.push(`✅ Consolidated ${report.reduction} duplicate entries (${report.reductionPercentage}% reduction)`);
+      report.messages.push(`[OK] Consolidated ${report.reduction} duplicate entries (${report.reductionPercentage}% reduction)`);
     }
 
     return report;
@@ -176,13 +176,13 @@ class SeriesConsolidationService {
     const added = consolidationLog.filter(entry => entry.action === 'added');
 
     if (merged.length > 0) {
-      console.log(`📋 Merged ${merged.length} duplicate series:`);
+      console.log(`[Info] Merged ${merged.length} duplicate series:`);
       merged.forEach(entry => {
         console.log(`  - "${entry.title}": ${entry.existingEpisodes} + ${entry.newEpisodes} = ${entry.mergedEpisodes} episodes`);
       });
     }
 
-    console.log(`📈 Summary: ${added.length} unique series, ${merged.length} merges completed`);
+    console.log(`[Info] Summary: ${added.length} unique series, ${merged.length} merges completed`);
   }
 
   /**

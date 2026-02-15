@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="ingress-path" content="">
     <title>Series Complete for Plex - Series Analyzer</title>
-    
+
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="apple-touch-icon" href="favicon.svg">
-    
+
     <!-- Tailwind CSS Play CDN -->
     <script src="https://cdn.tailwindcss.com/3.4.15"></script>
 
@@ -19,14 +20,18 @@
     <!-- jsPDF for PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- Modern Design System 2026 - Emerald Green -->
+    <!-- Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+
+    <!-- Design System -->
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        // Primary - Emerald Green
                         'primary': {
                             50: '#ecfdf5',
                             100: '#d1fae5',
@@ -39,7 +44,6 @@
                             800: '#065f46',
                             900: '#064e3b'
                         },
-                        // Neutral - Dark Theme
                         'surface': {
                             50: '#f9fafb',
                             100: '#f3f4f6',
@@ -53,7 +57,6 @@
                             900: '#111827',
                             950: '#0a0a0a'
                         },
-                        // Legacy aliases (for compatibility)
                         'app-dark': '#111827',
                         'app-darker': '#0a0a0a',
                         'app-gray': '#374151',
@@ -61,7 +64,7 @@
                         'app-white': '#f9fafb'
                     },
                     fontFamily: {
-                        'sans': ['SF Pro Display', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                        'sans': ['DM Sans', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif']
                     },
                     backdropBlur: {
                         'xs': '2px',
@@ -71,97 +74,191 @@
                         'glass': '16px',
                         '2xl': '1rem',
                         '3xl': '1.5rem'
+                    },
+                    animation: {
+                        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+                        'fade-in': 'fade-in 0.4s ease-out',
+                        'slide-up': 'slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'shimmer': 'shimmer 2s linear infinite',
+                    },
+                    keyframes: {
+                        'glow-pulse': {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.7' },
+                        },
+                        'fade-in': {
+                            '0%': { opacity: '0', transform: 'translateY(8px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        'slide-up': {
+                            '0%': { opacity: '0', transform: 'translateY(24px) scale(0.96)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+                        },
+                        'shimmer': {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' },
+                        },
                     }
                 }
             }
         }
     </script>
-    
+
     <style>
         /* ========================================
-           Modern Design System 2026
-           Glass Morphism + Emerald Green
+           Series Complete — Liquid Glass 2026
+           Refined dark observatory aesthetic
            ======================================== */
 
         /* Base */
         body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #111827 50%, #0f172a 100%);
+            background: #060a10;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        /* Glass Effect - Apple Liquid Glass 2026 */
+        /* Ambient background atmosphere */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(16, 185, 129, 0.06) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 90%, rgba(6, 78, 59, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse 100% 80% at 50% 50%, rgba(17, 24, 39, 0.9) 0%, #060a10 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Noise texture overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.025;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Glass Effect — Liquid Glass 2026 */
         .glass-effect {
             background: linear-gradient(
                 135deg,
-                rgba(255, 255, 255, 0.08) 0%,
-                rgba(255, 255, 255, 0.03) 100%
+                rgba(255, 255, 255, 0.07) 0%,
+                rgba(255, 255, 255, 0.02) 100%
             );
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.09);
             box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.1);
         }
 
         .glass-card {
             background: linear-gradient(
-                135deg,
-                rgba(255, 255, 255, 0.06) 0%,
-                rgba(255, 255, 255, 0.02) 100%
+                160deg,
+                rgba(255, 255, 255, 0.05) 0%,
+                rgba(255, 255, 255, 0.015) 100%
             );
             backdrop-filter: blur(16px) saturate(150%);
             -webkit-backdrop-filter: blur(16px) saturate(150%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 16px;
             box-shadow:
-                0 4px 24px rgba(0, 0, 0, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+                0 4px 24px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
 
-        /* Primary Button - Emerald */
+        /* Primary Button — Emerald */
         .btn-primary {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             font-weight: 600;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            letter-spacing: -0.01em;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow:
+                0 2px 8px rgba(16, 185, 129, 0.3),
+                0 0 0 1px rgba(16, 185, 129, 0.15);
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+            transform: translateY(-1px);
+            box-shadow:
+                0 6px 20px rgba(16, 185, 129, 0.4),
+                0 0 0 1px rgba(16, 185, 129, 0.3);
             background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         /* Secondary Button */
         .btn-secondary {
-            background: rgba(55, 65, 81, 0.8);
+            background: rgba(255, 255, 255, 0.04);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #d1d5db;
+            transition: all 0.25s ease;
         }
 
         .btn-secondary:hover {
-            background: rgba(75, 85, 99, 0.9);
-            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: white;
+        }
+
+        /* Danger Button */
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            transition: all 0.25s ease;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #fecaca;
+        }
+
+        /* Focus Visible — Accessibility */
+        :focus-visible {
+            outline: 2px solid #10b981;
+            outline-offset: 2px;
+        }
+
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 2px solid #10b981;
+            outline-offset: 2px;
         }
 
         /* Series Card */
         .series-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             will-change: transform;
             contain: layout style paint;
         }
 
         .series-card:hover {
-            transform: translateY(-4px) scale(1.01);
-            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateY(-3px);
+            border-color: rgba(16, 185, 129, 0.25);
             box-shadow:
-                0 20px 40px rgba(0, 0, 0, 0.4),
-                0 0 0 1px rgba(16, 185, 129, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                0 16px 40px rgba(0, 0, 0, 0.45),
+                0 0 0 1px rgba(16, 185, 129, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
 
         /* Virtual scrolling container */
@@ -175,27 +272,55 @@
         .status-critical { color: #f87171; }
         .status-unknown { color: #9ca3af; }
 
-        /* Filter Button Active State - iOS Segmented Control Style */
+        /* Filter Button Active State — Segmented Control */
         .filter-btn {
             position: relative;
             z-index: 1;
+            transition: all 0.2s ease;
         }
 
         .filter-btn.active {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
         }
 
         .filter-btn:not(.active):hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        /* Status Pill Toggle (Filter Modal) */
+        .status-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .status-pill.active {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #10b981;
+            color: white;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+
+        .status-pill:not(.active):hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+
+        /* Filter Tag Toggle (Genre/Network pills) */
+        .filter-tag.active {
+            background: rgba(16, 185, 129, 0.15) !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+            color: #34d399 !important;
         }
 
         /* Input Focus States */
         input:focus, select:focus {
             outline: none;
             border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
         }
 
         /* Progress Bar */
@@ -211,21 +336,37 @@
 
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
-            background: rgba(17, 24, 39, 0.5);
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(55, 65, 81, 0.8);
-            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #10b981;
+            background: rgba(16, 185, 129, 0.4);
+        }
+
+        /* Stat counter glow */
+        .stat-value {
+            text-shadow: 0 0 20px currentColor;
+        }
+
+        /* Header divider line */
+        .header-accent {
+            background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.3) 50%, transparent 100%);
+            height: 1px;
+        }
+
+        /* Empty state illustration */
+        .empty-glow {
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
         }
 
         /* Mobile Responsive */
@@ -256,13 +397,11 @@
                 font-size: 0.875rem;
             }
 
-            /* Filter Segmented Control - Horizontal Scroll on Mobile */
             .filter-btn {
                 white-space: nowrap;
                 flex-shrink: 0;
             }
 
-            /* Allow horizontal scroll for filter container */
             .inline-flex:has(.filter-btn) {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
@@ -285,7 +424,8 @@
 
             #pagination-controls button {
                 padding: 0.5rem;
-                min-width: 2.5rem;
+                min-width: 2.75rem;
+                min-height: 2.75rem;
             }
         }
 
@@ -344,128 +484,157 @@
         .border-plex-gray { border-color: #374151; }
     </style>
 </head>
-<body class="font-sans text-app-white min-h-screen">
+<body class="font-sans text-app-white min-h-screen antialiased">
     <!-- Header -->
-    <header class="glass-effect sticky top-0 z-50 border-b border-white/10">
-        <div class="container mx-auto px-6 py-4">
+    <header class="glass-effect sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
             <div class="flex items-center justify-between">
                 <!-- Logo -->
-                <div class="flex items-center space-x-4">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center">
-                        <i data-lucide="tv" class="w-6 h-6 text-white"></i>
+                <div class="flex items-center space-x-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-lg shadow-primary-500/20">
+                        <i data-lucide="tv" class="w-5 h-5 sm:w-6 sm:h-6 text-white"></i>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-white">Series Complete</h1>
-                        <p class="text-xs text-surface-400">Plex Library Analyzer</p>
+                        <h1 class="text-lg sm:text-xl font-bold text-white tracking-tight">Series Complete</h1>
+                        <p class="text-[10px] sm:text-xs text-surface-500 font-medium tracking-wider uppercase">Plex Library Analyzer</p>
                     </div>
                 </div>
 
-                <!-- Stats -->
-                <div class="hidden sm:flex items-center space-x-4 md:space-x-8">
-                    <div class="text-center">
-                        <div class="text-xl md:text-2xl font-bold text-primary-400" id="stat-series">0</div>
-                        <div class="text-xs text-surface-400">Series</div>
+                <!-- Stats — Desktop -->
+                <div class="hidden md:flex items-center gap-6 lg:gap-8">
+                    <div class="text-center group">
+                        <div class="text-xl lg:text-2xl font-bold text-primary-400 stat-value tabular-nums" id="stat-series">0</div>
+                        <div class="text-[10px] text-surface-500 font-medium uppercase tracking-wider">Series</div>
                     </div>
+                    <div class="w-px h-8 bg-white/5"></div>
                     <div class="text-center">
-                        <div class="text-xl md:text-2xl font-bold text-emerald-400" id="stat-complete">0</div>
-                        <div class="text-xs text-surface-400">Complete</div>
+                        <div class="text-xl lg:text-2xl font-bold text-emerald-400 stat-value tabular-nums" id="stat-complete">0</div>
+                        <div class="text-[10px] text-surface-500 font-medium uppercase tracking-wider">Complete</div>
                     </div>
+                    <div class="w-px h-8 bg-white/5"></div>
                     <div class="text-center">
-                        <div class="text-xl md:text-2xl font-bold text-amber-400" id="stat-incomplete">0</div>
-                        <div class="text-xs text-surface-400">Incomplete</div>
+                        <div class="text-xl lg:text-2xl font-bold text-amber-400 stat-value tabular-nums" id="stat-incomplete">0</div>
+                        <div class="text-[10px] text-surface-500 font-medium uppercase tracking-wider">Incomplete</div>
                     </div>
                 </div>
 
                 <!-- Actions -->
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                    <button id="scan-library-btn" class="btn-primary px-3 sm:px-6 py-2 sm:py-2.5 rounded-xl flex items-center space-x-1 sm:space-x-2" title="Scan your Plex library for TV series">
-                        <i id="scan-icon" data-lucide="database" class="w-4 sm:w-5 h-4 sm:h-5"></i>
-                        <div id="scan-spinner" class="hidden animate-spin rounded-full h-4 sm:h-5 w-4 sm:w-5 border-2 border-white/30 border-t-white"></div>
-                        <span id="scan-text" class="hidden sm:inline">Scan Library</span>
-                        <span id="scan-text-short" class="sm:hidden">Scan</span>
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button id="scan-library-btn" class="btn-primary px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl flex items-center gap-1.5 sm:gap-2 text-sm" aria-label="Scan Plex library for TV series" title="Scan your Plex library for TV series">
+                        <i id="scan-icon" data-lucide="database" class="w-4 h-4"></i>
+                        <div id="scan-spinner" class="hidden animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                        <span id="scan-text" class="hidden sm:inline font-semibold">Scan Library</span>
+                        <span id="scan-text-short" class="sm:hidden font-semibold">Scan</span>
                     </button>
 
-                    <button id="analyze-all-btn" class="btn-primary px-6 py-2.5 rounded-xl flex items-center space-x-2 hidden" title="Analyze all series for missing episodes">
-                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
-                        <span>Analyze All</span>
+                    <button id="analyze-all-btn" class="btn-primary px-5 py-2.5 rounded-xl flex items-center gap-2 hidden text-sm" aria-label="Analyze all series for missing episodes" title="Analyze all series for missing episodes">
+                        <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                        <span class="font-semibold">Analyze All</span>
                     </button>
 
-                    <button id="refresh-cache-btn" class="btn-secondary p-2.5 rounded-xl" title="Reload from cache">
-                        <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                    <div class="w-px h-6 bg-white/5 hidden sm:block"></div>
+
+                    <button id="refresh-cache-btn" class="btn-secondary p-2 sm:p-2.5 rounded-xl" aria-label="Reload from cache" title="Reload from cache">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                     </button>
 
-                    <button id="insights-btn" class="btn-secondary px-3 sm:px-4 py-2.5 rounded-xl flex items-center space-x-2" title="View library insights and statistics">
-                        <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                        <span class="hidden sm:inline text-sm font-medium">Insights</span>
+                    <button id="insights-btn" class="btn-secondary px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl flex items-center gap-2" aria-label="View library insights and statistics" title="View library insights and statistics">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span class="hidden lg:inline text-sm font-medium">Insights</span>
                     </button>
 
-                    <button id="settings-btn" class="btn-secondary p-2.5 rounded-xl" title="Open application settings">
-                        <i data-lucide="settings" class="w-5 h-5"></i>
+                    <button id="settings-btn" class="btn-secondary p-2 sm:p-2.5 rounded-xl" aria-label="Open settings" title="Open application settings">
+                        <i data-lucide="settings" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
         </div>
+        <!-- Accent line -->
+        <div class="header-accent"></div>
     </header>
-    
+
+    <!-- Mobile Stats Bar -->
+    <div class="md:hidden glass-effect border-b border-white/5">
+        <div class="container mx-auto px-4 py-2.5">
+            <div class="flex items-center justify-around">
+                <div class="text-center">
+                    <div class="text-base font-bold text-primary-400 tabular-nums" id="stat-series-mobile">0</div>
+                    <div class="text-[9px] text-surface-500 font-medium uppercase tracking-wider">Series</div>
+                </div>
+                <div class="w-px h-6 bg-white/5"></div>
+                <div class="text-center">
+                    <div class="text-base font-bold text-emerald-400 tabular-nums" id="stat-complete-mobile">0</div>
+                    <div class="text-[9px] text-surface-500 font-medium uppercase tracking-wider">Complete</div>
+                </div>
+                <div class="w-px h-6 bg-white/5"></div>
+                <div class="text-center">
+                    <div class="text-base font-bold text-amber-400 tabular-nums" id="stat-incomplete-mobile">0</div>
+                    <div class="text-[9px] text-surface-500 font-medium uppercase tracking-wider">Incomplete</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <!-- Search and Filters - Apple Style -->
-        <div class="space-y-4 mb-8">
+        <!-- Search and Filters -->
+        <div class="space-y-3 mb-8">
 
             <!-- Row 1: Search Bar -->
-            <div class="relative">
-                <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-surface-400 pointer-events-none"></i>
-                <input type="text" id="search-input" placeholder="Search series..."
-                       class="w-full h-12 pl-12 pr-4 bg-surface-800/60 backdrop-blur-xl rounded-2xl text-white placeholder-surface-400 border border-white/10 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all text-base">
+            <div class="relative group">
+                <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-surface-500 group-focus-within:text-primary-400 transition-colors pointer-events-none"></i>
+                <input type="text" id="search-input" placeholder="Search series by name..."
+                       aria-label="Search series"
+                       class="w-full h-11 pl-11 pr-4 bg-white/[0.03] backdrop-blur-xl rounded-xl text-white placeholder-surface-500 border border-white/[0.06] focus:border-primary-500/50 focus:bg-white/[0.05] transition-all text-sm">
             </div>
 
-            <!-- Row 2: Segmented Filter Control -->
-            <div class="flex flex-col sm:flex-row gap-3">
-                <!-- Filter Segments - iOS Style -->
-                <div class="inline-flex p-1 bg-surface-800/60 backdrop-blur-xl rounded-xl border border-white/10 flex-shrink-0">
-                    <button data-filter="all" class="filter-btn active px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2">
-                        <i data-lucide="layers" class="w-4 h-4"></i>
+            <!-- Row 2: Filters + Actions -->
+            <div class="flex flex-col sm:flex-row gap-2.5">
+                <!-- Filter Segments -->
+                <div class="inline-flex p-0.5 bg-white/[0.03] backdrop-blur-xl rounded-xl border border-white/[0.06] flex-shrink-0" role="group" aria-label="Filter series by completion status">
+                    <button data-filter="all" class="filter-btn active px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5" aria-pressed="true">
+                        <i data-lucide="layers" class="w-3.5 h-3.5"></i>
                         <span>All</span>
                     </button>
-                    <button data-filter="complete" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-surface-300 hover:text-white">
-                        <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <button data-filter="complete" class="filter-btn px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 text-surface-400 hover:text-white" aria-pressed="false">
+                        <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                         <span>Complete</span>
                     </button>
-                    <button data-filter="incomplete" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-surface-300 hover:text-white">
-                        <i data-lucide="circle-dot" class="w-4 h-4"></i>
+                    <button data-filter="incomplete" class="filter-btn px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 text-surface-400 hover:text-white" aria-pressed="false">
+                        <i data-lucide="circle-dot" class="w-3.5 h-3.5"></i>
                         <span>Incomplete</span>
                     </button>
-                    <button data-filter="critical" class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 text-surface-300 hover:text-white">
-                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    <button data-filter="critical" class="filter-btn px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 text-surface-400 hover:text-white" aria-pressed="false">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
                         <span class="hidden sm:inline">Critical</span>
                     </button>
                 </div>
 
-                <!-- Spacer -->
                 <div class="flex-1"></div>
 
                 <!-- Action Buttons -->
                 <div class="flex gap-2">
-                    <button id="advanced-search-btn"
-                            class="h-10 px-4 bg-surface-800/60 backdrop-blur-xl text-white rounded-xl border border-white/10 hover:border-primary-500/50 hover:bg-surface-700/60 transition-all text-sm font-medium flex items-center gap-2">
-                        <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+                    <!-- Filter button hidden: advanced search functions not operational -->
+                    <button id="advanced-search-btn" aria-label="Advanced filters"
+                            class="hidden h-9 px-3.5 bg-white/[0.03] backdrop-blur-xl text-surface-300 rounded-xl border border-white/[0.06] hover:border-primary-500/30 hover:text-white hover:bg-white/[0.05] transition-all text-sm font-medium flex items-center gap-1.5">
+                        <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
                         <span class="hidden sm:inline">Filters</span>
                     </button>
-                    <button id="export-btn"
-                            class="h-10 px-4 bg-surface-800/60 backdrop-blur-xl text-white rounded-xl border border-white/10 hover:border-sky-500/50 hover:bg-sky-600/20 transition-all text-sm font-medium flex items-center gap-2">
-                        <i data-lucide="download" class="w-4 h-4"></i>
+                    <button id="export-btn" aria-label="Export data"
+                            class="h-9 px-3.5 bg-white/[0.03] backdrop-blur-xl text-surface-300 rounded-xl border border-white/[0.06] hover:border-sky-500/30 hover:text-white hover:bg-white/[0.05] transition-all text-sm font-medium flex items-center gap-1.5">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
                         <span class="hidden sm:inline">Export</span>
                     </button>
                 </div>
             </div>
 
             <!-- Row 3: Sort Controls -->
-            <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                <div class="flex items-center gap-3">
-                    <span class="text-surface-400 text-sm font-medium">Sort:</span>
-                    <select id="sort-select"
-                            class="h-10 bg-surface-800/60 backdrop-blur-xl text-white text-sm px-4 pr-10 rounded-xl border border-white/10 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none appearance-none cursor-pointer"
-                            style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%239ca3af%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px;">
+            <div class="flex flex-col sm:flex-row gap-2.5 items-start sm:items-center">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-surface-500 text-xs font-medium uppercase tracking-wider">Sort</span>
+                    <select id="sort-select" aria-label="Sort series"
+                            class="h-9 bg-white/[0.03] backdrop-blur-xl text-white text-sm px-3 pr-8 rounded-xl border border-white/[0.06] focus:border-primary-500/50 outline-none appearance-none cursor-pointer"
+                            style="background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27%236b7280%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: right 8px center; background-size: 14px;">
                         <option value="name-asc">Name (A-Z)</option>
                         <option value="name-desc">Name (Z-A)</option>
                         <option value="completion-desc">Completion ↓</option>
@@ -474,27 +643,29 @@
                         <option value="episodes-asc">Episodes ↑</option>
                         <option value="year-desc">Year (Newest)</option>
                         <option value="year-asc">Year (Oldest)</option>
+                        <option value="date-desc">Date (Newest)</option>
+                        <option value="date-asc">Date (Oldest)</option>
                         <option value="quality-desc">Quality ↓</option>
                         <option value="missing-desc">Missing ↓</option>
                         <option value="missing-asc">Missing ↑</option>
                     </select>
                 </div>
 
-                <button id="advanced-sort-btn"
-                        class="h-10 px-4 bg-surface-800/60 backdrop-blur-xl text-surface-300 hover:text-white rounded-xl border border-white/10 hover:border-white/20 transition-all text-sm font-medium flex items-center gap-2">
-                    <i data-lucide="settings-2" class="w-4 h-4"></i>
+                <button id="advanced-sort-btn" aria-label="More sort options"
+                        class="h-9 px-3.5 bg-white/[0.03] backdrop-blur-xl text-surface-400 hover:text-white rounded-xl border border-white/[0.06] hover:border-white/10 transition-all text-sm font-medium flex items-center gap-1.5">
+                    <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
                     <span>More Options</span>
                 </button>
             </div>
 
             <!-- Advanced Sort Panel (Hidden by default) -->
             <div id="advanced-sort-panel" class="hidden">
-                <div class="p-4 bg-surface-800/40 backdrop-blur-xl rounded-2xl border border-white/10">
+                <div class="p-4 bg-white/[0.02] backdrop-blur-xl rounded-xl border border-white/[0.06]">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div class="space-y-2">
-                            <label class="text-surface-400 text-xs font-medium uppercase tracking-wide">Group by</label>
-                            <select id="group-by-select"
-                                    class="w-full h-10 bg-surface-900/60 text-white text-sm px-3 rounded-xl border border-white/10 focus:border-primary-500 outline-none">
+                        <div class="space-y-1.5">
+                            <label class="text-surface-500 text-[10px] font-medium uppercase tracking-wider">Group by</label>
+                            <select id="group-by-select" aria-label="Group series by"
+                                    class="w-full h-9 bg-surface-900/40 text-white text-sm px-3 rounded-xl border border-white/[0.06] focus:border-primary-500/50 outline-none">
                                 <option value="none">None</option>
                                 <option value="completion">Completion Status</option>
                                 <option value="quality">Quality</option>
@@ -504,23 +675,24 @@
                             </select>
                         </div>
 
-                        <div class="space-y-2">
-                            <label class="text-surface-400 text-xs font-medium uppercase tracking-wide">Then by</label>
-                            <select id="secondary-sort-select"
-                                    class="w-full h-10 bg-surface-900/60 text-white text-sm px-3 rounded-xl border border-white/10 focus:border-primary-500 outline-none">
+                        <div class="space-y-1.5">
+                            <label class="text-surface-500 text-[10px] font-medium uppercase tracking-wider">Then by</label>
+                            <select id="secondary-sort-select" aria-label="Secondary sort"
+                                    class="w-full h-9 bg-surface-900/40 text-white text-sm px-3 rounded-xl border border-white/[0.06] focus:border-primary-500/50 outline-none">
                                 <option value="name-asc">Name (A-Z)</option>
                                 <option value="completion-desc">Completion %</option>
                                 <option value="year-desc">Year</option>
+                                <option value="date-desc">Date (Newest)</option>
                                 <option value="episodes-desc">Episode Count</option>
                             </select>
                         </div>
 
                         <div class="flex items-end">
-                            <label class="flex items-center gap-3 text-surface-300 cursor-pointer hover:text-white transition-colors h-10">
+                            <label class="flex items-center gap-3 text-surface-400 cursor-pointer hover:text-white transition-colors h-9">
                                 <div class="relative">
                                     <input type="checkbox" id="reverse-sort" class="sr-only peer">
-                                    <div class="w-10 h-6 bg-surface-700 rounded-full peer-checked:bg-primary-500 transition-colors"></div>
-                                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+                                    <div class="w-9 h-5 bg-surface-700 rounded-full peer-checked:bg-primary-500 transition-colors"></div>
+                                    <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow-sm"></div>
                                 </div>
                                 <span class="text-sm">Reverse order</span>
                             </label>
@@ -529,55 +701,68 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Progress Bar -->
-        <div id="progress-container" class="glass-effect rounded-2xl p-6 mb-8 hidden">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="animate-spin rounded-full h-8 w-8 border-2 border-primary-500/30 border-t-primary-500"></div>
-                    <span class="text-white font-semibold">Analyzing Library...</span>
+        <div id="progress-container" class="glass-effect rounded-2xl p-5 mb-8 hidden">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="animate-spin rounded-full h-5 w-5 border-2 border-primary-500/30 border-t-primary-500"></div>
+                    <span class="text-white font-medium text-sm">Analyzing Library...</span>
                 </div>
-                <span id="progress-text" class="text-surface-400 font-mono">0%</span>
+                <span id="progress-text" class="text-surface-400 font-mono text-sm tabular-nums">0%</span>
             </div>
-            <div class="w-full bg-surface-800 rounded-full h-2 overflow-hidden">
-                <div id="progress-bar" class="progress-bar h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            <div class="w-full bg-surface-800/80 rounded-full h-1.5 overflow-hidden">
+                <div id="progress-bar" class="progress-bar h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
             </div>
         </div>
 
         <!-- Series Grid -->
-        <div id="series-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div id="series-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 lg:gap-5">
             <!-- Series cards will be inserted here -->
         </div>
 
         <!-- Empty State -->
-        <div id="empty-state" class="text-center py-20">
-            <div class="w-24 h-24 mx-auto mb-6 rounded-2xl bg-surface-800/50 flex items-center justify-center">
-                <i data-lucide="film" class="w-12 h-12 text-surface-500"></i>
+        <div id="empty-state" class="text-center py-24 sm:py-32 animate-fade-in">
+            <div class="relative inline-block mb-8">
+                <!-- Ambient glow -->
+                <div class="absolute inset-0 -m-12 empty-glow rounded-full animate-glow-pulse"></div>
+                <!-- Icon container -->
+                <div class="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center backdrop-blur-sm">
+                    <i data-lucide="film" class="w-10 h-10 sm:w-12 sm:h-12 text-surface-600"></i>
+                </div>
             </div>
-            <h3 class="text-xl font-semibold text-white mb-2">No Series Loaded</h3>
-            <p class="text-surface-400 mb-6">Click "Scan Library" to load your Plex database</p>
-            <button onclick="document.getElementById('scan-library-btn').click()" class="btn-primary px-6 py-3 rounded-xl inline-flex items-center space-x-2">
-                <i data-lucide="database" class="w-5 h-5"></i>
-                <span>Scan Library</span>
+            <h3 class="text-xl sm:text-2xl font-bold text-white mb-2 tracking-tight">No Series Loaded</h3>
+            <p class="text-surface-500 mb-8 max-w-sm mx-auto text-sm leading-relaxed">
+                Connect to your Plex database to discover and analyze your TV series library
+            </p>
+            <button onclick="document.getElementById('scan-library-btn').click()" class="btn-primary px-6 py-3 rounded-xl inline-flex items-center gap-2.5 text-sm" aria-label="Scan Plex library">
+                <i data-lucide="database" class="w-4 h-4"></i>
+                <span class="font-semibold">Scan Library</span>
             </button>
+            <p class="mt-4 text-surface-600 text-xs">
+                <kbd class="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.08] font-mono text-[10px]">Ctrl</kbd>
+                <span class="mx-0.5">+</span>
+                <kbd class="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/[0.08] font-mono text-[10px]">S</kbd>
+                <span class="ml-1.5">to scan</span>
+            </p>
         </div>
     </main>
 
     <!-- Loading Overlay -->
-    <div id="loading-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50">
-        <div class="glass-effect rounded-2xl p-8 text-center max-w-sm mx-4">
-            <div class="animate-spin rounded-full h-16 w-16 border-4 border-primary-500/30 border-t-primary-500 mx-auto mb-4"></div>
-            <p class="text-white font-semibold">Loading Database...</p>
-            <p class="text-surface-400 text-sm mt-2">This may take a few moments</p>
+    <div id="loading-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Loading">
+        <div class="glass-effect rounded-2xl p-8 text-center max-w-xs mx-4 animate-slide-up">
+            <div class="animate-spin rounded-full h-12 w-12 border-[3px] border-primary-500/20 border-t-primary-500 mx-auto mb-5"></div>
+            <p class="text-white font-semibold text-sm">Loading Database</p>
+            <p class="text-surface-500 text-xs mt-1.5">This may take a few moments</p>
         </div>
     </div>
-    
+
+    <!-- Base path for HA ingress -->
+    <script src="js/base-path.js"></script>
+
     <!-- Initialize critical functions first -->
     <script src="js/init-settings.js"></script>
-    
-    <!-- Event Delegation System DISABLED - using button-fix.js instead -->
-    <!-- <script src="js/event-delegation.js"></script> -->
-    
+
     <!-- Other scripts -->
     <script src="js/retry-manager.js"></script>
     <script src="js/api-retry-wrapper.js"></script>
@@ -587,31 +772,48 @@
     <script src="js/websocket-client.js"></script>
     <script src="js/audio-generator.js"></script>
     <script src="js/advanced-search.js"></script>
-    <script src="js/app.js?v=2.5.1"></script>
+    <script src="js/app.js?v=2.6.0"></script>
     <script src="js/pdf-export.js"></script>
-    
+
     <!-- CRITICAL: Direct button fix - MUST BE LAST -->
     <script src="js/button-fix.js"></script>
 
     <!-- Initialize Lucide Icons -->
     <script>
-        // Initialize Lucide icons on page load
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+
+            // Sync mobile stats with desktop stats
+            const syncStats = () => {
+                const pairs = [
+                    ['stat-series', 'stat-series-mobile'],
+                    ['stat-complete', 'stat-complete-mobile'],
+                    ['stat-incomplete', 'stat-incomplete-mobile']
+                ];
+                pairs.forEach(([src, dst]) => {
+                    const s = document.getElementById(src);
+                    const d = document.getElementById(dst);
+                    if (s && d) d.textContent = s.textContent;
+                });
+            };
+
+            // Observe stat changes for mobile sync
+            const statObserver = new MutationObserver(syncStats);
+            ['stat-series', 'stat-complete', 'stat-incomplete'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) statObserver.observe(el, { childList: true, characterData: true, subtree: true });
+            });
         });
 
-        // Re-initialize icons when DOM changes (for dynamically added content)
-        // Using debounce to prevent infinite loops (createIcons modifies DOM which triggers observer)
+        // Re-initialize icons when DOM changes
         let iconUpdateTimeout = null;
         let isUpdatingIcons = false;
 
         const iconObserver = new MutationObserver(function(mutations) {
-            // Skip if we're currently updating icons (prevents infinite loop)
             if (isUpdatingIcons) return;
 
-            // Check if any mutation contains unprocessed lucide icons
             const hasNewIcons = mutations.some(mutation => {
                 return Array.from(mutation.addedNodes).some(node => {
                     if (node.nodeType === 1) {
@@ -624,7 +826,6 @@
 
             if (!hasNewIcons) return;
 
-            // Debounce icon creation
             clearTimeout(iconUpdateTimeout);
             iconUpdateTimeout = setTimeout(function() {
                 if (typeof lucide !== 'undefined') {
@@ -635,7 +836,6 @@
             }, 50);
         });
 
-        // Start observing once DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
             iconObserver.observe(document.body, {
                 childList: true,

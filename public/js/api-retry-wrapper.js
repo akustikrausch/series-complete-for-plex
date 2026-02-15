@@ -94,7 +94,7 @@ class ApiRetryWrapper {
                         };
                         
                         // Update cache
-                        localStorage.setItem('plexSeriesCache', JSON.stringify({
+                        localStorage.setItem('seriesCompleteCache', JSON.stringify({
                             series: window.state.series,
                             timestamp: Date.now()
                         }));

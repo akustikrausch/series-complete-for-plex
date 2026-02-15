@@ -15,7 +15,7 @@ class RetrySettingsUI {
                 <!-- Header -->
                 <div class="p-6 border-b border-plex-gray">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-plex-white">⚙️ Retry Settings</h2>
+                        <h2 class="text-2xl font-bold text-plex-white flex items-center gap-2"><svg class="w-6 h-6 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Retry Settings</h2>
                         <button data-action="close-retry-settings" class="text-plex-light hover:text-plex-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -363,7 +363,9 @@ class RetrySettingsUI {
             
             resultsContainer.innerHTML = Object.entries(healthResults).map(([name, result]) => {
                 const statusClass = result.healthy ? 'border-green-500/30 bg-green-900/20' : 'border-red-500/30 bg-red-900/20';
-                const statusIcon = result.healthy ? '✅' : '❌';
+                const statusIcon = result.healthy
+                    ? '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                    : '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
                 
                 return `
                     <div class="border ${statusClass} rounded-lg p-4">

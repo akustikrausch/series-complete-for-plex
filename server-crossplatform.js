@@ -11,8 +11,12 @@ const rateLimit = require('express-rate-limit');
 
 // Import custom modules
 const tvApiService = require('./tv-api-service');
-const { extractSeriesFoldersSimple } = require('./extract-folders-simple');
-const secureDb = require('./services/SecureDatabaseService');
+let secureDb;
+try {
+    secureDb = require('./services/SecureDatabaseService');
+} catch (e) {
+    console.log('[Server] SecureDatabaseService not available (Plex API mode)');
+}
 const config = require('./services/ConfigService');
 
 // Import validation middleware
@@ -41,9 +45,11 @@ function escapeHtml(unsafe) {
     .replace(/'/g, "&#039;");
 }
 
-// Simple error tracking
+// Simple error tracking (bounded to prevent memory leak)
+const MAX_ERROR_LOG = 100;
 const errorLog = [];
 function trackError(type, message) {
+  if (errorLog.length >= MAX_ERROR_LOG) errorLog.shift();
   errorLog.push({ type, message, timestamp: new Date() });
   console.error(`[ERROR] ${type}: ${message}`);
 }
@@ -63,8 +69,22 @@ async function exportErrorReport() {
 // Get monitoring service from DI Container (Clean Architecture)
 const monitoring = container.get('monitoringService');
 
-// Load environment variables
-require('dotenv').config();
+// Helper to mask API keys for safe display
+function maskApiKey(key, prefixLen = 8) {
+  if (!key) return '';
+  return key.slice(0, prefixLen) + '...' + key.slice(-4);
+}
+
+// Check if running in Plex API mode (vs SQLite mode)
+function isApiMode() {
+    const plexConfig = config.config && config.config.plex;
+    return !!(plexConfig && plexConfig.url && plexConfig.url.trim());
+}
+
+// Check if running in Home Assistant mode
+function isHomeAssistant() {
+    return require('fs').existsSync('/data/options.json');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -75,12 +95,15 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false // Allow external resources
 }));
 
-// COMPLETELY DISABLE RATE LIMITING - IT'S CAUSING ISSUES
-// const generalLimiter = rateLimit({...});
-// const apiLimiter = rateLimit({...});
-// NO RATE LIMITING AT ALL
-
-console.log('⚠️  RATE LIMITING COMPLETELY DISABLED');
+// Rate limiting - generous limits for personal use
+const apiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 120, // 120 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again shortly' }
+});
+app.use('/api/', apiLimiter);
 
 // Basic middleware
 app.use(cors({
@@ -108,6 +131,30 @@ app.use(express.json({
 // Input sanitization middleware
 app.use(sanitizeStrings);
 
+// Ingress path support for Home Assistant
+app.use((req, res, next) => {
+    res.locals.ingressPath = req.headers['x-ingress-path'] || '';
+    next();
+});
+
+// Serve index.html dynamically to inject ingress path
+app.get('/', async (req, res, next) => {
+    const ingressPath = res.locals.ingressPath;
+    if (!ingressPath) return next();
+
+    try {
+        const indexPath = path.join(__dirname, 'public', 'index.html');
+        let html = await fs.readFile(indexPath, 'utf8');
+        html = html.replace(
+            '<meta name="ingress-path" content="">',
+            `<meta name="ingress-path" content="${ingressPath}">`
+        );
+        res.type('html').send(html);
+    } catch (error) {
+        next();
+    }
+});
+
 // Static files - AFTER security
 app.use(express.static('public'));
 
@@ -115,23 +162,10 @@ app.use(express.static('public'));
 try {
   const apiRoutes = configureRoutes(container);
   app.use('/api/v2', apiRoutes); // Using v2 to test alongside existing routes
-  console.log('✅ Clean Architecture routes configured successfully');
+  console.log('[OK] Clean Architecture routes configured successfully');
 } catch (error) {
-  console.error('❌ Failed to configure Clean Architecture routes:', error.message);
+  console.error('[Error] Failed to configure Clean Architecture routes:', error.message);
   console.log('Continuing with legacy routes...');
-}
-
-// DEPRECATED: This function has been replaced with SecureDatabaseService
-// Kept for backwards compatibility during migration phase
-async function executeSqliteQuery(dbPath, query) {
-  console.warn('DEPRECATED: executeSqliteQuery is unsafe and should be replaced with SecureDatabaseService');
-  // Redirect to secure service - this won't work for complex queries but prevents command injection
-  try {
-    return await secureDb.executeQuery(dbPath, query, []);
-  } catch (error) {
-    console.error('Deprecated function call failed:', error.message);
-    throw error;
-  }
 }
 
 // Cache for API requests
@@ -159,7 +193,7 @@ function getPlexDbPath() {
     const wslPath = dbConfig.wslPath.replace('USERNAME', currentUser);
     console.log('Checking WSL Plex DB path:', wslPath);
     if (require('fs').existsSync(wslPath)) {
-      console.log('✓ Using WSL Plex DB path');
+      console.log('[OK] Using WSL Plex DB path');
       return wslPath;
     }
   }
@@ -340,60 +374,19 @@ async function getSeriesFromDatabase() {
       throw new Error('Failed to load series from database');
     }
     
-    // Consolidate duplicate series by title BEFORE quality detection
+    // Consolidate duplicate series by title
     const consolidatedSeries = consolidateSeriesByTitle(result.series);
-    
-    // Add video quality detection to each series
-    const seriesWithQuality = consolidatedSeries.map(series => {
-      let videoQuality = 'Unknown';
-      let hasHDR = false;
-      let hasDolbyVision = false;
-      let detectedFrom = null;
-      
-      // Extract file paths from folders
-      const filePathStrings = series.folders || [];
-      
-      // Check file paths for quality indicators
-      for (const path of filePathStrings) {
-        const pathLower = path.toLowerCase();
-        
-        // Check for 4K/2160p indicators
-        if (pathLower.includes('2160p') || pathLower.includes('4k') || 
-            pathLower.includes('uhd') || pathLower.includes('ultra.hd')) {
-          videoQuality = '4K';
-          detectedFrom = 'file path';
-          break;
-        }
-        
-        // Check for 1080p indicators
-        if (videoQuality === 'Unknown' && pathLower.includes('1080p')) {
-          videoQuality = 'HD';
-          detectedFrom = 'file path';
-        }
-        
-        // Check for HDR/DV
-        if (pathLower.includes('hdr') || pathLower.includes('.hdr.')) {
-          hasHDR = true;
-        }
-        if (pathLower.includes('dolby') || pathLower.includes('dv') || pathLower.includes('dolbyvision')) {
-          hasDolbyVision = true;
-        }
-      }
-      
-      return {
-        ...series,
-        folders: extractSeriesFoldersSimple(filePathStrings, series.title),
-        files: filePathStrings.slice(0, 10),
-        videoQuality: videoQuality,
-        hasHDR: hasHDR,
-        hasDolbyVision: hasDolbyVision
-      };
-    });
-    
+
+    // Clean up response (don't send raw folder paths to client)
+    const cleanedSeries = consolidatedSeries.map(series => ({
+      ...series,
+      folders: []
+    }));
+
     monitoring.logPerformance('database_read', 'end');
-    
-    console.log(`Securely loaded and consolidated ${seriesWithQuality.length} unique series`);
-    return seriesWithQuality;
+
+    console.log(`Loaded and consolidated ${cleanedSeries.length} unique series`);
+    return cleanedSeries;
     
   } catch (error) {
     monitoring.logPerformance('database_read', 'error');
@@ -421,15 +414,15 @@ async function testApiConfiguration() {
   try {
     const tmdbResult = await tvApiService.testTmdbApi();
     if (tmdbResult.success) {
-      console.log('\x1b[32m    ✓ TMDb API Key: VALID\x1b[0m');
-      console.log(`\x1b[32m    ✓ Successfully fetched: ${tmdbResult.title}\x1b[0m`);
+      console.log('\x1b[32m    [OK] TMDb API Key: VALID\x1b[0m');
+      console.log(`\x1b[32m    [OK] Successfully fetched: ${tmdbResult.title}\x1b[0m`);
       results.tmdb = true;
     } else {
-      console.log('\x1b[31m    ✗ TMDb API Key: INVALID\x1b[0m');
+      console.log('\x1b[31m    [FAIL] TMDb API Key: INVALID\x1b[0m');
       console.log(`\x1b[31m    ! Error: ${tmdbResult.error}\x1b[0m`);
     }
   } catch (error) {
-    console.log('\x1b[31m    ✗ TMDb API Key: ERROR\x1b[0m');
+    console.log('\x1b[31m    [FAIL] TMDb API Key: ERROR\x1b[0m');
     console.log(`\x1b[31m    ! ${error.message}\x1b[0m`);
   }
   
@@ -440,15 +433,15 @@ async function testApiConfiguration() {
   try {
     const tvdbResult = await tvApiService.testThetvdbApi();
     if (tvdbResult.success) {
-      console.log('\x1b[32m    ✓ TheTVDB API Key: VALID\x1b[0m');
-      console.log(`\x1b[32m    ✓ Successfully fetched: ${tvdbResult.title}\x1b[0m`);
+      console.log('\x1b[32m    [OK] TheTVDB API Key: VALID\x1b[0m');
+      console.log(`\x1b[32m    [OK] Successfully fetched: ${tvdbResult.title}\x1b[0m`);
       results.thetvdb = true;
     } else {
-      console.log('\x1b[31m    ✗ TheTVDB API Key: INVALID or API Error\x1b[0m');
+      console.log('\x1b[31m    [FAIL] TheTVDB API Key: INVALID or API Error\x1b[0m');
       console.log('\x1b[33m    ! Note: TheTVDB might have authentication issues\x1b[0m');
     }
   } catch (error) {
-    console.log('\x1b[31m    ✗ TheTVDB API Key: ERROR\x1b[0m');
+    console.log('\x1b[31m    [FAIL] TheTVDB API Key: ERROR\x1b[0m');
     console.log(`\x1b[33m    ! ${error.message}\x1b[0m`);
   }
   
@@ -459,15 +452,15 @@ async function testApiConfiguration() {
   try {
     const openaiResult = await tvApiService.testOpenAiApi();
     if (openaiResult.success) {
-      console.log('\x1b[32m    ✓ OpenAI API Key: VALID\x1b[0m');
-      console.log('\x1b[32m    ✓ Model: gpt-3.5-turbo available\x1b[0m');
+      console.log('\x1b[32m    [OK] OpenAI API Key: VALID\x1b[0m');
+      console.log('\x1b[32m    [OK] Model: gpt-3.5-turbo available\x1b[0m');
       results.openai = true;
     } else {
-      console.log('\x1b[31m    ✗ OpenAI API Key: INVALID\x1b[0m');
+      console.log('\x1b[31m    [FAIL] OpenAI API Key: INVALID\x1b[0m');
       console.log(`\x1b[31m    ! Error: ${openaiResult.error}\x1b[0m`);
     }
   } catch (error) {
-    console.log('\x1b[31m    ✗ OpenAI API Key: ERROR\x1b[0m');
+    console.log('\x1b[31m    [FAIL] OpenAI API Key: ERROR\x1b[0m');
     console.log(`\x1b[31m    ! ${error.message}\x1b[0m`);
   }
   
@@ -476,16 +469,16 @@ async function testApiConfiguration() {
   console.log('\x1b[36m╚═══════════════════════════════════════════════════════════╝\x1b[0m\n');
   
   console.log('\x1b[35mAPI Status:\x1b[0m');
-  console.log(`  TMDb:      ${results.tmdb ? '\x1b[32m✓ ACTIVE\x1b[0m' : '\x1b[31m✗ INACTIVE\x1b[0m'}`);
-  console.log(`  TheTVDB:   ${results.thetvdb ? '\x1b[32m✓ ACTIVE\x1b[0m' : '\x1b[31m✗ OFFLINE\x1b[0m'}`);
-  console.log(`  OpenAI:    ${results.openai ? '\x1b[32m✓ ACTIVE\x1b[0m' : '\x1b[31m✗ INACTIVE\x1b[0m'}`);
-  console.log(`  Fallback:  \x1b[32m✓ ALWAYS AVAILABLE\x1b[0m`);
+  console.log(`  TMDb:      ${results.tmdb ? '\x1b[32m[OK] ACTIVE\x1b[0m' : '\x1b[31m[FAIL] INACTIVE\x1b[0m'}`);
+  console.log(`  TheTVDB:   ${results.thetvdb ? '\x1b[32m[OK] ACTIVE\x1b[0m' : '\x1b[31m[FAIL] OFFLINE\x1b[0m'}`);
+  console.log(`  OpenAI:    ${results.openai ? '\x1b[32m[OK] ACTIVE\x1b[0m' : '\x1b[31m[FAIL] INACTIVE\x1b[0m'}`);
+  console.log(`  Fallback:  \x1b[32m[OK] ALWAYS AVAILABLE\x1b[0m`);
   
   const hasWorkingApi = results.tmdb || results.thetvdb;
   if (hasWorkingApi) {
-    console.log('\n\x1b[32m✓ SYSTEM STATUS: OPERATIONAL\x1b[0m');
+    console.log('\n\x1b[32m[OK] SYSTEM STATUS: OPERATIONAL\x1b[0m');
   } else {
-    console.log('\n\x1b[33m⚠ WARNING: No primary APIs available. Using fallback data only.\x1b[0m');
+    console.log('\n\x1b[33m[Warning] No primary APIs available. Using fallback data only.\x1b[0m');
   }
   
   console.log('\nAPI tests completed. Starting server...\n');
@@ -535,25 +528,63 @@ async function saveCache() {
 
 // API endpoints
 app.get('/api/test-connection', async (req, res) => {
-  try {
-    const dbPath = getPlexDbPath();
-    res.json({ 
-      success: true, 
-      message: 'Plex database found',
-      path: dbPath 
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
-    });
-  }
+    try {
+        if (isApiMode()) {
+            const plexApiService = container.get('plexApiService');
+            const result = await plexApiService.testConnection();
+            res.json({
+                success: true,
+                message: `Connected to Plex server: ${result.name}`,
+                serverName: result.name,
+                version: result.version,
+                mode: 'api'
+            });
+        } else {
+            const dbPath = getPlexDbPath();
+            res.json({
+                success: true,
+                message: 'Plex database found',
+                path: dbPath,
+                mode: 'sqlite'
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 app.post('/api/load-database', validateDatabasePath('dbPath'), async (req, res) => {
   // Set timeout for large database operations
   res.setTimeout(120000); // 120 seconds timeout for large databases
-  
+
+  if (isApiMode()) {
+    try {
+        const plexApiService = container.get('plexApiService');
+        const libraries = await plexApiService.getLibraries();
+        let allSeries = [];
+        for (const lib of libraries) {
+            const series = await plexApiService.getAllSeries(lib.id);
+            allSeries = allSeries.concat(series);
+        }
+        const consolidated = consolidateSeriesByTitle(allSeries);
+        return res.json({
+            success: true,
+            series: consolidated,
+            count: consolidated.length,
+            mode: 'api'
+        });
+    } catch (error) {
+        trackError('api_load', error.message);
+        return res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+  }
+
   try {
     console.log('Loading database with secure service...');
     
@@ -666,34 +697,59 @@ app.post('/api/load-database', validateDatabasePath('dbPath'), async (req, res) 
 });
 
 app.post('/api/get-series', async (req, res) => {
-  try {
-    const series = await getSeriesFromDatabase();
-    res.json(series);
-  } catch (error) {
-    trackError('database_read', error.message);
-    
-    // Better error message for production
-    if (error.message.includes('Plex database not found')) {
-      res.status(500).json({ 
-        error: error.message,
-        solution: {
-          title: "Plex Database nicht gefunden",
-          steps: [
-            "1. Stelle sicher, dass Plex Media Server läuft",
-            "2. Überprüfe den Pfad in config.json unter 'database.customPath'",
-            "3. Standardpfade: Windows: C:\\Users\\[user]\\AppData\\Local\\Plex Media Server\\...",
-            "4. Oder setze PLEX_DB_PATH Umgebungsvariable"
-          ]
+    try {
+        if (isApiMode()) {
+            const plexApiService = container.get('plexApiService');
+            const libraries = await plexApiService.getLibraries();
+            let allSeries = [];
+            for (const lib of libraries) {
+                const series = await plexApiService.getAllSeries(lib.id);
+                allSeries = allSeries.concat(series);
+            }
+            const consolidated = consolidateSeriesByTitle(allSeries);
+            res.json(consolidated);
+        } else {
+            const series = await getSeriesFromDatabase();
+            res.json(series);
         }
-      });
-    } else {
-      res.status(500).json({ error: error.message });
+    } catch (error) {
+        trackError('database_read', error.message);
+        if (error.message.includes('Plex database not found')) {
+            res.status(500).json({
+                error: error.message,
+                solution: {
+                    title: "Plex Database nicht gefunden",
+                    steps: [
+                        "1. Stelle sicher, dass Plex Media Server läuft",
+                        "2. Überprüfe den Pfad in config.json unter 'database.customPath'",
+                        "3. Standardpfade: Windows: C:\\Users\\[user]\\AppData\\Local\\Plex Media Server\\...",
+                        "4. Oder setze PLEX_DB_PATH Umgebungsvariable"
+                    ]
+                }
+            });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     }
-  }
 });
 
 // Helper endpoint to find Plex database
 app.get('/api/find-plex-database', async (req, res) => {
+  if (isApiMode()) {
+    try {
+        const plexApiService = container.get('plexApiService');
+        const libraries = await plexApiService.getLibraries();
+        return res.json({
+            success: true,
+            mode: 'api',
+            libraries: libraries,
+            message: 'Running in Plex API mode'
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+
   try {
     const platform = os.platform();
     const username = os.userInfo().username;
@@ -978,12 +1034,20 @@ app.get('/api/load-cache', async (req, res) => {
 
 // Error tracking endpoints
 app.get('/api/error-stats', (req, res) => {
-  res.json(getErrorStats());
+  try {
+    res.json(getErrorStats());
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/clear-errors', (req, res) => {
-  clearErrors();
-  res.json({ success: true, message: 'Error log cleared' });
+  try {
+    clearErrors();
+    res.json({ success: true, message: 'Error log cleared' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Database cleanup endpoint
@@ -1017,7 +1081,7 @@ app.post('/api/cleanup-database', async (req, res) => {
       await fs.rm(tempDir, { recursive: true, force: true });
     }
     
-    console.log('✅ Cache cleanup completed');
+    console.log('[OK] Cache cleanup completed');
     
     res.json({ 
       success: true, 
@@ -1049,18 +1113,30 @@ app.get('/api/export-errors', async (req, res) => {
 
 // Monitoring endpoints
 app.get('/api/monitoring/report', (req, res) => {
-  const report = monitoring.generateReport();
-  res.json(report);
+  try {
+    const report = monitoring.generateReport();
+    res.json(report);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/api/monitoring/dashboard', (req, res) => {
-  const data = monitoring.getDashboardData();
-  res.json(data);
+  try {
+    const data = monitoring.getDashboardData();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.post('/api/monitoring/reset', async (req, res) => {
-  await monitoring.reset();
-  res.json({ success: true, message: 'Monitoring data reset' });
+  try {
+    await monitoring.reset();
+    res.json({ success: true, message: 'Monitoring data reset' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // API Settings endpoints
@@ -1077,27 +1153,25 @@ app.get('/api/settings', async (req, res) => {
       tmdb: {
         name: 'The Movie Database (TMDb)',
         configured: !!(apiConfigs.tmdb?.apiKey && apiConfigs.tmdb.apiKey.trim()),
-        key: apiConfigs.tmdb?.apiKey ? 
-          (showFull ? apiConfigs.tmdb.apiKey : apiConfigs.tmdb.apiKey.slice(0, 8) + '...' + apiConfigs.tmdb.apiKey.slice(-4)) : '',
-        maskedKey: apiConfigs.tmdb?.apiKey ? apiConfigs.tmdb.apiKey.slice(0, 8) + '...' + apiConfigs.tmdb.apiKey.slice(-4) : '',
+        key: showFull ? (apiConfigs.tmdb?.apiKey || '') : maskApiKey(apiConfigs.tmdb?.apiKey),
+        maskedKey: maskApiKey(apiConfigs.tmdb?.apiKey),
         status: 'unknown',
         testResult: null
       },
       thetvdb: {
         name: 'TheTVDB',
         configured: !!(apiConfigs.thetvdb?.apiKey && apiConfigs.thetvdb.apiKey.trim()),
-        key: apiConfigs.thetvdb?.apiKey ? 
-          (showFull ? apiConfigs.thetvdb.apiKey : apiConfigs.thetvdb.apiKey.slice(0, 8) + '...' + apiConfigs.thetvdb.apiKey.slice(-4)) : '',
-        maskedKey: apiConfigs.thetvdb?.apiKey ? apiConfigs.thetvdb.apiKey.slice(0, 8) + '...' + apiConfigs.thetvdb.apiKey.slice(-4) : '',
+        pinConfigured: !!(apiConfigs.thetvdb?.pin && apiConfigs.thetvdb.pin.trim()),
+        key: showFull ? (apiConfigs.thetvdb?.apiKey || '') : maskApiKey(apiConfigs.thetvdb?.apiKey),
+        maskedKey: maskApiKey(apiConfigs.thetvdb?.apiKey),
         status: 'unknown',
         testResult: null
       },
       openai: {
         name: 'OpenAI (GPT)',
         configured: !!(apiConfigs.openai?.apiKey && apiConfigs.openai.apiKey.trim()),
-        key: apiConfigs.openai?.apiKey ? 
-          (showFull ? apiConfigs.openai.apiKey : apiConfigs.openai.apiKey.slice(0, 7) + '...' + apiConfigs.openai.apiKey.slice(-4)) : '',
-        maskedKey: apiConfigs.openai?.apiKey ? apiConfigs.openai.apiKey.slice(0, 7) + '...' + apiConfigs.openai.apiKey.slice(-4) : '',
+        key: showFull ? (apiConfigs.openai?.apiKey || '') : maskApiKey(apiConfigs.openai?.apiKey, 7),
+        maskedKey: maskApiKey(apiConfigs.openai?.apiKey, 7),
         status: 'unknown',
         testResult: null,
         optional: true
@@ -1105,9 +1179,8 @@ app.get('/api/settings', async (req, res) => {
       omdb: {
         name: 'OMDb (Optional)',
         configured: !!(apiConfigs.omdb?.apiKey && apiConfigs.omdb.apiKey.trim()),
-        key: apiConfigs.omdb?.apiKey ? 
-          (showFull ? apiConfigs.omdb.apiKey : apiConfigs.omdb.apiKey.slice(0, 8) + '...' + apiConfigs.omdb.apiKey.slice(-4)) : '',
-        maskedKey: apiConfigs.omdb?.apiKey ? apiConfigs.omdb.apiKey.slice(0, 8) + '...' + apiConfigs.omdb.apiKey.slice(-4) : '',
+        key: showFull ? (apiConfigs.omdb?.apiKey || '') : maskApiKey(apiConfigs.omdb?.apiKey),
+        maskedKey: maskApiKey(apiConfigs.omdb?.apiKey),
         status: 'unknown',
         testResult: null,
         optional: true
@@ -1152,20 +1225,26 @@ app.get('/api/settings', async (req, res) => {
 
 app.post('/api/settings', validateApiKeys, async (req, res) => {
   try {
-    const { tmdb, thetvdb, openai, omdb } = req.body;
-    
+    const { tmdb, thetvdb, thetvdbPin, openai, omdb } = req.body;
+
     // Ensure config is loaded
     await config.init();
-    
+
     // Prepare API configurations to update
     const apiConfigs = {};
-    
+
     if (tmdb && tmdb.trim()) {
       apiConfigs.tmdb = { apiKey: tmdb.trim(), enabled: true };
     }
-    
+
     if (thetvdb && thetvdb.trim()) {
-      apiConfigs.thetvdb = { apiKey: thetvdb.trim(), enabled: true };
+      apiConfigs.thetvdb = { apiKey: thetvdb.trim(), pin: (thetvdbPin || '').trim(), enabled: true };
+    } else if (thetvdbPin && thetvdbPin.trim()) {
+      // Allow updating just the PIN without changing the API key
+      const currentApis = config.getApiConfigs();
+      if (currentApis.thetvdb?.apiKey) {
+        apiConfigs.thetvdb = { ...currentApis.thetvdb, pin: thetvdbPin.trim() };
+      }
     }
     
     if (openai && openai.trim()) {
@@ -1179,7 +1258,7 @@ app.post('/api/settings', validateApiKeys, async (req, res) => {
     // Update configuration
     if (Object.keys(apiConfigs).length > 0) {
       await config.updateApiConfigs(apiConfigs);
-      console.log('✅ API configuration updated successfully');
+      console.log('[OK] API configuration updated successfully');
     }
     
     res.json({ success: true, message: 'Settings saved successfully' });
@@ -1201,6 +1280,52 @@ app.get('/api/test-apis', async (req, res) => {
   }
 });
 
+// Plex API mode endpoints
+app.get('/api/plex/libraries', async (req, res) => {
+    try {
+        if (!isApiMode()) {
+            return res.status(400).json({ error: 'Not in Plex API mode' });
+        }
+        const plexApiService = container.get('plexApiService');
+        const libraries = await plexApiService.getLibraries();
+        res.json({ success: true, libraries });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/plex/test', async (req, res) => {
+    try {
+        const { url, token } = req.body;
+        if (!url || !token) {
+            return res.status(400).json({ error: 'URL and token are required' });
+        }
+        const axios = require('axios');
+        const response = await axios.get(`${url.replace(/\/+$/, '')}/?X-Plex-Token=${token}`, {
+            headers: { 'Accept': 'application/json' },
+            timeout: 10000
+        });
+        const server = response.data.MediaContainer;
+        res.json({
+            success: true,
+            serverName: server.friendlyName || server.machineIdentifier,
+            version: server.version
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.response?.status === 401 ? 'Invalid token' : error.message
+        });
+    }
+});
+
+app.get('/api/config/mode', async (req, res) => {
+    res.json({
+        mode: isApiMode() ? 'api' : 'sqlite',
+        isHomeAssistant: isHomeAssistant()
+    });
+});
+
 // Start server
 async function startServer() {
   try {
@@ -1210,10 +1335,10 @@ async function startServer() {
     
     // Print API status
     console.log('API Keys Status:');
-    console.log(`- TMDb: ${apiConfigs.tmdb?.apiKey ? '✅ Configured' : '❌ Missing'}`);
-    console.log(`- TheTVDB: ${apiConfigs.thetvdb?.apiKey ? '✅ Configured' : '❌ Missing'}`);
-    console.log(`- OpenAI: ${apiConfigs.openai?.apiKey ? '✅ Configured' : '❌ Missing (Optional)'}`);
-    console.log(`- OMDb: ${apiConfigs.omdb?.apiKey ? '✅ Configured' : '❌ Missing (Optional)'}`);
+    console.log(`- TMDb: ${apiConfigs.tmdb?.apiKey ? '[OK] Configured' : '[Missing] Not configured'}`);
+    console.log(`- TheTVDB: ${apiConfigs.thetvdb?.apiKey ? '[OK] Configured' : '[Missing] Not configured'}`);
+    console.log(`- OpenAI: ${apiConfigs.openai?.apiKey ? '[OK] Configured' : '[Missing] Not configured (Optional)'}`);
+    console.log(`- OMDb: ${apiConfigs.omdb?.apiKey ? '[OK] Configured' : '[Missing] Not configured (Optional)'}`);
     
     // Test APIs
     await testApiConfiguration();
@@ -1223,6 +1348,15 @@ async function startServer() {
     
     // Initialize monitoring
     // Monitoring is already initialized via DI Container
+
+    // Global error handler - prevents stack trace leaks
+    app.use((err, req, res, next) => {
+      console.error('Unhandled error:', err.message);
+      const status = err.status || err.statusCode || 500;
+      res.status(status).json({
+        error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message
+      });
+    });
 
     // Create HTTP server
     const http = require('http');
@@ -1234,23 +1368,28 @@ async function startServer() {
     
     // WebSocket status endpoint
     app.get('/api/websocket/status', (req, res) => {
-      res.json({
-        success: true,
-        status: websocketService.getStatus()
-      });
+      try {
+        res.json({
+          success: true,
+          status: websocketService.getStatus()
+        });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
     });
     
     // Start listening
-    server.listen(PORT, () => {
+    const HOST = isHomeAssistant() ? '0.0.0.0' : 'localhost';
+    server.listen(PORT, HOST, () => {
       console.log('╔═══════════════════════════════════════════════════════╗');
       console.log('║  Series Complete for Plex by Akustikrausch läuft auf http://localhost:3000  ║');
       console.log('╚═══════════════════════════════════════════════════════╝');
       console.log('\nDer Browser sollte sich automatisch öffnen...\n');
       console.log('Monitoring active at /api/monitoring/dashboard');
       console.log('WebSocket active at ws://localhost:3000/ws');
-      
-      // Open browser on Windows
-      if (process.platform === 'win32') {
+
+      // Open browser on Windows (not in HA mode)
+      if (process.platform === 'win32' && !isHomeAssistant()) {
         require('child_process').exec('start http://localhost:3000');
       }
     });

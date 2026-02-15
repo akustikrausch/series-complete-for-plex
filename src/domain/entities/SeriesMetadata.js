@@ -195,11 +195,11 @@ class SeriesMetadata {
    */
   getConfidenceDisplay() {
     const confidenceMap = {
-      'high': '🟢 High',
-      'medium': '🟡 Medium',
-      'low': '🔴 Low'
+      'high': '[High]',
+      'medium': '[Medium]',
+      'low': '[Low]'
     };
-    return confidenceMap[this.confidence] || '❓ Unknown';
+    return confidenceMap[this.confidence] || '[Unknown]';
   }
 
   /**

@@ -33,7 +33,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-console.log(`🔒 Starting SECURE server in ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'} mode`);
+console.log(`[Security] Starting SECURE server in ${isDevelopment ? 'DEVELOPMENT' : 'PRODUCTION'} mode`);
 
 // Trust proxy for rate limiting and IP detection
 app.set('trust proxy', 1);
@@ -42,29 +42,29 @@ app.set('trust proxy', 1);
 
 // 1. Security Headers with Helmet
 app.use(require('helmet')(SecurityConfig.getHelmetConfig(isDevelopment)));
-console.log('✅ Security headers configured with Helmet');
+console.log('[OK] Security headers configured with Helmet');
 
 // 2. Rate Limiting
 const rateLimiters = SecurityConfig.createRateLimiters();
 app.use(rateLimiters.general); // Apply general rate limiting to all requests
-console.log('✅ Rate limiting enabled for all endpoints');
+console.log('[OK] Rate limiting enabled for all endpoints');
 
 // 3. Security Logging
 app.use(SecurityConfig.securityLogger);
-console.log('✅ Security logging middleware active');
+console.log('[OK] Security logging middleware active');
 
 // 4. CORS with strict configuration
 app.use(require('cors')(SecurityConfig.getCorsConfig(process.env.NODE_ENV)));
-console.log('✅ CORS configured with strict origin policy');
+console.log('[OK] CORS configured with strict origin policy');
 
 // 5. JSON Body Parser with security checks
 app.use(express.json(SecurityConfig.getJsonConfig()));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-console.log('✅ JSON parser configured with security validation');
+console.log('[OK] JSON parser configured with security validation');
 
 // 6. Input sanitization middleware
 app.use(sanitizeStrings);
-console.log('✅ Input sanitization active');
+console.log('[OK] Input sanitization active');
 
 // 7. Static files with security
 app.use(express.static('public', {
@@ -77,15 +77,15 @@ app.use(express.static('public', {
     res.setHeader('Cache-Control', 'public, max-age=3600');
   }
 }));
-console.log('✅ Static file serving configured securely');
+console.log('[OK] Static file serving configured securely');
 
 // Clean Architecture API Routes
 try {
   const apiRoutes = configureRoutes(container);
   app.use('/api/v2', rateLimiters.api, apiRoutes); // Apply API rate limiting
-  console.log('✅ Clean Architecture routes configured successfully');
+  console.log('[OK] Clean Architecture routes configured successfully');
 } catch (error) {
-  console.error('❌ Failed to configure Clean Architecture routes:', error.message);
+  console.error('[Error] Failed to configure Clean Architecture routes:', error.message);
   console.log('Continuing with legacy routes...');
 }
 
@@ -260,7 +260,7 @@ function consolidateSeriesByTitle(series) {
   });
   
   const result = Array.from(consolidated.values());
-  console.log(`Series consolidation: ${series.length} → ${result.length} (removed ${duplicatesFound} duplicates)`);
+  console.log(`Series consolidation: ${series.length} -> ${result.length} (removed ${duplicatesFound} duplicates)`);
   
   return result;
 }
@@ -455,16 +455,16 @@ app.post('/api/load-database', async (req, res) => {
   });
 });
 
-console.log('🔍 EXECUTION CHECKPOINT: After /api/get-series route');
+console.log('[Debug] EXECUTION CHECKPOINT: After /api/get-series route');
 
 // TEST ROUTE
-console.log('🔍 REGISTERING TEST ROUTE');
+console.log('[Debug] REGISTERING TEST ROUTE');
 app.get('/api/test-route', (req, res) => {
   res.json({ success: true, message: 'Test route works!' });
 });
 
 // Load database with enhanced security - CRITICAL ENDPOINT
-console.log('🔍 REGISTERING LOAD DATABASE ROUTE');
+console.log('[Debug] REGISTERING LOAD DATABASE ROUTE');
 app.post('/api/load-database', async (req, res) => {
   // Set timeout for large database operations
   res.setTimeout(120000); // 120 seconds timeout for large databases
@@ -601,12 +601,12 @@ app.use((req, res) => {
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
-  console.log('🔒 SIGTERM received, shutting down gracefully');
+  console.log('[Security] SIGTERM received, shutting down gracefully');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('🔒 SIGINT received, shutting down gracefully');
+  console.log('[Security] SIGINT received, shutting down gracefully');
   process.exit(0);
 });
 
@@ -618,36 +618,36 @@ async function startSecureServer() {
     
     // Validate environment
     if (!isDevelopment && !process.env.ALLOWED_ORIGINS) {
-      console.error('❌ SECURITY ERROR: ALLOWED_ORIGINS not configured for production');
+      console.error('[Error] SECURITY ERROR: ALLOWED_ORIGINS not configured for production');
       process.exit(1);
     }
     
     // Start server
     const server = app.listen(PORT, () => {
       console.log('');
-      console.log('🔒╔═══════════════════════════════════════════════════════════╗');
-      console.log('🔒║  SECURE Plex Series Checker running on http://localhost:' + PORT + '  ║');
-      console.log('🔒╚═══════════════════════════════════════════════════════════╝');
+      console.log('[Security] ╔═══════════════════════════════════════════════════════════╗');
+      console.log('[Security] ║  SECURE Plex Series Checker running on http://localhost:' + PORT + '  ║');
+      console.log('[Security] ╚═══════════════════════════════════════════════════════════╝');
       console.log('');
-      console.log('🛡️  Security Features Active:');
-      console.log('   ✅ Helmet Security Headers');
-      console.log('   ✅ Rate Limiting');
-      console.log('   ✅ CORS Protection');
-      console.log('   ✅ Input Sanitization');
-      console.log('   ✅ Security Logging');
-      console.log('   ✅ Error Tracking');
-      console.log('   ✅ API Routes Active');
+      console.log('[Security] Security Features Active:');
+      console.log('   [OK] Helmet Security Headers');
+      console.log('   [OK] Rate Limiting');
+      console.log('   [OK] CORS Protection');
+      console.log('   [OK] Input Sanitization');
+      console.log('   [OK] Security Logging');
+      console.log('   [OK] Error Tracking');
+      console.log('   [OK] API Routes Active');
       console.log('');
     });
     
     // Handle server errors
     server.on('error', (error) => {
       trackSecurityError('SERVER_ERROR', error.message);
-      console.error('❌ Server error:', error);
+      console.error('[Error] Server error:', error);
     });
     
   } catch (error) {
-    console.error('❌ Failed to start secure server:', error);
+    console.error('[Error] Failed to start secure server:', error);
     process.exit(1);
   }
 }

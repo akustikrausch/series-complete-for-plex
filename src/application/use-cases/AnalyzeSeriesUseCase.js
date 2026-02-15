@@ -72,7 +72,7 @@ class AnalyzeSeriesUseCase {
         metadata = await this.getCachedMetadata(series.id, series.title);
         if (metadata) {
           fromCache = true;
-          console.log(`✅ Using cached data for: ${series.title}`);
+          console.log(`[OK] Using cached data for: ${series.title}`);
           
           // Update WebSocket progress
           this.updateProgress(taskId, 1, { cached: true });
@@ -139,7 +139,7 @@ class AnalyzeSeriesUseCase {
 
       // Check if cached data is still fresh
       if (metadata && this.isCacheStale(metadata)) {
-        console.log(`⚠️ Cache is stale for ${seriesTitle}, will refresh`);
+        console.log(`[Warning] Cache is stale for ${seriesTitle}, will refresh`);
         return null;
       }
 
@@ -183,7 +183,7 @@ class AnalyzeSeriesUseCase {
       });
 
       if (!metadata) {
-        console.log(`❌ No metadata found for: ${series.title}`);
+        console.log(`[Error] No metadata found for: ${series.title}`);
         return null;
       }
 
@@ -199,7 +199,7 @@ class AnalyzeSeriesUseCase {
           });
           
           if (enhancedMetadata) {
-            console.log(`🤖 Enhanced metadata with AI for: ${series.title}`);
+            console.log(`[Info] Enhanced metadata with AI for: ${series.title}`);
             return enhancedMetadata;
           }
         } catch (aiError) {
@@ -230,7 +230,7 @@ class AnalyzeSeriesUseCase {
       metadata.lastUpdated = new Date();
       
       await this.cacheRepository.save(metadata);
-      console.log(`💾 Cached analysis result for: ${seriesTitle}`);
+      console.log(`[OK] Cached analysis result for: ${seriesTitle}`);
     } catch (error) {
       console.warn(`Failed to cache result for ${seriesTitle}:`, error.message);
       // Don't throw - caching failure shouldn't fail the analysis

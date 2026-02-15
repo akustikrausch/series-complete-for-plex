@@ -341,7 +341,7 @@ class SecurityConfig {
     );
 
     if (isSuspicious) {
-      console.warn(`🚨 SECURITY ALERT - Suspicious request from ${ip}:`, {
+      console.warn(`[SECURITY ALERT] Suspicious request from ${ip}:`, {
         method: req.method,
         url: url,
         userAgent: userAgent,
@@ -353,7 +353,7 @@ class SecurityConfig {
     res.on('finish', () => {
       const duration = Date.now() - startTime;
       if (duration > 5000) { // Log slow requests
-        console.warn(`⚠️ SLOW REQUEST from ${ip}: ${req.method} ${url} - ${duration}ms`);
+        console.warn(`[Warning] SLOW REQUEST from ${ip}: ${req.method} ${url} - ${duration}ms`);
       }
     });
 

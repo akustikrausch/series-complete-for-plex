@@ -73,7 +73,7 @@ class CleanupDatabaseUseCase {
         }
       }
 
-      console.log('✅ Cache cleanup completed');
+      console.log('[OK] Cache cleanup completed');
 
       const hasErrors = results.errors.length > 0;
       
@@ -110,7 +110,7 @@ class CleanupDatabaseUseCase {
       // Recreate empty directory
       await fsp.mkdir(apiCacheDir, { recursive: true });
       
-      console.log('✅ API cache directory cleared');
+      console.log('[OK] API cache directory cleared');
       return { success: true };
       
     } catch (error) {
@@ -151,13 +151,13 @@ class CleanupDatabaseUseCase {
         }
         
         await fsp.unlink(cacheFile);
-        console.log(`✅ Legacy analysis cache cleared (${removedCount} entries)`);
+        console.log(`[OK] Legacy analysis cache cleared (${removedCount} entries)`);
       }
       
       // Clear repository cache using the cache repository
       if (this.cacheRepository && typeof this.cacheRepository.clear === 'function') {
         await this.cacheRepository.clear();
-        console.log('✅ Repository cache cleared');
+        console.log('[OK] Repository cache cleared');
       }
       
       return { 
@@ -191,7 +191,7 @@ class CleanupDatabaseUseCase {
       
       if (fs.existsSync(tempDir)) {
         await fsp.rm(tempDir, { recursive: true, force: true });
-        console.log('✅ Temporary files cleared');
+        console.log('[OK] Temporary files cleared');
       }
       
       return { success: true };
@@ -214,7 +214,7 @@ class CleanupDatabaseUseCase {
       // Clear cache repository memory cache
       if (this.cacheRepository && typeof this.cacheRepository.clearMemoryCache === 'function') {
         await this.cacheRepository.clearMemoryCache();
-        console.log('✅ Memory cache cleared');
+        console.log('[OK] Memory cache cleared');
       }
       
       return { success: true };

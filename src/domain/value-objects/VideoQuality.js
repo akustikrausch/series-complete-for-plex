@@ -89,12 +89,12 @@ class VideoQuality {
    */
   getDisplayName() {
     const displayMap = {
-      '4K UHD': '🎬 4K Ultra HD',
-      '1080p': '📺 Full HD (1080p)',
-      '720p': '📻 HD (720p)',
-      '480p': '📼 SD (480p)',
-      '360p': '📱 Low Quality',
-      'Unknown': '❓ Unknown'
+      '4K UHD': '4K Ultra HD',
+      '1080p': 'Full HD (1080p)',
+      '720p': 'HD (720p)',
+      '480p': 'SD (480p)',
+      '360p': 'Low Quality',
+      'Unknown': 'Unknown'
     };
     return displayMap[this.value] || this.value;
   }

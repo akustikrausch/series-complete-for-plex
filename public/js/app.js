@@ -35,26 +35,14 @@
         
         // Ensure critical buttons work (fallback for event delegation)
         setTimeout(() => {
-            // Settings button
-            const settingsBtn = document.getElementById('settings-btn');
-            if (settingsBtn && !settingsBtn.hasAttribute('data-listener-attached')) {
-                settingsBtn.setAttribute('data-listener-attached', 'true');
-                settingsBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    console.log('⚙️ Settings button clicked (fallback)');
-                    if (window.openSettings) {
-                        window.openSettings();
-                    }
-                });
-            }
-            
-            // Scan button
-            const scanBtn = document.getElementById('scan-btn');
+            // Settings button — handled by button-fix.js (no duplicate handler here)
+
+            // Scan button (fallback - primary handler in button-fix.js)
+            const scanBtn = document.getElementById('scan-library-btn');
             if (scanBtn && !scanBtn.hasAttribute('data-listener-attached')) {
                 scanBtn.setAttribute('data-listener-attached', 'true');
                 scanBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log('🔍 Scan button clicked (fallback)');
                     if (window.handleScanLibrary) {
                         window.handleScanLibrary();
                     }
@@ -64,14 +52,6 @@
             // Analyze button handler is now in button-fix.js - skip this
         }, 100);
         
-    // Debug: Log available functions
-    console.log('[DEBUG] Available window functions:');
-    console.log('- analyzeAllSeries:', typeof window.analyzeAllSeries);
-    console.log('- clearCache:', typeof window.clearCache);
-    console.log('- cleanupDatabase:', typeof window.cleanupDatabase);
-    console.log('- showClearCacheModal:', typeof window.showClearCacheModal);
-    console.log('- showCleanupDatabaseModal:', typeof window.showCleanupDatabaseModal);
-
     });
 
     // Debounce function for performance
@@ -86,15 +66,8 @@
     function init() {
         console.log('Series Complete for Plex initialized');
         
-        // Global modal close handler and dynamic button handler
+        // Dynamic button handler (close-modal is handled globally by button-fix.js)
         document.addEventListener('click', function(e) {
-            // Check if clicked element or its parent has modal-close class or data-action="close-modal"
-            if (e.target.matches('[data-action="close-modal"]') || 
-                e.target.closest('[data-action="close-modal"]')) {
-                const modal = e.target.closest('.fixed');
-                if (modal) modal.remove();
-            }
-            
             // Handle dynamic analyze series buttons
             const analyzeBtn = e.target.closest('[data-action="analyze-series"]');
             if (analyzeBtn) {
@@ -138,11 +111,11 @@
         
         // Global test function for console debugging
         window.testScanButton = function() {
-            console.log('🧪 Testing scan button manually...');
+            console.log('[Test] Testing scan button manually...');
             const btn = document.getElementById('scan-library-btn');
-            console.log('🧪 Button found:', btn);
+            console.log('[Test] Button found:', btn);
             if (btn) {
-                console.log('🧪 Triggering click...');
+                console.log('[Test] Triggering click...');
                 btn.click();
             }
         };
@@ -152,7 +125,13 @@
         
         loadFromCache(); // Load cached series on page load
         updateUI();
-        
+
+        // If no cached series found, auto-load from database
+        if (state.series.length === 0) {
+            console.log('[Init] No cache found, auto-loading from database...');
+            loadDatabase();
+        }
+
         // Debounced resize handler
         const handleResize = debounce(() => {
             // Keep page size at 80 for all screen sizes for better overview
@@ -200,10 +179,18 @@
                 e.preventDefault();
                 openSettings();
             }
-            // Esc = Close modals
+            // Esc = Close modals (skip hidden panels and persistent elements)
             else if (e.key === 'Escape') {
-                const modal = document.querySelector('.fixed.inset-0');
-                if (modal) modal.remove();
+                // Close advanced search panel by hiding (not removing)
+                const advPanel = document.getElementById('advanced-search-panel');
+                if (advPanel && !advPanel.classList.contains('hidden')) {
+                    advPanel.classList.add('hidden');
+                    return;
+                }
+                // Close the topmost visible dynamically-created modal
+                const modals = document.querySelectorAll('.fixed.inset-0:not(.hidden):not(#advanced-search-panel)');
+                const topModal = modals[modals.length - 1];
+                if (topModal) topModal.remove();
             }
         });
     }
@@ -254,14 +241,28 @@
     
     // Save to cache
     window.saveToCache = function() {
-        console.log(`[Cache] Saving ${state.series.length} series to localStorage...`);
         try {
             localStorage.setItem('seriesCompleteCache', JSON.stringify({
                 series: state.series,
                 timestamp: Date.now()
             }));
         } catch (error) {
-            console.error('Failed to save cache:', error);
+            if (error.name === 'QuotaExceededError') {
+                console.warn('[Cache] Storage full, clearing old caches...');
+                localStorage.removeItem('statisticsCache');
+                localStorage.removeItem('searchHistory');
+                localStorage.removeItem('searchPresets');
+                try {
+                    localStorage.setItem('seriesCompleteCache', JSON.stringify({
+                        series: state.series,
+                        timestamp: Date.now()
+                    }));
+                } catch (retryError) {
+                    console.error('[Cache] Still full after cleanup:', retryError);
+                }
+            } else {
+                console.error('[Cache] Failed to save:', error);
+            }
         }
     }
 
@@ -403,7 +404,7 @@
             // Add single clean listener
             newScanBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                console.log('🔍 Scan button clicked');
+                console.log('[Scan] button clicked');
                 handleScanLibrary();
             });
         }
@@ -479,11 +480,11 @@
     // Handle scan library button click - FIXED with debounce
     let scanInProgress = false;
     window.handleScanLibrary = async function() {
-        console.log('🔍 handleScanLibrary called!');
+        console.log('[Scan] handleScanLibrary called!');
         
         // Prevent multiple simultaneous scans
         if (scanInProgress) {
-            console.log('⚠️ Scan already in progress, ignoring duplicate call');
+            console.log('[Scan] already in progress, ignoring duplicate call');
             return;
         }
         
@@ -494,7 +495,7 @@
         const scanText = document.getElementById('scan-text');
         const scanTextShort = document.getElementById('scan-text-short');
         
-        console.log('🔍 Button elements:', { scanIcon, scanSpinner, scanBtn, scanText, scanTextShort });
+        console.log('[Scan] Button elements:', { scanIcon, scanSpinner, scanBtn, scanText, scanTextShort });
         
         if (state.isLoading) {
             // Stop the scan
@@ -673,8 +674,6 @@
                     if (progressContainer) {
                         progressContainer.classList.add('hidden');
                     }
-                    showNotification('success', `Loaded ${data.series.length} series from database`);
-                    
                     // Track scan performance for analytics dashboard
                     const scanEndTime = Date.now();
                     const scanDuration = scanEndTime - (window.scanStartTime || scanEndTime - 5000);
@@ -967,7 +966,6 @@
         // Check if already analyzed
         const series = state.series.find(s => s.id === seriesId);
         if (series && series.totalEpisodes) {
-            showNotification('info', 'Already analyzed');
             return;
         }
         
@@ -1230,6 +1228,16 @@
                 const bYear = b.year || (b.originally_available_at ? new Date(b.originally_available_at).getFullYear() : 0);
                 return aYear - bYear;
             },
+            'date-desc': (a, b) => {
+                const aDate = a.originally_available_at ? new Date(a.originally_available_at).getTime() : 0;
+                const bDate = b.originally_available_at ? new Date(b.originally_available_at).getTime() : 0;
+                return bDate - aDate;
+            },
+            'date-asc': (a, b) => {
+                const aDate = a.originally_available_at ? new Date(a.originally_available_at).getTime() : 0;
+                const bDate = b.originally_available_at ? new Date(b.originally_available_at).getTime() : 0;
+                return aDate - bDate;
+            },
             'quality-desc': (a, b) => getQualityScore(b) - getQualityScore(a),
             'missing-desc': (a, b) => getMissingCount(b) - getMissingCount(a),
             'missing-asc': (a, b) => getMissingCount(a) - getMissingCount(b),
@@ -1380,18 +1388,15 @@
     window.setFilter = function(filter, event) {
         state.currentFilter = filter;
         state.currentPage = 1; // Reset to first page on filter change
-        
-        // Update button states
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('bg-primary-600', 'text-white');
-            btn.classList.add('bg-plex-gray', 'text-plex-white');
+
+        // Update button states using the CSS .active class
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+            const isActive = btn.getAttribute('data-filter') === filter;
+            btn.classList.toggle('active', isActive);
+            btn.classList.toggle('text-surface-400', !isActive);
+            btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
-        
-        if (event && event.target) {
-            event.target.classList.remove('bg-plex-gray', 'text-plex-white');
-            event.target.classList.add('bg-primary-600', 'text-white');
-        }
-        
+
         filterSeries();
     };
 
@@ -1635,16 +1640,6 @@
         `;
         
         document.body.appendChild(modal);
-
-        // Direct close button handler (more reliable than delegated)
-        const closeBtn = modal.querySelector('[data-action="close-modal"]');
-        if (closeBtn) {
-            closeBtn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                modal.remove();
-            };
-        }
     };
 
     // Refresh series card after analysis
@@ -1765,34 +1760,19 @@
         `;
         
         document.body.appendChild(modal);
-        
-        // Add animation styles if not already present
-        if (!document.getElementById('modal-animations')) {
-            const style = document.createElement('style');
-            style.id = 'modal-animations';
-            style.textContent = `
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                @keyframes slideUp {
-                    from { 
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to { 
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                .animate-fade-in {
-                    animation: fadeIn 0.2s ease-out;
-                }
-                .animate-slide-up {
-                    animation: slideUp 0.3s ease-out;
-                }
-            `;
-            document.head.appendChild(style);
+
+        // Backdrop click to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+
+        // Re-analyze All button handler
+        const reanalyzeBtn = modal.querySelector('[data-action="analyze-all-series"]');
+        if (reanalyzeBtn) {
+            reanalyzeBtn.addEventListener('click', () => {
+                modal.remove();
+                analyzeAllSeriesMain(true);
+            });
         }
     }
     
@@ -1913,7 +1893,6 @@
         let seriesToAnalyze;
         if (forceReanalyze) {
             seriesToAnalyze = state.series;
-            showNotification('info', 'Re-analyzing all series...');
         } else {
             seriesToAnalyze = state.series.filter(s => !s.totalEpisodes);
         }
@@ -2055,7 +2034,7 @@
             state.analyzeAbortController.abort();
             state.analyzeAbortController = null;
         }
-        showNotification('info', 'Stopping analysis...');
+        // Stop feedback comes from the batch completion handler
     };
     
     // Settings modal analyze all (existing)
@@ -2287,10 +2266,10 @@
                     
                     <div class="pt-4 border-t border-plex-gray">
                         <p class="text-sm text-plex-light text-center">
-                            Series Complete for Plex v1.0.1<br>
+                            Series Complete for Plex v2.5.1<br>
                             Series: ${state.stats.total}<br>
                             Analyzed: ${state.series.filter(s => s.totalEpisodes).length}<br>
-                            <span class="text-xs text-primary-500 mt-2 block">© 2025 by Akustikrausch</span>
+                            <span class="text-xs text-primary-500 mt-2 block">© 2025-2026 by Akustikrausch</span>
                         </p>
                     </div>
                 </div>
@@ -2299,8 +2278,9 @@
         document.body.appendChild(modal);
     };
     
-    // Clean Settings Modal
-    window.openSettings = function() {
+    // Settings Modal defined in init-settings.js (loaded first) and button-fix.js (loaded last)
+    // Legacy openSettings removed - was v1.0.1 duplicate causing triple handler conflicts
+    window._legacyOpenSettings = function() {
         const modal = document.createElement('div');
         modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4';
         modal.innerHTML = `
@@ -2396,7 +2376,7 @@
                 
                 <div class="pt-4 border-t border-plex-gray text-center">
                     <p class="text-xs text-plex-light mb-4">
-                        <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v1.0.1
+                        <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v2.5.1
                     </p>
                 </div>
             </div>
@@ -2746,12 +2726,12 @@
                     const result = await response.json();
                     
                     if (result.success) {
-                        alert(`✓ Path funktioniert! ${result.count} Serien gefunden.`);
+                        alert(`Path funktioniert! ${result.count} Serien gefunden.`);
                     } else {
-                        alert(`✗ Path funktioniert nicht: ${result.error}`);
+                        alert(`Path funktioniert nicht: ${result.error}`);
                     }
                 } catch (error) {
-                    alert(`✗ Fehler beim Testen: ${error.message}`);
+                    alert(`Fehler beim Testen: ${error.message}`);
                 } finally {
                     testBtn.disabled = false;
                     testBtn.textContent = 'Test Path';
@@ -2777,13 +2757,13 @@
                     });
                     
                     if (response.ok) {
-                        alert('✓ Database-Pfad gespeichert! Anwendung neu starten für Änderungen.');
+                        alert('Database-Pfad gespeichert! Anwendung neu starten für Änderungen.');
                         modal.remove();
                     } else {
-                        alert('✗ Fehler beim Speichern der Einstellungen.');
+                        alert('Fehler beim Speichern der Einstellungen.');
                     }
                 } catch (error) {
-                    alert(`✗ Fehler: ${error.message}`);
+                    alert(`Fehler: ${error.message}`);
                 }
             });
             
@@ -2803,12 +2783,12 @@
                     
                     if (response.ok) {
                         document.getElementById('custom-db-path').value = '';
-                        alert('✓ Auf automatische Erkennung zurückgesetzt!');
+                        alert('Auf automatische Erkennung zurückgesetzt!');
                     } else {
-                        alert('✗ Fehler beim Zurücksetzen.');
+                        alert('Fehler beim Zurücksetzen.');
                     }
                 } catch (error) {
-                    alert(`✗ Fehler: ${error.message}`);
+                    alert(`Fehler: ${error.message}`);
                 }
             });
             
@@ -2888,16 +2868,16 @@
                 console.log(`[API Test] ${apiName} result:`, result);
                 
                 if (result && result.success) {
-                    console.log(`[API Test] ✅ ${apiName} API connected successfully`);
-                    if (statusSpan) statusSpan.textContent = '✅ Connected';
+                    console.log(`[API Test] ${apiName} API connected successfully`);
+                    if (statusSpan) statusSpan.textContent = 'Connected';
                     if (statusIndicator) {
                         statusIndicator.classList.remove('bg-red-500', 'bg-yellow-500');
                         statusIndicator.classList.add('bg-green-500');
                     }
                     showNotification('success', `${apiName.toUpperCase()} API connected successfully`);
                 } else {
-                    console.error(`[API Test] ❌ ${apiName} API test failed:`, result?.error || 'Connection failed');
-                    if (statusSpan) statusSpan.textContent = `❌ Error: ${result?.error || 'Connection failed'}`;
+                    console.error(`[API Test] ${apiName} API test failed:`, result?.error || 'Connection failed');
+                    if (statusSpan) statusSpan.textContent = `Error: ${result?.error || 'Connection failed'}`;
                     if (statusIndicator) {
                         statusIndicator.classList.remove('bg-green-500', 'bg-yellow-500');
                         statusIndicator.classList.add('bg-red-500');
@@ -2943,7 +2923,7 @@
         console.log('[SaveAPIKeys] Payload to save:', payload);
         
         if (Object.keys(payload).length === 0) {
-            showNotification('info', 'No changes to save');
+            // No changes - silently close
             return;
         }
         
@@ -2958,14 +2938,11 @@
             const data = await response.json();
             
             if (data.success) {
-                showNotification('success', 'API configuration saved successfully');
-                
-                // Test all APIs after saving
+                showNotification('success', 'API configuration saved');
+
+                // Test all APIs after saving, then refresh modal
                 setTimeout(() => {
-                    showNotification('info', 'Testing API connections...');
                     fetch('/api/test-apis').then(() => {
-                        showNotification('success', 'API tests complete');
-                        // Reload settings modal to show updated status
                         document.querySelector('.fixed.inset-0').remove();
                         openApiSettings();
                     });
@@ -3064,7 +3041,12 @@
         `;
         
         document.body.appendChild(modal);
-        
+
+        // Backdrop click to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+
         // Add event listener for the cleanup button
         const cleanupBtn = modal.querySelector('#confirm-cleanup-btn');
         if (cleanupBtn) {
@@ -3096,7 +3078,7 @@
         const modal = document.querySelector('.fixed.inset-0');
         if (modal) modal.remove();
         
-        showNotification('info', 'Starting database cleanup...');
+        // Cleanup result shown after completion
         
         try {
             // Call cleanup endpoint
@@ -3116,18 +3098,13 @@
                 calculateStats();
                 
                 // Show success message
-                let message = '✅ All caches cleared successfully!';
+                let message = 'All caches cleared successfully!';
                 if (result.stats.removedAnalyses > 0) {
                     message += ` Removed ${result.stats.removedAnalyses} cached analyses.`;
                 }
                 showNotification('success', message);
                 
-                // Inform user they need to scan again
-                setTimeout(() => {
-                    showNotification('info', 
-                        '📍 Please click "Scan Library" to reload your series collection'
-                    );
-                }, 2000);
+                // No follow-up toast - the success message is sufficient
                 
             } else {
                 throw new Error(result.error || 'Cleanup failed');
@@ -3220,7 +3197,12 @@
         `;
         
         document.body.appendChild(modal);
-        
+
+        // Backdrop click to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
+        });
+
         // Add event listener for the clear cache button
         const clearCacheBtn = modal.querySelector('#confirm-clear-cache-btn');
         if (clearCacheBtn) {
@@ -3309,7 +3291,6 @@
         if (state.series.length === 0) {
             showNotification('warning', 'No cached data found. Please scan library first.');
         } else {
-            showNotification('info', `Loaded ${state.series.length} series from cache`);
             // Show analyze all button if series exist
             const analyzeBtnRefresh = document.getElementById('analyze-all-btn');
             if (analyzeBtnRefresh) {

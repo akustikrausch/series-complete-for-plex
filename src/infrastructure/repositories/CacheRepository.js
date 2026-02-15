@@ -13,8 +13,12 @@ const fs = require('fs').promises;
 const path = require('path');
 
 class CacheRepository extends IMetadataRepository {
-  constructor(cacheFile = 'analysis-cache.json') {
+  constructor(cacheFile = null) {
     super();
+    if (!cacheFile) {
+      const { existsSync } = require('fs');
+      cacheFile = existsSync('/data/options.json') ? '/data/analysis-cache.json' : 'analysis-cache.json';
+    }
     this.cacheFile = path.resolve(cacheFile);
     this.cache = new Map();
     this.initialized = false;
