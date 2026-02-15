@@ -69,7 +69,14 @@ class DIContainer {
     // External services (legacy wrappers)
     this.register('configService', () => require('../../services/ConfigService'), true);
     this.register('tvApiService', () => require('../../tv-api-service'), true);
-    this.register('secureDatabaseService', () => require('../../services/SecureDatabaseService'), true);
+    this.register('secureDatabaseService', () => {
+        try {
+            return require('../../services/SecureDatabaseService');
+        } catch (e) {
+            console.log('[DI] SecureDatabaseService not available (API mode)');
+            return null;
+        }
+    }, true);
 
     // Infrastructure Layer - Services
     this.register('webSocketService', () => {
@@ -91,10 +98,29 @@ class DIContainer {
       return new ConfigRepository(configService);
     }, true);
 
+    this.register('plexApiService', (container) => {
+      const PlexApiService = require('./services/PlexApiService');
+      const configRepository = container.get('configRepository');
+      return new PlexApiService(configRepository);
+    }, true);
+
     this.register('seriesRepository', (container) => {
-      const PlexSeriesRepository = require('./repositories/PlexSeriesRepository');
-      const secureDbService = container.get('secureDatabaseService');
-      return new PlexSeriesRepository(secureDbService);
+      const configRepository = container.get('configRepository');
+      const configService = container.get('configService');
+
+      // Check if Plex API mode is configured
+      const plexConfig = configService.config && configService.config.plex;
+      const isApiMode = plexConfig && plexConfig.url && plexConfig.url.trim();
+
+      if (isApiMode) {
+        const PlexApiRepository = require('./repositories/PlexApiRepository');
+        const plexApiService = container.get('plexApiService');
+        return new PlexApiRepository(plexApiService);
+      } else {
+        const PlexSeriesRepository = require('./repositories/PlexSeriesRepository');
+        const secureDbService = container.get('secureDatabaseService');
+        return new PlexSeriesRepository(secureDbService);
+      }
     }, true);
 
     this.register('externalApiRepository', (container) => {
@@ -111,21 +137,21 @@ class DIContainer {
 
     // Application Layer - Use Cases
     this.register('loadDatabaseUseCase', (container) => {
-      const LoadDatabaseUseCase = require('../../application/use-cases/LoadDatabaseUseCase');
+      const LoadDatabaseUseCase = require('../application/use-cases/LoadDatabaseUseCase');
       const seriesRepository = container.get('seriesRepository');
       const configRepository = container.get('configRepository');
       return new LoadDatabaseUseCase(seriesRepository, configRepository);
     });
 
     this.register('getSeriesUseCase', (container) => {
-      const GetSeriesUseCase = require('../../application/use-cases/GetSeriesUseCase');
+      const GetSeriesUseCase = require('../application/use-cases/GetSeriesUseCase');
       const seriesRepository = container.get('seriesRepository');
       const configRepository = container.get('configRepository');
       return new GetSeriesUseCase(seriesRepository, configRepository);
     });
 
     this.register('analyzeSeriesUseCase', (container) => {
-      const AnalyzeSeriesUseCase = require('../../application/use-cases/AnalyzeSeriesUseCase');
+      const AnalyzeSeriesUseCase = require('../application/use-cases/AnalyzeSeriesUseCase');
       const externalApiRepository = container.get('externalApiRepository');
       const cacheRepository = container.get('cacheRepository');
       const configRepository = container.get('configRepository');
@@ -141,32 +167,32 @@ class DIContainer {
     });
 
     this.register('loadCacheUseCase', (container) => {
-      const LoadCacheUseCase = require('../../application/use-cases/LoadCacheUseCase');
+      const LoadCacheUseCase = require('../application/use-cases/LoadCacheUseCase');
       const cacheRepository = container.get('cacheRepository');
       return new LoadCacheUseCase(cacheRepository);
     });
 
     this.register('saveAnalysisUseCase', (container) => {
-      const SaveAnalysisUseCase = require('../../application/use-cases/SaveAnalysisUseCase');
+      const SaveAnalysisUseCase = require('../application/use-cases/SaveAnalysisUseCase');
       const cacheRepository = container.get('cacheRepository');
       return new SaveAnalysisUseCase(cacheRepository);
     });
 
     this.register('testConnectionUseCase', (container) => {
-      const TestConnectionUseCase = require('../../application/use-cases/TestConnectionUseCase');
+      const TestConnectionUseCase = require('../application/use-cases/TestConnectionUseCase');
       const configRepository = container.get('configRepository');
       const seriesRepository = container.get('seriesRepository');
       return new TestConnectionUseCase(configRepository, seriesRepository);
     });
 
     this.register('findPlexDatabaseUseCase', (container) => {
-      const FindPlexDatabaseUseCase = require('../../application/use-cases/FindPlexDatabaseUseCase');
+      const FindPlexDatabaseUseCase = require('../application/use-cases/FindPlexDatabaseUseCase');
       const configRepository = container.get('configRepository');
       return new FindPlexDatabaseUseCase(configRepository);
     });
 
     this.register('cleanupDatabaseUseCase', (container) => {
-      const CleanupDatabaseUseCase = require('../../application/use-cases/CleanupDatabaseUseCase');
+      const CleanupDatabaseUseCase = require('../application/use-cases/CleanupDatabaseUseCase');
       const cacheRepository = container.get('cacheRepository');
       return new CleanupDatabaseUseCase(cacheRepository);
     });

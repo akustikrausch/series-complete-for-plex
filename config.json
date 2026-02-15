@@ -6,6 +6,11 @@
   "database": {
     "plexDbPath": "auto"
   },
+  "plex": {
+    "url": "",
+    "token": "",
+    "libraryIds": []
+  },
   "apis": {
     "tmdb": {
       "apiKey": "",
@@ -14,6 +19,7 @@
     },
     "thetvdb": {
       "apiKey": "",
+      "pin": "",
       "baseUrl": "https://api4.thetvdb.com/v4",
       "enabled": true
     }

@@ -7,7 +7,7 @@ const container = require('./container');
  */
 function configureContainer() {
   // Will be populated as we extract services and create new architecture
-  console.log('📦 Dependency injection container configured');
+  console.log('[OK] Dependency injection container configured');
   return container;
 }
 

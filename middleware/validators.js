@@ -51,26 +51,32 @@ const validateDatabasePath = (fieldName = 'dbPath') => [
  * Validate API keys
  */
 const validateApiKeys = [
-    body('tmdbApiKey')
+    body('tmdb')
         .optional()
         .isString()
         .isLength({ min: 16, max: 64 })
         .matches(/^[a-f0-9]+$/i)
         .withMessage('TMDb API key must be a valid hexadecimal string'),
-        
-    body('thetvdbApiKey')
+
+    body('thetvdb')
         .optional()
         .isString()
         .isLength({ min: 10, max: 100 })
-        .matches(/^[A-Z0-9_-]+$/i)
+        .matches(/^[A-Za-z0-9_-]+$/)
         .withMessage('TheTVDB API key must contain only alphanumeric characters, underscore and dash'),
-        
-    body('openaiApiKey')
+
+    body('thetvdbPin')
         .optional()
         .isString()
-        .matches(/^sk-[A-Za-z0-9]+$/)
-        .withMessage('OpenAI API key must start with sk- followed by alphanumeric characters'),
-        
+        .isLength({ max: 100 })
+        .withMessage('TheTVDB subscriber PIN is too long'),
+
+    body('openai')
+        .optional()
+        .isString()
+        .matches(/^sk-[A-Za-z0-9_-]+$/)
+        .withMessage('OpenAI API key must start with sk-'),
+
     handleValidationErrors
 ];
 

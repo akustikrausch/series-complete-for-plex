@@ -15,19 +15,27 @@ class ConfigService {
     async init() {
         if (this.initialized) return this.config;
 
+        // Check for Home Assistant mode
+        const { existsSync } = require('fs');
+        if (existsSync('/data/options.json')) {
+            await this.loadHomeAssistantConfig();
+            this.initialized = true;
+            return this.config;
+        }
+
         try {
             // Try to load local config first (with user's API keys)
             const localConfigData = await fs.readFile(this.localConfigPath, 'utf8');
             this.config = JSON.parse(localConfigData);
-            console.log('✅ Configuration loaded from config.local.json');
+            console.log('[OK] Configuration loaded from config.local.json');
         } catch (error) {
             try {
                 // Fall back to default config.json (with empty placeholders)
                 const configData = await fs.readFile(this.configPath, 'utf8');
                 this.config = JSON.parse(configData);
-                console.log('✅ Configuration loaded from config.json (default)');
+                console.log('[OK] Configuration loaded from config.json (default)');
             } catch (error2) {
-                console.log('📝 No config files found, creating default...');
+                console.log('[Info] No config files found, creating default...');
                 await this.createDefaultConfig();
             }
         }
@@ -40,64 +48,123 @@ class ConfigService {
     }
 
     /**
+     * Load configuration from Home Assistant options
+     */
+    async loadHomeAssistantConfig() {
+        try {
+            const data = await fs.readFile('/data/options.json', 'utf8');
+            const options = JSON.parse(data);
+
+            this.config = this.getDefaultConfigBase();
+
+            // Map HA options to config structure
+            this.config.plex = {
+                url: options.plex_url || '',
+                token: options.plex_token || '',
+                libraryIds: options.library_ids || []
+            };
+
+            if (options.tmdb_api_key) {
+                this.config.apis.tmdb.apiKey = options.tmdb_api_key;
+            }
+            if (options.thetvdb_api_key) {
+                this.config.apis.thetvdb.apiKey = options.thetvdb_api_key;
+            }
+            if (options.thetvdb_pin) {
+                this.config.apis.thetvdb.pin = options.thetvdb_pin;
+            }
+
+            // Force HA-compatible server settings
+            this.config.server.host = '0.0.0.0';
+            this.config.server.port = parseInt(process.env.PORT) || 3000;
+
+            console.log('[OK] Configuration loaded from Home Assistant options');
+        } catch (error) {
+            console.error('[Error] Failed to load HA config:', error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Get the default config base object
+     */
+    getDefaultConfigBase() {
+        return {
+            "server": {
+                "port": 3000,
+                "host": "localhost"
+            },
+            "database": {
+                "plexDbPath": "auto"
+            },
+            "plex": {
+                "url": "",
+                "token": "",
+                "libraryIds": []
+            },
+            "apis": {
+                "tmdb": {
+                    "apiKey": "",
+                    "baseUrl": "https://api.themoviedb.org/3",
+                    "enabled": true
+                },
+                "thetvdb": {
+                    "apiKey": "",
+                    "pin": "",
+                    "baseUrl": "https://api4.thetvdb.com/v4",
+                    "enabled": true
+                }
+            },
+            "features": {
+                "enableCache": true,
+                "cacheExpiry": 86400000,
+                "enableAnalytics": false,
+                "maxConcurrentRequests": 5,
+                "requestDelay": 1000
+            },
+            "ui": {
+                "theme": "dark",
+                "language": "en",
+                "itemsPerPage": 20,
+                "enableNotifications": true
+            },
+            "security": {
+                "rateLimit": {
+                    "windowMs": 900000,
+                    "maxRequests": 100
+                },
+                "cors": {
+                    "enabled": true,
+                    "origin": "http://localhost:3000"
+                }
+            }
+        };
+    }
+
+    /**
+     * Check if running in Home Assistant mode
+     */
+    isHomeAssistant() {
+        const { existsSync } = require('fs');
+        return existsSync('/data/options.json');
+    }
+
+    /**
      * Create default config with working settings
      */
     async createDefaultConfig() {
         try {
             // Default working configuration
-            const defaultConfig = {
-                "server": {
-                    "port": 3000,
-                    "host": "localhost"
-                },
-                "database": {
-                    "plexDbPath": "auto"
-                },
-                "apis": {
-                    "tmdb": {
-                        "apiKey": "",
-                        "baseUrl": "https://api.themoviedb.org/3",
-                        "enabled": true
-                    },
-                    "thetvdb": {
-                        "apiKey": "",
-                        "baseUrl": "https://api4.thetvdb.com/v4",
-                        "enabled": true
-                    }
-                },
-                "features": {
-                    "enableCache": true,
-                    "cacheExpiry": 86400000,
-                    "enableAnalytics": false,
-                    "maxConcurrentRequests": 5,
-                    "requestDelay": 1000
-                },
-                "ui": {
-                    "theme": "dark",
-                    "language": "en",
-                    "itemsPerPage": 20,
-                    "enableNotifications": true
-                },
-                "security": {
-                    "rateLimit": {
-                        "windowMs": 900000,
-                        "maxRequests": 100
-                    },
-                    "cors": {
-                        "enabled": true,
-                        "origin": "http://localhost:3000"
-                    }
-                }
-            };
+            const defaultConfig = this.getDefaultConfigBase();
             
             // Check for legacy .env values
             await this.migrateLegacyEnv(defaultConfig);
             
             await fs.writeFile(this.configPath, JSON.stringify(defaultConfig, null, 2));
             this.config = defaultConfig;
-            console.log('✅ Created functional config.json');
+            console.log('[OK] Created functional config.json');
         } catch (error) {
-            console.error('❌ Failed to create default config:', error.message);
+            console.error('[Error] Failed to create default config:', error.message);
             throw error;
         }
     }
@@ -110,16 +177,16 @@ class ConfigService {
         
         if (process.env.PORT && config.server) {
             config.server.port = parseInt(process.env.PORT) || 3000;
-            console.log('🔄 Migrated PORT from .env');
+            console.log('[Migrated] PORT from .env');
         }
         
         if (process.env.PLEX_DB_PATH && config.database) {
             config.database.plexDbPath = process.env.PLEX_DB_PATH;
-            console.log('🔄 Migrated PLEX_DB_PATH from .env');
+            console.log('[Migrated] PLEX_DB_PATH from .env');
         }
         
         // API Keys are NO LONGER migrated from process.env for security reasons
-        console.log('🔒 API key migration disabled for security - use JSON config only');
+        console.log('[Info] API key migration disabled for security - use JSON config only');
     }
 
     /**
@@ -132,6 +199,7 @@ class ConfigService {
         const defaultSections = {
             server: { port: 3000, host: "localhost" },
             database: { plexDbPath: "auto" },
+            plex: { url: "", token: "", libraryIds: [] },
             apis: {
                 tmdb: { apiKey: "", baseUrl: "https://api.themoviedb.org/3", enabled: true },
                 thetvdb: { apiKey: "", baseUrl: "https://api4.thetvdb.com/v4", enabled: true }
@@ -143,7 +211,7 @@ class ConfigService {
 
         for (const [section, defaultValue] of Object.entries(defaultSections)) {
             if (!this.config[section]) {
-                console.log(`🔄 Adding missing config section: ${section}`);
+                console.log(`[Migrated] Adding missing config section: ${section}`);
                 this.config[section] = defaultValue;
                 needsSave = true;
             }
@@ -153,7 +221,7 @@ class ConfigService {
         const apiServices = ['tmdb', 'thetvdb'];
         for (const service of apiServices) {
             if (!this.config.apis[service]) {
-                console.log(`🔄 Adding missing API config: ${service}`);
+                console.log(`[Migrated] Adding missing API config: ${service}`);
                 this.config.apis[service] = defaultSections.apis[service];
                 needsSave = true;
             }
@@ -210,10 +278,10 @@ class ConfigService {
             await fs.writeFile(targetPath, JSON.stringify(this.config, null, 2));
             
             const fileName = hasAnyKey ? 'config.local.json' : 'config.json';
-            console.log(`✅ Configuration saved to ${fileName}`);
+            console.log(`[OK] Configuration saved to ${fileName}`);
             return true;
         } catch (error) {
-            console.error('❌ Failed to save configuration:', error.message);
+            console.error('[Error] Failed to save configuration:', error.message);
             throw error;
         }
     }
@@ -249,7 +317,7 @@ class ConfigService {
 
         this.set('apis', currentApis);
         await this.save();
-        console.log(`✅ Saved API configs to ${this.configPath}`);
+        console.log(`[OK] Saved API configs to ${this.configPath}`);
         return currentApis;
     }
 
@@ -275,7 +343,7 @@ class ConfigService {
      * Reset configuration to defaults
      */
     async reset() {
-        console.log('🔄 Resetting configuration to defaults...');
+        console.log('[Info] Resetting configuration to defaults...');
         await this.createDefaultConfig();
         return this.config;
     }

@@ -142,6 +142,35 @@ class ConfigRepository {
   }
 
   /**
+   * Get Plex connection configuration
+   * @returns {Promise<Object>} Plex configuration
+   */
+  async getPlexConfig() {
+    return {
+      url: await this.get('plex.url', ''),
+      token: await this.get('plex.token', ''),
+      libraryIds: await this.get('plex.libraryIds', [])
+    };
+  }
+
+  /**
+   * Check if running in Home Assistant mode
+   * @returns {boolean} True if running as HA add-on
+   */
+  isHomeAssistant() {
+    return this.configService.isHomeAssistant();
+  }
+
+  /**
+   * Check if running in API mode (Plex URL configured instead of direct DB)
+   * @returns {Promise<boolean>} True if API mode is active
+   */
+  async isApiMode() {
+    const plexConfig = await this.getPlexConfig();
+    return !!(plexConfig.url && plexConfig.url.trim());
+  }
+
+  /**
    * Get specific API configuration
    * @param {string} apiName - Name of the API (tmdb, thetvdb, etc.)
    * @returns {Promise<Object|null>} API configuration or null

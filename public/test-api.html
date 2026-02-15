@@ -67,14 +67,14 @@
                 // Interpret results  
                 if (testData.success && testData.results) {
                     if (testData.results.tmdb === true) {
-                        resultDiv.innerHTML = `<div class="text-green-400">✅ TMDb API Key is VALID!</div>`;
+                        resultDiv.innerHTML = `<div class="text-green-400"><svg class="w-4 h-4 inline-block mr-1 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>TMDb API Key is VALID!</div>`;
                     } else {
                         // Try a direct test with the key
                         const directTest = await fetch(`https://api.themoviedb.org/3/tv/1396?api_key=${apiKey}`);
                         if (directTest.ok) {
-                            resultDiv.innerHTML = `<div class="text-green-400">✅ API Key is VALID (direct test successful)!</div>`;
+                            resultDiv.innerHTML = `<div class="text-green-400"><svg class="w-4 h-4 inline-block mr-1 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>API Key is VALID (direct test successful)!</div>`;
                         } else {
-                            resultDiv.innerHTML = `<div class="text-red-400">❌ API Key appears to be invalid</div>`;
+                            resultDiv.innerHTML = `<div class="text-red-400"><svg class="w-4 h-4 inline-block mr-1 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>API Key appears to be invalid</div>`;
                         }
                     }
                 } else {

@@ -98,7 +98,8 @@ class WebSocketService {
     }
 
     startHeartbeat() {
-        setInterval(() => {
+        if (this.heartbeatInterval) clearInterval(this.heartbeatInterval);
+        this.heartbeatInterval = setInterval(() => {
             this.clients.forEach((client, clientId) => {
                 if (!client.alive) {
                     console.log(`[WebSocket] Removing inactive client: ${clientId}`);

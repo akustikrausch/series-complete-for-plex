@@ -5,9 +5,11 @@ This guide will walk you through setting up Series Complete for Plex on your sys
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
-- [Installation Methods](#installation-methods)
+- [Installation](#installation)
+  - [Home Assistant Addon](#method-3-home-assistant-addon)
 - [API Key Configuration](#api-key-configuration)
 - [Database Configuration](#database-configuration)
+- [Plex API Configuration](#plex-api-configuration)
 - [First Run](#first-run)
 - [Troubleshooting](#troubleshooting)
 - [Platform-Specific Notes](#platform-specific-notes)
@@ -26,31 +28,14 @@ This guide will walk you through setting up Series Complete for Plex on your sys
 - **TV Shows Library** configured in Plex
 - Access to the Plex database file (usually automatic)
 
-## Installation Methods
+## Installation
 
-### Method 1: Using Bun (Recommended)
-
-```bash
-# Install Bun if you haven't already
-curl -fsSL https://bun.sh/install | bash
-
-# Clone the repository
-git clone https://github.com/yourusername/series-complete-for-plex.git
-cd series-complete-for-plex/web-version
-
-# Install dependencies
-bun install
-
-# Start development server
-bun run dev
-```
-
-### Method 2: Using Node.js/npm
+### Method 1: npm
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/series-complete-for-plex.git
-cd series-complete-for-plex/web-version
+git clone https://github.com/akustikrausch/series-complete-for-plex.git
+cd series-complete-for-plex
 
 # Install dependencies
 npm install
@@ -59,66 +44,82 @@ npm install
 npm run dev
 ```
 
-### Method 3: Production Deployment
+### Method 2: Production Deployment
 
 ```bash
 # After installation, start production server
-bun start  # or npm start
+npm start
 
 # Or use PM2 for process management
 npm install -g pm2
-pm2 start ecosystem.config.js
+pm2 start server-crossplatform.js --name series-complete
 ```
+
+### Method 3: Home Assistant Addon
+
+1. Open your Home Assistant instance
+2. Navigate to **Settings** > **Add-ons** > **Add-on Store**
+3. Click the three-dot menu (top right) > **Repositories**
+4. Add: `https://github.com/akustikrausch/series-complete-for-plex`
+5. Find "Series Complete for Plex" in the store and click **Install**
+6. Configure the addon settings:
+   - `plex_url`: Your Plex server URL (e.g., `http://192.168.1.100:32400`)
+   - `plex_token`: Your Plex authentication token
+   - `tmdb_api_key`: Your TMDb API key
+   - `thetvdb_api_key`: Your TheTVDB v4 API key (optional)
+7. Start the addon
+8. Access via the Home Assistant sidebar ("Series Complete")
+
+**Finding your Plex Token:**
+1. Sign in to Plex Web App
+2. Browse to any media item
+3. Click "Get Info" > "View XML"
+4. Look for `X-Plex-Token=` in the URL
+
+**Note:** The addon uses the Plex REST API over the network. No local database access or SQLite is required.
 
 ## API Key Configuration
 
 Series Complete for Plex requires API keys from external services to fetch TV series metadata.
 
-### 1. Create Configuration File
-
-Copy the example configuration:
-```bash
-cp config.example.json config.json
-```
-
-### 2. Get API Keys
+### 1. Get API Keys
 
 #### TMDb (The Movie Database) - Required
 1. Visit [themoviedb.org/signup](https://www.themoviedb.org/signup)
 2. Create a free account
-3. Go to **Settings** → **API**
+3. Go to **Settings** > **API**
 4. Request an API key (select "Personal Use")
 5. Copy your **API Key (v3 auth)**
 
 #### TheTVDB - Required
 1. Register at [thetvdb.com/signup](https://thetvdb.com/signup)
-2. Go to **Dashboard** → **API Keys**
-3. Generate a new API key
+2. Go to **Dashboard** > **API Keys**
+3. Generate a new **v4 API key** (legacy v2/v3 keys will not work)
 4. Copy the generated key
+5. Note your **subscriber PIN** if you have one (optional)
 
 #### OpenAI - Optional
 1. Sign up at [platform.openai.com/signup](https://platform.openai.com/signup)
 2. Go to **API Keys** section
 3. Create a new secret key
-4. Copy and save the key immediately (it won't be shown again)
+4. Used as a fallback when TMDb and TheTVDB cannot identify a series
 
-### 3. Configure config.json
+### 2. Configure API Keys
 
-Edit `config.json` with your API keys:
+Edit `config.json` in the project root, or create `config.local.json` to keep your keys private (not tracked by git):
 
 ```json
 {
-  "tmdbApiKey": "your_tmdb_api_key_here",
-  "thetvdbApiKey": "your_thetvdb_api_key_here",
-  "openaiApiKey": "your_openai_api_key_here",
-  "plexDatabasePath": "auto",
-  "server": {
-    "port": 3000,
-    "host": "localhost"
-  },
-  "cache": {
-    "apiCacheDuration": 604800000,
-    "analysisCacheDuration": 86400000
+  "apis": {
+    "tmdb": {
+      "apiKey": "your_tmdb_api_key_here",
+      "enabled": true
+    },
+    "thetvdb": {
+      "apiKey": "your_thetvdb_v4_api_key_here",
+      "pin": "your_subscriber_pin_or_empty",
+      "enabled": true
+    }
   }
 }
 ```
@@ -127,14 +128,21 @@ Edit `config.json` with your API keys:
 
 | Setting | Description | Default |
 |---------|-------------|---------|
-| `tmdbApiKey` | TMDb API key for movie/TV metadata | Required |
-| `thetvdbApiKey` | TheTVDB API key for TV series data | Required |
-| `openaiApiKey` | OpenAI API key for enhanced metadata | Optional |
-| `plexDatabasePath` | Path to Plex database (auto-detected if "auto") | "auto" |
-| `server.port` | Port for web interface | 3000 |
-| `server.host` | Host binding | "localhost" |
-| `cache.apiCacheDuration` | API cache duration in ms | 7 days |
-| `cache.analysisCacheDuration` | Analysis cache duration in ms | 24 hours |
+| `apis.tmdb.apiKey` | TMDb API key for movie/TV metadata | Required |
+| `apis.tmdb.enabled` | Enable TMDb API | `true` |
+| `apis.thetvdb.apiKey` | TheTVDB v4 API key for TV series data | Required |
+| `apis.thetvdb.pin` | TheTVDB subscriber PIN | Optional |
+| `apis.thetvdb.enabled` | Enable TheTVDB API | `true` |
+| `plex.url` | Plex server URL (enables API mode) | `""` (disabled) |
+| `plex.token` | Plex authentication token | `""` |
+| `plex.libraryIds` | Specific library IDs to scan (empty = all) | `[]` |
+| `database.plexDbPath` | Path to Plex database (`"auto"` for auto-detection) | `"auto"` |
+| `server.port` | Port for web interface | `3000` |
+| `server.host` | Host binding | `"localhost"` |
+| `features.enableCache` | Enable caching | `true` |
+| `features.cacheExpiry` | Cache expiry in ms | `86400000` (24h) |
+| `features.maxConcurrentRequests` | Max parallel API requests | `5` |
+| `features.requestDelay` | Delay between API requests in ms | `1000` |
 
 ## Database Configuration
 
@@ -159,22 +167,65 @@ C:\Users\[username]\AppData\Local\Plex Media Server\Plug-in Support\Databases\co
 
 ### Manual Configuration
 
-If automatic detection fails, set the path manually in `config.json`:
+If automatic detection fails, set the path in `config.json`:
 
 ```json
 {
-  "plexDatabasePath": "/path/to/your/com.plexapp.plugins.library.db"
+  "database": {
+    "plexDbPath": "/path/to/your/com.plexapp.plugins.library.db"
+  }
 }
 ```
+
+You can also set the database path from the Settings > Database menu in the web interface.
 
 ### WSL (Windows Subsystem for Linux)
 
-For WSL setups, use Windows paths:
+For WSL setups, use the mounted Windows path:
 ```json
 {
-  "plexDatabasePath": "/mnt/c/Users/[username]/AppData/Local/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"
+  "database": {
+    "plexDbPath": "/mnt/c/Users/[username]/AppData/Local/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"
+  }
 }
 ```
+
+## Plex API Configuration
+
+For network setups (Home Assistant, Docker, remote server), configure the Plex REST API instead of direct database access:
+
+### Configuration
+
+Add the `plex` section to `config.json` or `config.local.json`:
+
+```json
+{
+  "plex": {
+    "url": "http://192.168.1.100:32400",
+    "token": "your_plex_token",
+    "libraryIds": []
+  }
+}
+```
+
+When `plex.url` is set, the application automatically switches to API mode. The SQLite database path is ignored.
+
+### Testing the Connection
+
+Use the built-in test endpoint:
+```bash
+curl http://localhost:3000/api/plex/test -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"url":"http://192.168.1.100:32400","token":"your_token"}'
+```
+
+### Configuration Options
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `plex.url` | Plex server URL (enables API mode) | `""` (disabled) |
+| `plex.token` | Plex authentication token | `""` |
+| `plex.libraryIds` | Specific library IDs to scan (empty = all) | `[]` |
 
 ## First Run
 
@@ -182,10 +233,10 @@ For WSL setups, use Windows paths:
 
 ```bash
 # Development mode (with auto-restart)
-bun run dev  # or npm run dev
+npm run dev
 
 # Production mode
-bun start   # or npm start
+npm start
 ```
 
 ### 2. Access the Application
@@ -200,11 +251,11 @@ http://localhost:3000
 1. **Scan Library**: Click "Scan Library" to load your TV series
 2. **Verify Data**: Check that your series are loaded correctly
 3. **Test Analysis**: Try analyzing a single series first
-4. **Configure Settings**: Adjust settings as needed
+4. **Configure Settings**: Use the Settings gear icon to check API key status
 
 ### 4. Verify API Keys
 
-Use the "Manage API Keys" button in settings to check your configuration status.
+Use the **Settings > API Keys** menu to check your configuration status.
 
 ## Troubleshooting
 
@@ -217,48 +268,33 @@ netstat -an | grep :3000  # Linux/macOS
 netstat -an | findstr :3000  # Windows
 
 # Use different port
-PORT=3001 bun run dev
+PORT=3001 npm run dev
 ```
 
 #### Database Not Found
 - Ensure Plex Media Server is installed and has been run at least once
 - Check that you have TV Shows library configured in Plex
-- Verify database path in settings or config.json
+- Verify database path in Settings > Database
 
 #### API Calls Failing
 - Verify API keys are correct and active
+- TheTVDB requires a **v4** API key (not legacy v2/v3)
 - Check internet connection
 - Review API rate limits (usually not an issue with free tiers)
 
 #### Performance Issues
-- Increase system RAM
-- Clear browser cache
+- Clear browser cache (Settings > Clear Cache)
 - Restart the application
 - Check available disk space
 
 ### Log Files
 
-Check console output for detailed error messages:
-```bash
-# View recent logs
-tail -f logs/app.log  # if logging is enabled
-
-# Check browser console (F12) for frontend errors
-```
-
-### Reset Configuration
-
-To reset all settings:
-```bash
-# Remove config and cache files
-rm config.json
-rm analysis-cache.json
-rm -rf api-cache/
-
-# Restart with fresh configuration
-cp config.example.json config.json
-# Re-configure your API keys
-```
+Check console output for detailed error messages. Browser console (F12) prefixes:
+- `[ButtonFix]` - Button handler logs
+- `[WebSocket]` - Connection status
+- `[StatisticsManager]` - Video quality detection
+- `[Cache]` - localStorage operations
+- `[ExportManager]` - Export operations
 
 ## Platform-Specific Notes
 
@@ -270,7 +306,7 @@ cp config.example.json config.json
 
 ### macOS
 
-- **Permissions**: Ensure Terminal has Full Disk Access (System Preferences → Security & Privacy)
+- **Permissions**: Ensure Terminal has Full Disk Access (System Preferences > Security & Privacy)
 - **Homebrew**: Install Node.js/Bun via Homebrew for easier management
 
 ### Linux
@@ -281,72 +317,45 @@ cp config.example.json config.json
 
 ### Docker (Experimental)
 
+For Home Assistant users, the [Home Assistant Addon](#method-3-home-assistant-addon) is the recommended alternative.
+
 ```bash
 # Build image
 docker build -t series-complete-for-plex .
 
-# Run container
+# Run container (with local database access)
 docker run -p 3000:3000 \
   -v /path/to/config.json:/app/config.json \
   -v /path/to/plex/database:/plex/database:ro \
   series-complete-for-plex
 ```
 
+**Note:** When using the Plex REST API (`plex.url` configured), the database volume mount and sqlite3 dependency are not required. See [Plex API Configuration](#plex-api-configuration).
+
 ## Security Considerations
 
 ### API Keys
 - Never commit API keys to version control
-- Store config.json securely
+- Use `config.local.json` for private keys (gitignored)
 - Consider environment variables for production
 
 ### Database Access
-- Series Complete for Plex only reads from Plex database
+- Series Complete for Plex only reads from the Plex database
 - Creates temporary copies for analysis
-- No modifications made to original database
+- No modifications made to the original database
 
 ### Network Security
 - Bind to localhost only for local use
 - Use reverse proxy (nginx) for external access
 - Enable HTTPS for production deployments
 
-## Performance Optimization
-
-### System Tuning
-```bash
-# Increase Node.js memory limit
-export NODE_OPTIONS="--max-old-space-size=2048"
-
-# Enable SSD optimizations
-export UV_USE_IO_URING=1  # Linux only
-```
-
-### Configuration Tuning
-```json
-{
-  "cache": {
-    "apiCacheDuration": 1209600000,    // 14 days
-    "analysisCacheDuration": 259200000  // 3 days
-  }
-}
-```
-
 ## Next Steps
 
 After successful installation:
 
 1. Read the [Technical Documentation](TECHNICAL.md)
-2. Explore the [User Manual](public/documentation.html)
-3. Join our community discussions
-4. Report issues on GitHub
-
-## Support
-
-If you encounter issues:
-
-1. Check this troubleshooting section
-2. Search existing [GitHub Issues](https://github.com/yourusername/series-complete-for-plex/issues)
-3. Create a new issue with detailed information
-4. Join our community discussions
+2. Explore the [User Manual](public/documentation.html) (accessible from Settings)
+3. Report issues on GitHub
 
 ---
 
