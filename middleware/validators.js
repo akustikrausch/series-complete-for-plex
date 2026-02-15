@@ -51,26 +51,32 @@ const validateDatabasePath = (fieldName = 'dbPath') => [
  * Validate API keys
  */
 const validateApiKeys = [
-    body('tmdbApiKey')
+    body('tmdb')
         .optional()
         .isString()
         .isLength({ min: 16, max: 64 })
         .matches(/^[a-f0-9]+$/i)
         .withMessage('TMDb API key must be a valid hexadecimal string'),
-        
-    body('thetvdbApiKey')
+
+    body('thetvdb')
         .optional()
         .isString()
         .isLength({ min: 10, max: 100 })
-        .matches(/^[A-Z0-9_-]+$/i)
+        .matches(/^[A-Za-z0-9_-]+$/)
         .withMessage('TheTVDB API key must contain only alphanumeric characters, underscore and dash'),
-        
-    body('openaiApiKey')
+
+    body('thetvdbPin')
         .optional()
         .isString()
-        .matches(/^sk-[A-Za-z0-9]+$/)
-        .withMessage('OpenAI API key must start with sk- followed by alphanumeric characters'),
-        
+        .isLength({ max: 100 })
+        .withMessage('TheTVDB subscriber PIN is too long'),
+
+    body('openai')
+        .optional()
+        .isString()
+        .matches(/^sk-[A-Za-z0-9_-]+$/)
+        .withMessage('OpenAI API key must start with sk-'),
+
     handleValidationErrors
 ];
 
@@ -86,6 +92,13 @@ const validateSeriesAnalysis = [
         
     body('series.id')
         .exists()
+        .customSanitizer(value => {
+            // Convert string to int if needed
+            if (typeof value === 'string') {
+                return parseInt(value, 10);
+            }
+            return value;
+        })
         .isInt({ min: 1 })
         .withMessage('Series ID must be a positive integer'),
         
@@ -98,8 +111,28 @@ const validateSeriesAnalysis = [
         .withMessage('Series title must be a non-empty string under 200 characters'),
         
     body('series.year')
-        .optional()
-        .isInt({ min: 1900, max: new Date().getFullYear() + 5 })
+        .optional({ nullable: true, checkFalsy: true })
+        .customSanitizer(value => {
+            // Handle null, undefined, empty string
+            if (value === null || value === undefined || value === '') {
+                return undefined;
+            }
+            // Extract first valid 4-digit year from string (e.g., "1949 2003" -> 1949)
+            if (typeof value === 'string') {
+                const match = value.match(/\b(19|20)\d{2}\b/);
+                return match ? parseInt(match[0], 10) : undefined;
+            }
+            return typeof value === 'number' ? value : parseInt(value, 10) || undefined;
+        })
+        .custom((value) => {
+            // Skip validation if value is undefined after sanitization
+            if (value === undefined) return true;
+            const year = parseInt(value, 10);
+            if (isNaN(year) || year < 1900 || year > new Date().getFullYear() + 5) {
+                return false;
+            }
+            return true;
+        })
         .withMessage('Year must be between 1900 and current year + 5'),
         
     body('silent')

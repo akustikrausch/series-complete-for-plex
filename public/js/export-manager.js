@@ -27,136 +27,143 @@ class ExportManager {
     createExportModal() {
         const modal = document.createElement('div');
         modal.id = 'export-modal';
-        modal.className = 'hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        modal.className = 'hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
         modal.innerHTML = `
-            <div class="glass-effect rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="glass-effect rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col animate-slide-up" style="animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1)">
                 <!-- Header -->
-                <div class="p-6 border-b border-plex-gray">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-plex-white">📊 Export Data</h2>
-                        <button data-action="close-export-manager" class="text-plex-light hover:text-plex-white">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <div class="flex items-center justify-between p-5 pb-4 border-b border-white/[0.06]">
+                    <h2 class="text-lg font-bold text-white tracking-tight flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
-                        </button>
-                    </div>
+                        </div>
+                        Export Data
+                    </h2>
+                    <button data-action="close-export-manager" class="p-1.5 rounded-lg text-surface-500 hover:text-white hover:bg-white/[0.06] transition-all" aria-label="Close export">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <!-- Content -->
-                <div class="flex-1 overflow-y-auto p-6">
+                <div class="flex-1 overflow-y-auto p-5">
                     <!-- Export Options -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                         <!-- CSV Export -->
-                        <div class="glass-effect rounded-lg p-4">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-plex-white">CSV Export</h3>
-                                    <p class="text-sm text-plex-light">For spreadsheets and data analysis</p>
+                                    <h3 class="text-sm font-medium text-white">CSV Export</h3>
+                                    <p class="text-xs text-surface-500">Spreadsheets & data analysis</p>
                                 </div>
                             </div>
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="csv-include-missing" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">Include missing episodes</label>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="csv-include-stats" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">Include completion stats</label>
-                                </div>
-                                <button data-action="export-csv" 
-                                    class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="csv-include-missing" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    Include missing episodes
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="csv-include-stats" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    Include completion stats
+                                </label>
+                                <button data-action="export-csv"
+                                    class="w-full py-2 px-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-all">
                                     Export CSV
                                 </button>
                             </div>
                         </div>
 
                         <!-- JSON Export -->
-                        <div class="glass-effect rounded-lg p-4">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-plex-white">JSON Export</h3>
-                                    <p class="text-sm text-plex-light">For automation and APIs</p>
+                                    <h3 class="text-sm font-medium text-white">JSON Export</h3>
+                                    <p class="text-xs text-surface-500">Automation & APIs</p>
                                 </div>
                             </div>
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="json-pretty-print" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">Pretty print (formatted)</label>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="json-include-metadata" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">Include export metadata</label>
-                                </div>
-                                <button data-action="export-json" 
-                                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="json-pretty-print" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    Pretty print (formatted)
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="json-include-metadata" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    Include export metadata
+                                </label>
+                                <button data-action="export-json"
+                                    class="w-full py-2 px-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-medium hover:bg-blue-500/20 transition-all">
                                     Export JSON
                                 </button>
                             </div>
                         </div>
 
                         <!-- HTML Report -->
-                        <div class="glass-effect rounded-lg p-4">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-plex-white">HTML Report</h3>
-                                    <p class="text-sm text-plex-light">Interactive charts and graphs</p>
+                                    <h3 class="text-sm font-medium text-white">HTML Report</h3>
+                                    <p class="text-xs text-surface-500">Interactive charts & graphs</p>
                                 </div>
                             </div>
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="html-include-charts" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">Include interactive charts</label>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="html-dark-theme" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">Dark theme</label>
-                                </div>
-                                <button data-action="export-html" 
-                                    class="w-full bg-orange-500 text-white py-2 px-4 rounded-lg hover:bg-orange-600 transition">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="html-include-charts" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    Include interactive charts
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="html-dark-theme" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    Dark theme
+                                </label>
+                                <button data-action="export-html"
+                                    class="w-full py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-medium hover:bg-amber-500/20 transition-all">
                                     Export HTML Report
                                 </button>
                             </div>
                         </div>
 
                         <!-- Markdown Export -->
-                        <div class="glass-effect rounded-lg p-4">
-                            <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="rounded-xl bg-white/[0.03] border border-white/[0.06] p-4">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-9 h-9 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-4 h-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-plex-white">Markdown Export</h3>
-                                    <p class="text-sm text-plex-light">For documentation and GitHub</p>
+                                    <h3 class="text-sm font-medium text-white">Markdown Export</h3>
+                                    <p class="text-xs text-surface-500">Documentation & GitHub</p>
                                 </div>
                             </div>
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="md-include-toc" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">Include table of contents</label>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <input type="checkbox" id="md-github-flavored" checked class="rounded text-purple-500">
-                                    <label class="text-sm text-plex-light">GitHub Flavored Markdown</label>
-                                </div>
-                                <button data-action="export-markdown" 
-                                    class="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition">
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="md-include-toc" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    Include table of contents
+                                </label>
+                                <label class="flex items-center gap-2 text-xs text-surface-400 cursor-pointer">
+                                    <input type="checkbox" id="md-github-flavored" checked class="rounded text-primary-500 w-3.5 h-3.5">
+                                    GitHub Flavored Markdown
+                                </label>
+                                <button data-action="export-markdown"
+                                    class="w-full py-2 px-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400 text-sm font-medium hover:bg-violet-500/20 transition-all">
                                     Export Markdown
                                 </button>
                             </div>
@@ -164,28 +171,28 @@ class ExportManager {
                     </div>
 
                     <!-- Export Preview -->
-                    <div class="glass-effect rounded-lg p-4">
-                        <h3 class="text-lg font-semibold text-plex-white mb-4">Export Preview</h3>
-                        <div id="export-preview" class="bg-plex-darker rounded-lg p-4 min-h-24 max-h-64 overflow-y-auto">
-                            <div class="text-sm text-plex-light">Select an export format to see a preview...</div>
+                    <div class="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4">
+                        <h3 class="text-xs font-semibold text-surface-500 uppercase tracking-wider mb-2.5">Preview</h3>
+                        <div id="export-preview" class="bg-black/30 rounded-lg p-3 min-h-16 max-h-48 overflow-y-auto">
+                            <div class="text-xs text-surface-500">Select an export format to see a preview...</div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Footer -->
-                <div class="p-6 border-t border-plex-gray">
+                <div class="p-5 pt-4 border-t border-white/[0.06]">
                     <div class="flex justify-between items-center">
-                        <div class="text-sm text-plex-gray" id="export-info">
-                            Ready to export <span id="export-count">0</span> series
+                        <div class="text-xs text-surface-500" id="export-info">
+                            Ready to export <span id="export-count" class="text-white font-medium">0</span> series
                         </div>
-                        <div class="flex space-x-3">
-                            <button data-action="export-all" 
-                                class="px-4 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
-                                Export All Formats
-                            </button>
-                            <button data-action="close-export-manager" 
-                                class="px-4 py-2 text-plex-light hover:text-plex-white transition">
+                        <div class="flex gap-2">
+                            <button data-action="close-export-manager"
+                                class="px-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06] text-surface-300 text-sm font-medium hover:bg-white/[0.06] transition-all">
                                 Close
+                            </button>
+                            <button data-action="export-all"
+                                class="px-4 py-2 rounded-xl bg-primary-500/15 border border-primary-500/25 text-primary-400 text-sm font-medium hover:bg-primary-500/25 transition-all">
+                                Export All Formats
                             </button>
                         </div>
                     </div>
@@ -301,7 +308,7 @@ class ExportManager {
         if (includeMetadata) {
             exportData.metadata = {
                 exportDate: new Date().toISOString(),
-                exportedBy: 'Series Complete for Plex v1.0.1.1',
+                exportedBy: 'Series Complete for Plex v2.5.1',
                 totalSeries: this.filteredSeries.length,
                 completeSeries: this.filteredSeries.filter(s => this.getSeriesStatus(s) === 'complete').length,
                 incompleteSeries: this.filteredSeries.filter(s => this.getSeriesStatus(s) !== 'complete').length,
@@ -341,7 +348,7 @@ class ExportManager {
 <body class="${darkTheme ? 'dark' : 'light'}">
     <div class="container">
         <header>
-            <h1>📊 Series Complete for Plex Analysis Report</h1>
+            <h1>Series Complete for Plex Analysis Report</h1>
             <div class="report-info">
                 <p>Generated on: ${new Date().toLocaleString()}</p>
                 <p>Total Series Analyzed: ${this.filteredSeries.length}</p>
@@ -409,8 +416,8 @@ class ExportManager {
         </div>
 
         <footer>
-            <p>Generated by <strong>Series Complete for Plex v1.0.1.1</strong> - Series Completeness Analyzer</p>
-            <p>🔗 <a href="https://github.com/your-repo/plexcomplete">GitHub Repository</a></p>
+            <p>Generated by <strong>Series Complete for Plex v2.5.1</strong> - Series Completeness Analyzer</p>
+            <p><a href="https://github.com/your-repo/plexcomplete">GitHub Repository</a></p>
         </footer>
     </div>
 
@@ -431,14 +438,14 @@ class ExportManager {
         let content = '';
 
         // Header
-        content += `# 📊 Series Complete for Plex Analysis Report\n\n`;
+        content += `# Series Complete for Plex Analysis Report\n\n`;
         content += `**Generated:** ${new Date().toLocaleString()}\n`;
         content += `**Total Series:** ${this.filteredSeries.length}\n`;
-        content += `**Report Version:** Series Complete for Plex v1.0.1.1\n\n`;
+        content += `**Report Version:** Series Complete for Plex v2.5.1\n\n`;
 
         // Table of Contents
         if (includeToc) {
-            content += `## 📋 Table of Contents\n\n`;
+            content += `## Table of Contents\n\n`;
             content += `- [Summary Statistics](#summary-statistics)\n`;
             content += `- [Series Breakdown](#series-breakdown)\n`;
             content += `- [Complete Series](#complete-series)\n`;
@@ -450,7 +457,7 @@ class ExportManager {
         }
 
         // Summary Statistics
-        content += `## 📈 Summary Statistics\n\n`;
+        content += `## Summary Statistics\n\n`;
         if (githubFlavored) {
             content += `| Metric | Count | Percentage |\n`;
             content += `|--------|-------|------------|\n`;
@@ -465,7 +472,7 @@ class ExportManager {
         content += `\n`;
 
         // Series Breakdown
-        content += `## 📺 Series Breakdown\n\n`;
+        content += `## Series Breakdown\n\n`;
         if (githubFlavored) {
             content += `| Title | Year | Network | Episodes | Completion | Status |\n`;
             content += `|-------|------|---------|----------|------------|--------|\n`;
@@ -474,18 +481,18 @@ class ExportManager {
                 const completion = series.total_episodes > 0 ? 
                     Math.round((series.available_episodes / series.total_episodes) * 100) : 0;
                 const status = this.getSeriesStatus(series);
-                const statusEmoji = status === 'complete' ? '✅' : status === 'critical' ? '🔴' : '⚠️';
+                const statusIcon = status === 'complete' ? '[OK]' : status === 'critical' ? '[!!]' : '[!]';
                 
-                content += `| **${series.title || 'Unknown'}** | ${series.year || 'N/A'} | ${series.network || 'N/A'} | ${series.available_episodes || 0}/${series.total_episodes || 0} | ${completion}% | ${statusEmoji} ${status} |\n`;
+                content += `| **${series.title || 'Unknown'}** | ${series.year || 'N/A'} | ${series.network || 'N/A'} | ${series.available_episodes || 0}/${series.total_episodes || 0} | ${completion}% | ${statusIcon} ${status} |\n`;
             });
         } else {
             this.filteredSeries.forEach(series => {
                 const completion = series.total_episodes > 0 ? 
                     Math.round((series.available_episodes / series.total_episodes) * 100) : 0;
                 const status = this.getSeriesStatus(series);
-                const statusEmoji = status === 'complete' ? '✅' : status === 'critical' ? '🔴' : '⚠️';
+                const statusIcon = status === 'complete' ? '[OK]' : status === 'critical' ? '[!!]' : '[!]';
                 
-                content += `### ${statusEmoji} ${series.title || 'Unknown'}\n`;
+                content += `### ${statusIcon} ${series.title || 'Unknown'}\n`;
                 content += `- **Year:** ${series.year || 'N/A'}\n`;
                 content += `- **Network:** ${series.network || 'N/A'}\n`;
                 content += `- **Episodes:** ${series.available_episodes || 0}/${series.total_episodes || 0}\n`;
@@ -495,7 +502,7 @@ class ExportManager {
         }
 
         // Missing Episodes Details
-        content += `## 🚫 Missing Episodes Details\n\n`;
+        content += `## Missing Episodes Details\n\n`;
         let hasMissingEpisodes = false;
         
         this.filteredSeries.forEach(series => {
@@ -517,12 +524,12 @@ class ExportManager {
         });
 
         if (!hasMissingEpisodes) {
-            content += `No missing episodes found in the analyzed series! 🎉\n\n`;
+            content += `No missing episodes found in the analyzed series!\n\n`;
         }
 
         // Footer
         content += `---\n\n`;
-        content += `*Report generated by **Series Complete for Plex v1.0.1.1** - Series Completeness Analyzer*\n`;
+        content += `*Report generated by **Series Complete for Plex v2.5.1** - Series Completeness Analyzer*\n`;
         content += `*Export Date: ${new Date().toISOString()}*\n`;
 
         this.downloadFile(content, 'plexcomplete-report.md', 'text/markdown');
@@ -723,8 +730,8 @@ class ExportManager {
     showPreview(content, format) {
         const preview = document.getElementById('export-preview');
         preview.innerHTML = `
-            <div class="text-xs text-plex-gray mb-2">${format} Preview:</div>
-            <pre class="text-sm text-plex-white whitespace-pre-wrap">${content}</pre>
+            <div class="text-[10px] text-surface-500 uppercase tracking-wider font-semibold mb-1.5">${format} Preview</div>
+            <pre class="text-xs text-surface-300 whitespace-pre-wrap font-mono">${content}</pre>
         `;
     }
 
@@ -751,11 +758,28 @@ class ExportManager {
         const modal = document.getElementById('export-modal');
         if (modal) {
             modal.classList.remove('hidden');
-            
+
             // Update data from current app state
             if (window.state) {
                 this.updateData(window.state.series, window.state.filteredSeries);
             }
+
+            // ESC key handler
+            this._escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    e.stopImmediatePropagation();
+                    this.close();
+                }
+            };
+            document.addEventListener('keydown', this._escHandler);
+
+            // Backdrop click handler
+            this._backdropHandler = (e) => {
+                if (e.target === modal) {
+                    this.close();
+                }
+            };
+            modal.addEventListener('click', this._backdropHandler);
         }
     }
 
@@ -763,6 +787,15 @@ class ExportManager {
         const modal = document.getElementById('export-modal');
         if (modal) {
             modal.classList.add('hidden');
+            // Cleanup event listeners
+            if (this._escHandler) {
+                document.removeEventListener('keydown', this._escHandler);
+                this._escHandler = null;
+            }
+            if (this._backdropHandler) {
+                modal.removeEventListener('click', this._backdropHandler);
+                this._backdropHandler = null;
+            }
         }
     }
 }

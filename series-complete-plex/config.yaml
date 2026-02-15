@@ -1,0 +1,29 @@
+name: "Series Complete for Plex"
+description: "Analyze your Plex TV library for missing episodes"
+version: "2.6.0"
+slug: "series-complete-plex"
+url: "https://github.com/akustikrausch/series-complete-for-plex"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+startup: application
+boot: auto
+ingress: true
+ingress_port: 3000
+panel_icon: "mdi:television-classic"
+panel_title: "Series Complete"
+options:
+  plex_url: ""
+  plex_token: ""
+  tmdb_api_key: ""
+  thetvdb_api_key: ""
+  thetvdb_pin: ""
+schema:
+  plex_url: url
+  plex_token: password
+  tmdb_api_key: "password?"
+  thetvdb_api_key: "password?"
+  thetvdb_pin: "password?"
+map:
+  - data:rw

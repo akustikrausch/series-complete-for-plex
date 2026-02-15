@@ -15,7 +15,7 @@ class RetrySettingsUI {
                 <!-- Header -->
                 <div class="p-6 border-b border-plex-gray">
                     <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-plex-white">⚙️ Retry Settings</h2>
+                        <h2 class="text-2xl font-bold text-plex-white flex items-center gap-2"><svg class="w-6 h-6 text-surface-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Retry Settings</h2>
                         <button data-action="close-retry-settings" class="text-plex-light hover:text-plex-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -29,7 +29,7 @@ class RetrySettingsUI {
                     <!-- Tabs -->
                     <div class="border-b border-plex-gray">
                         <div class="flex space-x-8 px-6">
-                            <button class="retry-tab py-4 px-2 border-b-2 border-plex-orange text-purple-500 font-semibold" data-tab="configuration">
+                            <button class="retry-tab py-4 px-2 border-b-2 border-primary-500 text-primary-500 font-semibold" data-tab="configuration">
                                 Configuration
                             </button>
                             <button class="retry-tab py-4 px-2 border-b-2 border-transparent text-plex-light hover:text-plex-white" data-tab="monitoring">
@@ -84,7 +84,7 @@ class RetrySettingsUI {
                                 <div class="flex justify-between items-center">
                                     <h3 class="text-lg font-semibold text-plex-white">API Health Status</h3>
                                     <button data-action="run-health-check" 
-                                        class="bg-purple-600 text-plex-dark px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 transition">
+                                        class="bg-primary-600 text-plex-dark px-4 py-2 rounded-lg font-semibold hover:bg-warning transition">
                                         Run Health Check
                                     </button>
                                 </div>
@@ -108,7 +108,7 @@ class RetrySettingsUI {
                                 Reset to Defaults
                             </button>
                             <button data-action="close-retry-settings" 
-                                class="px-6 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
+                                class="px-6 py-2 bg-primary-600 text-plex-dark rounded-lg font-semibold hover:bg-warning transition">
                                 Close
                             </button>
                         </div>
@@ -128,31 +128,31 @@ class RetrySettingsUI {
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Max Retries</label>
                         <input type="number" id="${type}-maxRetries" min="0" max="10" 
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Initial Delay (ms)</label>
                         <input type="number" id="${type}-initialDelay" min="100" max="10000" step="100"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Max Delay (ms)</label>
                         <input type="number" id="${type}-maxDelay" min="1000" max="60000" step="1000"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Backoff Multiplier</label>
                         <input type="number" id="${type}-backoffMultiplier" min="1" max="5" step="0.1"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-plex-light mb-2">Timeout (ms)</label>
                         <input type="number" id="${type}-timeoutMs" min="5000" max="120000" step="5000"
-                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange">
+                            class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500">
                     </div>
                     <div>
                         <label class="flex items-center space-x-2 text-sm text-plex-light">
-                            <input type="checkbox" id="${type}-jitter" class="rounded text-purple-500">
+                            <input type="checkbox" id="${type}-jitter" class="rounded text-primary-500">
                             <span>Enable Jitter</span>
                         </label>
                         <div class="text-xs text-plex-gray mt-1">Adds randomness to prevent thundering herd</div>
@@ -188,10 +188,10 @@ class RetrySettingsUI {
         // Update tab buttons
         document.querySelectorAll('.retry-tab').forEach(tab => {
             if (tab.dataset.tab === tabName) {
-                tab.classList.add('border-plex-orange', 'text-purple-500');
+                tab.classList.add('border-primary-500', 'text-primary-500');
                 tab.classList.remove('border-transparent', 'text-plex-light');
             } else {
-                tab.classList.remove('border-plex-orange', 'text-purple-500');
+                tab.classList.remove('border-primary-500', 'text-primary-500');
                 tab.classList.add('border-transparent', 'text-plex-light');
             }
         });
@@ -363,7 +363,9 @@ class RetrySettingsUI {
             
             resultsContainer.innerHTML = Object.entries(healthResults).map(([name, result]) => {
                 const statusClass = result.healthy ? 'border-green-500/30 bg-green-900/20' : 'border-red-500/30 bg-red-900/20';
-                const statusIcon = result.healthy ? '✅' : '❌';
+                const statusIcon = result.healthy
+                    ? '<svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                    : '<svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';
                 
                 return `
                     <div class="border ${statusClass} rounded-lg p-4">

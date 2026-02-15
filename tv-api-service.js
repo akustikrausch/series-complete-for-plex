@@ -120,13 +120,13 @@ async function initConfig() {
         // Log API key status (without revealing actual keys)
         if (process.env.NODE_ENV !== 'test') {
             console.log('API Keys Status:');
-            console.log(`- TMDb: ${apiConfig.tmdb?.apiKey ? '✅ Configured' : '⚠️  Not configured'}`);
-            console.log(`- TheTVDB: ${apiConfig.thetvdb?.apiKey ? '✅ Configured' : '⚠️  Not configured'}`);
-            console.log(`- OpenAI: ${apiConfig.openai?.apiKey ? '✅ Configured' : '⚠️  Not configured'}`);
-            console.log(`- OMDb: ${apiConfig.omdb?.apiKey ? '✅ Configured' : '⚠️  Not configured'}`);
+            console.log(`- TMDb: ${apiConfig.tmdb?.apiKey ? '[OK] Configured' : '[Warning] Not configured'}`);
+            console.log(`- TheTVDB: ${apiConfig.thetvdb?.apiKey ? '[OK] Configured' : '[Warning] Not configured'}`);
+            console.log(`- OpenAI: ${apiConfig.openai?.apiKey ? '[OK] Configured' : '[Warning] Not configured'}`);
+            console.log(`- OMDb: ${apiConfig.omdb?.apiKey ? '[OK] Configured' : '[Warning] Not configured'}`);
         }
     } catch (error) {
-        console.error('❌ Failed to load API configuration:', error.message);
+        console.error('[Error] Failed to load API configuration:', error.message);
     }
 }
 
@@ -137,6 +137,10 @@ function getTmdbApiKey() {
 
 function getThetvdbApiKey() {
     return apiConfig.thetvdb?.apiKey || '';
+}
+
+function getThetvdbPin() {
+    return apiConfig.thetvdb?.pin || '';
 }
 
 function getOpenaiApiKey() {
@@ -230,36 +234,57 @@ async function saveToCache(key, data) {
 }
 
 // TheTVDB Authentication
+// Invalidate cached token (e.g. on 401 during API call)
+function invalidateThetvdbToken() {
+    thetvdbToken = null;
+    tokenExpiry = null;
+}
+
 async function authenticateTheTVDB() {
     try {
         if (thetvdbToken && tokenExpiry && Date.now() < tokenExpiry) {
             return thetvdbToken;
         }
 
-        // Use rate limiter for TheTVDB authentication
-        // Ensure config is loaded
         await initConfig();
-        
+
         const apiKey = getThetvdbApiKey();
         if (!apiKey) {
             throw new Error('TheTVDB API key not configured');
         }
-        
+
+        // Build login body - include subscriber PIN if configured
+        const loginBody = { apikey: apiKey };
+        const pin = getThetvdbPin();
+        if (pin) {
+            loginBody.pin = pin;
+        }
+
         const response = await rateLimiter.throttle('thetvdb', async () => {
-            return await axios.post('https://api4.thetvdb.com/v4/login', {
-            apikey: apiKey
-        }, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        });
+            return await axios.post('https://api4.thetvdb.com/v4/login', loginBody, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
         });
 
         if (response.data && response.data.data && response.data.data.token) {
             thetvdbToken = response.data.data.token;
-            // Token expires in 30 days, but we'll refresh after 29 days
-            tokenExpiry = Date.now() + (29 * 24 * 60 * 60 * 1000);
+
+            // Try to extract actual expiry from JWT, fallback to 29 days
+            try {
+                const payload = JSON.parse(Buffer.from(thetvdbToken.split('.')[1], 'base64').toString());
+                if (payload.exp) {
+                    // Refresh 1 hour before actual expiry
+                    tokenExpiry = (payload.exp * 1000) - (60 * 60 * 1000);
+                } else {
+                    tokenExpiry = Date.now() + (29 * 24 * 60 * 60 * 1000);
+                }
+            } catch {
+                tokenExpiry = Date.now() + (29 * 24 * 60 * 60 * 1000);
+            }
+
             console.log('TheTVDB authentication successful');
             return thetvdbToken;
         } else {
@@ -267,10 +292,20 @@ async function authenticateTheTVDB() {
             return null;
         }
     } catch (error) {
-        console.error('TheTVDB authentication error:', error.response?.data || error.message);
+        const errorMsg = error.response?.data?.message || error.message;
+        console.error('TheTVDB authentication error:', errorMsg);
+
         if (error.response?.status === 401) {
-            console.error('TheTVDB API key is invalid or expired');
+            if (errorMsg.includes('pin')) {
+                console.error('TheTVDB: Subscriber PIN required. Add your PIN to config under apis.thetvdb.pin');
+            } else if (errorMsg.includes('InvalidAPIKey')) {
+                console.error('TheTVDB: API key is invalid, expired, or inactive. Verify your v4 API key at thetvdb.com/api-information');
+            } else {
+                console.error('TheTVDB: Authentication failed (401). Check your API key and subscriber PIN.');
+            }
         }
+
+        invalidateThetvdbToken();
         return null;
     }
 }
@@ -315,8 +350,9 @@ async function searchTheTVDB(seriesName, year) {
         // Extract the numeric ID from the series ID (e.g., "series-81189" -> "81189")
         const seriesId = series.tvdb_id || series.id.replace('series-', '');
         
-        // Get extended info including episodes (already inside rate limiter)
+        // Get extended info including episodes (meta=episodes is required for v4 API)
         const extendedResponse = await axios.get(`https://api4.thetvdb.com/v4/series/${seriesId}/extended`, {
+            params: { meta: 'episodes' },
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -430,7 +466,17 @@ async function searchTheTVDB(seriesName, year) {
         monitor.trackAPICall('thetvdb', Date.now() - apiStart, true);
         return result;
     } catch (error) {
-        console.error('TheTVDB search error:', error.message);
+        // On 401 during API call, invalidate token and retry once
+        if (error.response?.status === 401 && thetvdbToken) {
+            console.log('TheTVDB: Token expired during API call, re-authenticating...');
+            invalidateThetvdbToken();
+            const newToken = await authenticateTheTVDB();
+            if (newToken) {
+                // Retry is handled by the caller on next invocation
+                console.log('TheTVDB: Re-authentication successful, retry the request');
+            }
+        }
+        console.error('TheTVDB search error:', error.response?.data?.message || error.message);
         errorTracker.logAPIFailure('thetvdb', error);
         monitor.trackAPICall('thetvdb', Date.now() - apiStart, false);
         monitor.trackError(error);
@@ -544,15 +590,22 @@ async function searchIMDb(seriesName, year) {
     // Ensure config is loaded
     await initConfig();
     
-    const OMDB_API_KEY = getOmdbApiKey() || '4de86c97'; // Fallback to free tier key
+    const OMDB_API_KEY = getOmdbApiKey() || process.env.OMDB_API_KEY || '';
     const startTime = Date.now();
     
     try {
         console.log(`Searching OMDb/IMDb for: ${seriesName}`);
         
         // Search for the series
-        const searchUrl = `http://www.omdbapi.com/?apikey=${OMDB_API_KEY}&t=${encodeURIComponent(seriesName)}&type=series${year ? `&y=${year}` : ''}`;
-        const response = await axios.get(searchUrl, { timeout: 10000 });
+        const response = await axios.get('https://www.omdbapi.com/', {
+            params: {
+                apikey: OMDB_API_KEY,
+                t: seriesName,
+                type: 'series',
+                ...(year ? { y: year } : {})
+            },
+            timeout: 10000
+        });
         
         monitor.trackAPICall('omdb', Date.now() - startTime, true);
         
@@ -635,7 +688,7 @@ async function fillMissingPosters(metadata, seriesName, year) {
             metadata.thumb = metadata.thumb || tmdbData.thumb;
             metadata.art = metadata.art || tmdbData.art;
             metadata.posterOriginal = metadata.posterOriginal || tmdbData.posterOriginal;
-            console.log(`✓ Added poster URLs from TMDb to ${metadata.source} result`);
+            console.log(`[OK] Added poster URLs from TMDb to ${metadata.source} result`);
         }
     } catch (error) {
         console.log(`Failed to fetch poster from TMDb: ${error.message}`);
@@ -683,7 +736,7 @@ async function getSeriesMetadata(seriesName, year, specificApi = null) {
     try {
         let metadata = await searchTMDb(seriesName, year);
         if (metadata && metadata.totalSeasons > 0) {
-            console.log(`✓ Found on TMDb: ${seriesName}`);
+            console.log(`[OK] Found on TMDb: ${seriesName}`);
             metadata.fallbackUsed = false;
             return metadata;
         } else {
@@ -701,7 +754,7 @@ async function getSeriesMetadata(seriesName, year, specificApi = null) {
         try {
             let metadata = await searchTheTVDB(seriesName, year);
             if (metadata && metadata.totalSeasons > 0) {
-                console.log(`✓ Found on TheTVDB (fallback): ${seriesName}`);
+                console.log(`[OK] Found on TheTVDB (fallback): ${seriesName}`);
                 metadata.fallbackUsed = true;
                 metadata.fallbackReason = apiResults.tmdb === 'not_found' ? 'not_found_primary' : 'error_primary';
                 
@@ -766,7 +819,7 @@ Return only valid JSON with actual numbers and boolean:
                         // Try to get posters from TMDb since OpenAI doesn't provide images
                         result = await fillMissingPosters(result, seriesName, year);
                         
-                        console.log(`✓ Found on OpenAI (fallback): ${seriesName}`);
+                        console.log(`[OK] Found on OpenAI (fallback): ${seriesName}`);
                         await saveToCache(getCacheKey('openai', seriesName, year), result);
                         return result;
                     }
@@ -785,7 +838,7 @@ Return only valid JSON with actual numbers and boolean:
         try {
             let metadata = await searchTMDb(seriesName, null);
             if (metadata && metadata.totalSeasons > 0) {
-                console.log(`✓ Found on TMDb (without year): ${seriesName}`);
+                console.log(`[OK] Found on TMDb (without year): ${seriesName}`);
                 metadata.fallbackUsed = true;
                 metadata.fallbackReason = 'year_mismatch';
                 return metadata;
@@ -803,7 +856,7 @@ Return only valid JSON with actual numbers and boolean:
             if (metadata) {
                 metadata.fallbackUsed = true;
                 metadata.fallbackReason = 'last_resort';
-                console.log(`✓ Found on IMDb (last resort): ${seriesName}`);
+                console.log(`[OK] Found on IMDb (last resort): ${seriesName}`);
                 return metadata;
             }
         } catch (error) {
@@ -811,7 +864,7 @@ Return only valid JSON with actual numbers and boolean:
         }
     }
     
-    console.log(`✗ No metadata found for: ${seriesName}`);
+    console.log(`[FAIL] No metadata found for: ${seriesName}`);
     console.log(`API Results: ${JSON.stringify(apiResults)}`);
     return null;
 }
@@ -859,7 +912,7 @@ async function verifySeriesMetadata(seriesName, year) {
             // Import OpenAI if available
             const OpenAI = require('openai');
             const openai = new OpenAI({
-                apiKey: getOpenaiApiKey() || 'DEMO_KEY_REPLACE_IN_PRODUCTION'
+                apiKey: getOpenaiApiKey() || process.env.OPENAI_API_KEY || ''
             });
             
             const prompt = `TV series: ${seriesName}${year ? ` (${year})` : ''}
@@ -957,7 +1010,7 @@ async function testTmdbApi() {
     try {
         // Force reload config to get latest saved keys
         const config = require('./services/ConfigService');
-        await config.loadConfig();
+        await config.init();
         await initConfig();
         
         const apiKey = getTmdbApiKey();
@@ -990,9 +1043,8 @@ async function testTmdbApi() {
 
 async function testThetvdbApi() {
     try {
-        // Ensure config is loaded
         await initConfig();
-        
+
         const apiKey = getThetvdbApiKey();
         if (!apiKey) {
             return {
@@ -1000,33 +1052,44 @@ async function testThetvdbApi() {
                 error: 'TheTVDB API key not configured'
             };
         }
-        
-        const loggedIn = await authenticateTheTVDB();
-        if (!loggedIn) {
+
+        // Force fresh authentication for test
+        invalidateThetvdbToken();
+        const token = await authenticateTheTVDB();
+        if (!token) {
+            const pin = getThetvdbPin();
+            let hint = 'Authentication failed.';
+            if (!pin) {
+                hint += ' If you have a subscriber/user-supported API key, you also need to configure your subscriber PIN.';
+            }
+            hint += ' Make sure you are using a v4 API key (legacy v2/v3 keys do not work).';
             return {
                 success: false,
-                error: 'Authentication failed'
+                error: hint
             };
         }
-        
+
         const response = await axios.get(
-            'https://api4.thetvdb.com/v4/series/121361',
+            'https://api4.thetvdb.com/v4/series/121361/extended',
             {
+                params: { meta: 'episodes' },
                 headers: {
-                    'Authorization': `Bearer ${thetvdbToken}`,
+                    'Authorization': `Bearer ${token}`,
                     'Accept': 'application/json'
                 }
             }
         );
-        
+
         return {
             success: true,
-            title: response.data?.data?.name || 'Example Series'
+            title: response.data?.data?.name || 'Example Series',
+            pinConfigured: !!getThetvdbPin()
         };
     } catch (error) {
+        const msg = error.response?.data?.message || error.message;
         return {
             success: false,
-            error: error.response?.data?.message || error.message
+            error: msg
         };
     }
 }

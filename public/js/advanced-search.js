@@ -3,19 +3,13 @@ class AdvancedSearch {
     constructor() {
         this.filters = {
             query: '',
-            boolean: 'AND',
             genres: [],
             yearStart: null,
             yearEnd: null,
             networks: [],
-            status: 'all', // all, complete, incomplete
-            completeness: null, // min percentage
-            regex: null,
-            caseSensitive: false
+            status: 'all'
         };
-        
-        this.presets = this.loadPresets();
-        this.searchHistory = this.loadSearchHistory();
+
         this.allSeries = [];
         this.filteredSeries = [];
         this.genres = new Set();
@@ -35,171 +29,98 @@ class AdvancedSearch {
 
         const searchPanel = document.createElement('div');
         searchPanel.id = 'advanced-search-panel';
-        searchPanel.className = 'hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4';
+        searchPanel.className = 'hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4';
+        searchPanel.setAttribute('role', 'dialog');
+        searchPanel.setAttribute('aria-modal', 'true');
+        searchPanel.setAttribute('aria-label', 'Filter Series');
         searchPanel.innerHTML = `
-            <div class="glass-effect rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="glass-effect rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col animate-slide-up" style="animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1)">
                 <!-- Header -->
-                <div class="p-6 border-b border-plex-gray">
-                    <div class="flex justify-between items-center">
-                        <h2 class="text-2xl font-bold text-plex-white">🔍 Advanced Search</h2>
-                        <button data-action="close-advanced-search" class="text-plex-light hover:text-plex-white">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <div class="flex items-center justify-between p-5 pb-4 border-b border-white/[0.06]">
+                    <h2 class="text-lg font-bold text-white tracking-tight flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                             </svg>
-                        </button>
-                    </div>
+                        </div>
+                        Filter Series
+                    </h2>
+                    <button data-action="close-advanced-search" class="p-1.5 rounded-lg text-surface-500 hover:text-white hover:bg-white/[0.06] transition-all" aria-label="Close filter panel">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
 
-                <!-- Search Body -->
-                <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                    <!-- Main Query with Boolean -->
-                    <div class="space-y-3">
-                        <label class="text-sm font-semibold text-plex-light">Search Query</label>
-                        <div class="flex space-x-2">
-                            <input type="text" id="search-query" 
-                                class="flex-1 bg-plex-dark text-plex-white px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-plex-orange"
-                                placeholder="Enter search terms...">
-                            <select id="search-boolean" class="bg-plex-dark text-plex-white px-4 py-2 rounded-lg">
-                                <option value="AND">AND</option>
-                                <option value="OR">OR</option>
-                                <option value="NOT">NOT</option>
-                            </select>
-                        </div>
-                        <div class="text-xs text-plex-gray">
-                            Use operators: "exact phrase", +must_include, -exclude, title:specific_field
+                <!-- Filter Body -->
+                <div class="flex-1 overflow-y-auto p-5 space-y-5">
+                    <!-- Search Query -->
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Search</label>
+                        <div class="relative">
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <input type="text" id="search-query"
+                                class="w-full h-10 pl-9 pr-3 bg-white/[0.03] text-white rounded-xl border border-white/[0.06] focus:border-primary-500/50 transition-all text-sm placeholder-surface-500"
+                                placeholder="Search by title...">
                         </div>
                     </div>
 
-                    <!-- Filter Presets -->
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <label class="text-sm font-semibold text-plex-light">Filter Presets</label>
-                            <button data-action="save-search-preset" class="text-xs text-purple-500 hover:text-plex-white">
-                                + Save Current
-                            </button>
-                        </div>
-                        <div id="preset-buttons" class="flex flex-wrap gap-2">
-                            <!-- Preset buttons will be added here -->
+                    <!-- Status Filter (pill buttons) -->
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Status</label>
+                        <div class="flex gap-2" id="status-filter-group">
+                            <button data-status="all" class="status-pill active px-4 py-1.5 rounded-lg text-xs font-medium transition-all">All</button>
+                            <button data-status="complete" class="status-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Complete</button>
+                            <button data-status="incomplete" class="status-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Incomplete</button>
+                            <button data-status="critical" class="status-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Critical (&lt;50%)</button>
                         </div>
                     </div>
 
-                    <!-- Filters Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Genre Filter -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-plex-light">Genres</label>
-                            <div class="bg-plex-dark rounded-lg p-3 max-h-32 overflow-y-auto">
-                                <div id="genre-filters" class="space-y-1">
-                                    <!-- Genre checkboxes will be added here -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Network Filter -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-plex-light">Networks</label>
-                            <div class="bg-plex-dark rounded-lg p-3 max-h-32 overflow-y-auto">
-                                <div id="network-filters" class="space-y-1">
-                                    <!-- Network checkboxes will be added here -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Year Range -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-plex-light">Year Range</label>
-                            <div class="flex space-x-2">
-                                <input type="number" id="year-start" min="1950" max="2030" 
-                                    placeholder="From" class="flex-1 bg-plex-dark text-plex-white px-3 py-2 rounded-lg">
-                                <input type="number" id="year-end" min="1950" max="2030" 
-                                    placeholder="To" class="flex-1 bg-plex-dark text-plex-white px-3 py-2 rounded-lg">
-                            </div>
-                        </div>
-
-                        <!-- Completeness -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-plex-light">Completeness</label>
-                            <div class="flex items-center space-x-2">
-                                <select id="completeness-op" class="bg-plex-dark text-plex-white px-3 py-2 rounded-lg">
-                                    <option value="any">Any</option>
-                                    <option value="complete">Complete (100%)</option>
-                                    <option value="incomplete">Incomplete</option>
-                                    <option value="min">Minimum %</option>
-                                </select>
-                                <input type="number" id="completeness-value" min="0" max="100" 
-                                    placeholder="%" class="w-20 bg-plex-dark text-plex-white px-3 py-2 rounded-lg hidden">
-                            </div>
+                    <!-- Year Range -->
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Year Range</label>
+                        <div class="flex items-center gap-2">
+                            <input type="number" id="year-start" min="1950" max="2030"
+                                placeholder="From" class="flex-1 h-10 px-3 bg-white/[0.03] text-white rounded-xl border border-white/[0.06] focus:border-primary-500/50 text-sm placeholder-surface-500">
+                            <span class="text-surface-600 text-sm">—</span>
+                            <input type="number" id="year-end" min="1950" max="2030"
+                                placeholder="To" class="flex-1 h-10 px-3 bg-white/[0.03] text-white rounded-xl border border-white/[0.06] focus:border-primary-500/50 text-sm placeholder-surface-500">
                         </div>
                     </div>
 
-                    <!-- Advanced Options -->
-                    <div class="space-y-3">
-                        <details class="group">
-                            <summary class="cursor-pointer text-sm font-semibold text-plex-light hover:text-purple-500">
-                                ⚙️ Advanced Options
-                            </summary>
-                            <div class="mt-3 space-y-3">
-                                <!-- Regex Pattern -->
-                                <div class="space-y-2">
-                                    <label class="text-sm text-plex-light">Regex Pattern</label>
-                                    <input type="text" id="regex-pattern" 
-                                        class="w-full bg-plex-dark text-plex-white px-3 py-2 rounded-lg"
-                                        placeholder="e.g., S\\d{2}E\\d{2}">
-                                    <label class="flex items-center space-x-2 text-xs text-plex-gray">
-                                        <input type="checkbox" id="case-sensitive" class="rounded">
-                                        <span>Case Sensitive</span>
-                                    </label>
-                                </div>
-
-                                <!-- Search Fields -->
-                                <div class="space-y-2">
-                                    <label class="text-sm text-plex-light">Search In:</label>
-                                    <div class="flex flex-wrap gap-2">
-                                        <label class="flex items-center space-x-1 text-xs">
-                                            <input type="checkbox" name="search-field" value="title" checked>
-                                            <span>Title</span>
-                                        </label>
-                                        <label class="flex items-center space-x-1 text-xs">
-                                            <input type="checkbox" name="search-field" value="description" checked>
-                                            <span>Description</span>
-                                        </label>
-                                        <label class="flex items-center space-x-1 text-xs">
-                                            <input type="checkbox" name="search-field" value="episodes">
-                                            <span>Episodes</span>
-                                        </label>
-                                        <label class="flex items-center space-x-1 text-xs">
-                                            <input type="checkbox" name="search-field" value="path">
-                                            <span>File Path</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </details>
+                    <!-- Genres (clickable tags) -->
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Genres</label>
+                        <div id="genre-filters" class="flex flex-wrap gap-1.5">
+                            <!-- Genre tags populated dynamically -->
+                        </div>
                     </div>
 
-                    <!-- Search History -->
-                    <div class="space-y-2">
-                        <label class="text-sm font-semibold text-plex-light">Recent Searches</label>
-                        <div id="search-history" class="flex flex-wrap gap-2">
-                            <!-- History items will be added here -->
+                    <!-- Networks (clickable tags) -->
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Networks</label>
+                        <div id="network-filters" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto">
+                            <!-- Network tags populated dynamically -->
                         </div>
                     </div>
                 </div>
 
                 <!-- Footer -->
-                <div class="p-6 border-t border-plex-gray">
+                <div class="p-5 pt-4 border-t border-white/[0.06]">
                     <div class="flex justify-between items-center">
-                        <div class="text-sm text-plex-gray">
+                        <div class="text-sm text-surface-500">
                             <span id="result-count">0 results</span>
                         </div>
-                        <div class="flex space-x-3">
-                            <button data-action="reset-search" 
-                                class="px-4 py-2 text-plex-light hover:text-plex-white transition">
+                        <div class="flex gap-2">
+                            <button data-action="reset-search"
+                                class="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">
                                 Reset
                             </button>
-                            <button data-action="perform-search" 
-                                class="px-6 py-2 bg-purple-600 text-plex-dark rounded-lg font-semibold hover:bg-orange-500 transition">
-                                Search
+                            <button data-action="perform-search"
+                                class="btn-primary px-5 py-2 rounded-xl text-sm font-semibold">
+                                Apply Filters
                             </button>
                         </div>
                     </div>
@@ -208,24 +129,57 @@ class AdvancedSearch {
         `;
 
         document.body.appendChild(searchPanel);
-        this.updatePresetButtons();
-        this.updateSearchHistory();
     }
 
     attachEventListeners() {
-        // Completeness operator change
-        document.getElementById('completeness-op')?.addEventListener('change', (e) => {
-            const valueInput = document.getElementById('completeness-value');
-            if (e.target.value === 'min') {
-                valueInput.classList.remove('hidden');
-            } else {
-                valueInput.classList.add('hidden');
+        const panel = document.getElementById('advanced-search-panel');
+        if (!panel) return;
+
+        // Event delegation for all actions inside the panel
+        panel.addEventListener('click', (e) => {
+            // Backdrop click to close
+            if (e.target === panel) {
+                this.close();
+                return;
+            }
+
+            const actionBtn = e.target.closest('[data-action]');
+            if (actionBtn) {
+                const action = actionBtn.dataset.action;
+                switch (action) {
+                    case 'close-advanced-search':
+                        this.close();
+                        break;
+                    case 'perform-search':
+                        this.search();
+                        break;
+                    case 'reset-search':
+                        this.reset();
+                        break;
+                }
+                return;
+            }
+
+            // Status pill clicks
+            const statusPill = e.target.closest('.status-pill');
+            if (statusPill) {
+                panel.querySelectorAll('.status-pill').forEach(p => p.classList.remove('active'));
+                statusPill.classList.add('active');
+                this.updateResultCount();
+                return;
+            }
+
+            // Genre/Network tag clicks
+            const tag = e.target.closest('.filter-tag');
+            if (tag) {
+                tag.classList.toggle('active');
+                this.updateResultCount();
+                return;
             }
         });
 
-        // Real-time search preview
-        const searchInputs = ['search-query', 'year-start', 'year-end', 'regex-pattern'];
-        searchInputs.forEach(id => {
+        // Real-time search preview on input
+        ['search-query', 'year-start', 'year-end'].forEach(id => {
             document.getElementById(id)?.addEventListener('input', () => {
                 this.debounce(() => this.updateResultCount(), 300);
             });
@@ -234,7 +188,6 @@ class AdvancedSearch {
 
     async loadSeriesData() {
         try {
-            // Use the correct API endpoint
             const response = await fetch('/api/get-series', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -242,7 +195,7 @@ class AdvancedSearch {
             });
             const data = await response.json();
             this.allSeries = data.series || [];
-            
+
             // Extract unique genres and networks
             this.allSeries.forEach(series => {
                 if (series.genre) {
@@ -260,81 +213,52 @@ class AdvancedSearch {
     }
 
     populateFilters() {
-        // Populate genre filters
+        // Populate genre tags
         const genreContainer = document.getElementById('genre-filters');
         if (genreContainer) {
             genreContainer.innerHTML = Array.from(this.genres).sort().map(genre => `
-                <label class="flex items-center space-x-2 text-xs text-plex-light hover:text-plex-white cursor-pointer">
-                    <input type="checkbox" name="genre" value="${genre}" class="rounded text-purple-500">
-                    <span>${genre}</span>
-                </label>
+                <button class="filter-tag px-2.5 py-1 rounded-lg text-xs font-medium transition-all bg-white/[0.03] border border-white/[0.06] text-surface-400 hover:bg-white/[0.06] hover:text-white" data-value="${genre}">
+                    ${genre}
+                </button>
             `).join('');
         }
 
-        // Populate network filters
+        // Populate network tags
         const networkContainer = document.getElementById('network-filters');
         if (networkContainer) {
             networkContainer.innerHTML = Array.from(this.networks).sort().map(network => `
-                <label class="flex items-center space-x-2 text-xs text-plex-light hover:text-plex-white cursor-pointer">
-                    <input type="checkbox" name="network" value="${network}" class="rounded text-purple-500">
-                    <span>${network}</span>
-                </label>
+                <button class="filter-tag px-2.5 py-1 rounded-lg text-xs font-medium transition-all bg-white/[0.03] border border-white/[0.06] text-surface-400 hover:bg-white/[0.06] hover:text-white" data-value="${network}">
+                    ${network}
+                </button>
             `).join('');
         }
     }
 
-    parseSearchQuery(query) {
-        const tokens = [];
-        const regex = /("([^"]+)"|\+(\S+)|-(\S+)|(\w+):(\S+)|(\S+))/g;
-        let match;
-
-        while ((match = regex.exec(query)) !== null) {
-            if (match[2]) {
-                // Exact phrase
-                tokens.push({ type: 'phrase', value: match[2] });
-            } else if (match[3]) {
-                // Must include
-                tokens.push({ type: 'must', value: match[3] });
-            } else if (match[4]) {
-                // Must exclude
-                tokens.push({ type: 'exclude', value: match[4] });
-            } else if (match[5] && match[6]) {
-                // Field-specific search
-                tokens.push({ type: 'field', field: match[5], value: match[6] });
-            } else if (match[7]) {
-                // Regular term
-                tokens.push({ type: 'term', value: match[7] });
-            }
-        }
-
-        return tokens;
-    }
-
     applyFilters() {
-        const query = document.getElementById('search-query').value;
-        const booleanOp = document.getElementById('search-boolean').value;
-        const yearStart = document.getElementById('year-start').value;
-        const yearEnd = document.getElementById('year-end').value;
-        const completenessOp = document.getElementById('completeness-op').value;
-        const completenessValue = document.getElementById('completeness-value').value;
-        const regexPattern = document.getElementById('regex-pattern').value;
-        const caseSensitive = document.getElementById('case-sensitive').checked;
+        const query = (document.getElementById('search-query')?.value || '').trim().toLowerCase();
+        const yearStart = document.getElementById('year-start')?.value;
+        const yearEnd = document.getElementById('year-end')?.value;
 
-        // Get selected genres and networks
-        const selectedGenres = Array.from(document.querySelectorAll('input[name="genre"]:checked'))
-            .map(cb => cb.value);
-        const selectedNetworks = Array.from(document.querySelectorAll('input[name="network"]:checked'))
-            .map(cb => cb.value);
-        
-        // Get search fields
-        const searchFields = Array.from(document.querySelectorAll('input[name="search-field"]:checked'))
-            .map(cb => cb.value);
+        // Get active status
+        const activeStatus = document.querySelector('.status-pill.active')?.dataset.status || 'all';
 
-        // Parse search query
-        const tokens = this.parseSearchQuery(query);
+        // Get selected genres and networks from active tags
+        const selectedGenres = Array.from(document.querySelectorAll('#genre-filters .filter-tag.active'))
+            .map(tag => tag.dataset.value);
+        const selectedNetworks = Array.from(document.querySelectorAll('#network-filters .filter-tag.active'))
+            .map(tag => tag.dataset.value);
 
         // Apply filters
         this.filteredSeries = this.allSeries.filter(series => {
+            // Text search (title only for simplicity)
+            if (query) {
+                const title = (series.title || '').toLowerCase();
+                const summary = (series.summary || '').toLowerCase();
+                if (!title.includes(query) && !summary.includes(query)) {
+                    return false;
+                }
+            }
+
             // Genre filter
             if (selectedGenres.length > 0) {
                 const seriesGenres = (series.genre || '').split(',').map(g => g.trim());
@@ -352,34 +276,20 @@ class AdvancedSearch {
             if (yearStart && series.year < parseInt(yearStart)) return false;
             if (yearEnd && series.year > parseInt(yearEnd)) return false;
 
-            // Completeness filter
-            const completeness = (series.available_episodes / series.total_episodes) * 100;
-            switch (completenessOp) {
+            // Status/completeness filter
+            const completeness = series.total_episodes > 0
+                ? (series.available_episodes / series.total_episodes) * 100
+                : 0;
+            switch (activeStatus) {
                 case 'complete':
                     if (completeness < 100) return false;
                     break;
                 case 'incomplete':
                     if (completeness >= 100) return false;
                     break;
-                case 'min':
-                    if (completeness < parseFloat(completenessValue || 0)) return false;
+                case 'critical':
+                    if (completeness >= 50) return false;
                     break;
-            }
-
-            // Regex filter
-            if (regexPattern) {
-                try {
-                    const regex = new RegExp(regexPattern, caseSensitive ? 'g' : 'gi');
-                    const searchText = this.getSearchableText(series, searchFields);
-                    if (!regex.test(searchText)) return false;
-                } catch (e) {
-                    console.error('Invalid regex:', e);
-                }
-            }
-
-            // Query filter with boolean logic
-            if (tokens.length > 0) {
-                return this.matchesQuery(series, tokens, booleanOp, searchFields, caseSensitive);
             }
 
             return true;
@@ -388,81 +298,8 @@ class AdvancedSearch {
         return this.filteredSeries;
     }
 
-    matchesQuery(series, tokens, booleanOp, searchFields, caseSensitive) {
-        const searchText = this.getSearchableText(series, searchFields);
-        const compareText = caseSensitive ? searchText : searchText.toLowerCase();
-
-        const results = tokens.map(token => {
-            let value = caseSensitive ? token.value : token.value.toLowerCase();
-            
-            switch (token.type) {
-                case 'phrase':
-                case 'term':
-                case 'must':
-                    return compareText.includes(value);
-                case 'exclude':
-                    return !compareText.includes(value);
-                case 'field':
-                    const fieldValue = this.getFieldValue(series, token.field);
-                    const fieldText = caseSensitive ? fieldValue : fieldValue.toLowerCase();
-                    return fieldText.includes(value);
-                default:
-                    return false;
-            }
-        });
-
-        // Apply boolean logic
-        switch (booleanOp) {
-            case 'AND':
-                return results.every(r => r);
-            case 'OR':
-                return results.some(r => r);
-            case 'NOT':
-                return !results.some(r => r);
-            default:
-                return results.every(r => r);
-        }
-    }
-
-    getSearchableText(series, fields) {
-        const parts = [];
-        
-        if (fields.includes('title')) {
-            parts.push(series.title || '');
-        }
-        if (fields.includes('description')) {
-            parts.push(series.summary || '');
-        }
-        if (fields.includes('episodes')) {
-            parts.push(series.episode_titles?.join(' ') || '');
-        }
-        if (fields.includes('path')) {
-            parts.push(series.path || '');
-        }
-
-        return parts.join(' ');
-    }
-
-    getFieldValue(series, field) {
-        const fieldMap = {
-            'title': series.title,
-            'genre': series.genre,
-            'year': series.year?.toString(),
-            'network': series.network,
-            'path': series.path,
-            'summary': series.summary
-        };
-        return fieldMap[field] || '';
-    }
-
     async search() {
         const results = this.applyFilters();
-        
-        // Save to history
-        const query = document.getElementById('search-query').value;
-        if (query) {
-            this.addToHistory(query);
-        }
 
         // Update result count
         document.getElementById('result-count').textContent = `${results.length} results`;
@@ -478,7 +315,7 @@ class AdvancedSearch {
         // Show notification
         if (window.wsClient) {
             window.wsClient.showNotification(
-                'Search Complete',
+                'Filter Applied',
                 `Found ${results.length} series matching your criteria`,
                 'success',
                 { duration: 3000 }
@@ -488,150 +325,29 @@ class AdvancedSearch {
 
     updateResultCount() {
         const results = this.applyFilters();
-        document.getElementById('result-count').textContent = `${results.length} results`;
+        const countEl = document.getElementById('result-count');
+        if (countEl) {
+            countEl.textContent = `${results.length} results`;
+        }
     }
 
     reset() {
-        document.getElementById('search-query').value = '';
-        document.getElementById('search-boolean').value = 'AND';
-        document.getElementById('year-start').value = '';
-        document.getElementById('year-end').value = '';
-        document.getElementById('completeness-op').value = 'any';
-        document.getElementById('completeness-value').value = '';
-        document.getElementById('regex-pattern').value = '';
-        document.getElementById('case-sensitive').checked = false;
-        
-        // Clear all checkboxes
-        document.querySelectorAll('input[type="checkbox"][name="genre"]').forEach(cb => cb.checked = false);
-        document.querySelectorAll('input[type="checkbox"][name="network"]').forEach(cb => cb.checked = false);
-        document.querySelectorAll('input[name="search-field"]').forEach(cb => cb.checked = cb.value === 'title' || cb.value === 'description');
-        
-        this.updateResultCount();
-    }
+        const queryInput = document.getElementById('search-query');
+        if (queryInput) queryInput.value = '';
+        const yearStartInput = document.getElementById('year-start');
+        if (yearStartInput) yearStartInput.value = '';
+        const yearEndInput = document.getElementById('year-end');
+        if (yearEndInput) yearEndInput.value = '';
 
-    savePreset() {
-        const name = prompt('Enter preset name:');
-        if (!name) return;
+        // Reset status pills
+        document.querySelectorAll('.status-pill').forEach(p => p.classList.remove('active'));
+        const allPill = document.querySelector('.status-pill[data-status="all"]');
+        if (allPill) allPill.classList.add('active');
 
-        const preset = {
-            name,
-            query: document.getElementById('search-query').value,
-            boolean: document.getElementById('search-boolean').value,
-            genres: Array.from(document.querySelectorAll('input[name="genre"]:checked')).map(cb => cb.value),
-            networks: Array.from(document.querySelectorAll('input[name="network"]:checked')).map(cb => cb.value),
-            yearStart: document.getElementById('year-start').value,
-            yearEnd: document.getElementById('year-end').value,
-            completenessOp: document.getElementById('completeness-op').value,
-            completenessValue: document.getElementById('completeness-value').value,
-            regex: document.getElementById('regex-pattern').value,
-            caseSensitive: document.getElementById('case-sensitive').checked,
-            searchFields: Array.from(document.querySelectorAll('input[name="search-field"]:checked')).map(cb => cb.value)
-        };
-
-        this.presets.push(preset);
-        localStorage.setItem('searchPresets', JSON.stringify(this.presets));
-        this.updatePresetButtons();
-    }
-
-    loadPreset(index) {
-        const preset = this.presets[index];
-        if (!preset) return;
-
-        document.getElementById('search-query').value = preset.query || '';
-        document.getElementById('search-boolean').value = preset.boolean || 'AND';
-        document.getElementById('year-start').value = preset.yearStart || '';
-        document.getElementById('year-end').value = preset.yearEnd || '';
-        document.getElementById('completeness-op').value = preset.completenessOp || 'any';
-        document.getElementById('completeness-value').value = preset.completenessValue || '';
-        document.getElementById('regex-pattern').value = preset.regex || '';
-        document.getElementById('case-sensitive').checked = preset.caseSensitive || false;
-
-        // Set checkboxes
-        document.querySelectorAll('input[name="genre"]').forEach(cb => {
-            cb.checked = preset.genres?.includes(cb.value) || false;
-        });
-        document.querySelectorAll('input[name="network"]').forEach(cb => {
-            cb.checked = preset.networks?.includes(cb.value) || false;
-        });
-        document.querySelectorAll('input[name="search-field"]').forEach(cb => {
-            cb.checked = preset.searchFields?.includes(cb.value) || false;
-        });
+        // Reset all tags
+        document.querySelectorAll('.filter-tag.active').forEach(tag => tag.classList.remove('active'));
 
         this.updateResultCount();
-    }
-
-    deletePreset(index) {
-        if (confirm('Delete this preset?')) {
-            this.presets.splice(index, 1);
-            localStorage.setItem('searchPresets', JSON.stringify(this.presets));
-            this.updatePresetButtons();
-        }
-    }
-
-    updatePresetButtons() {
-        const container = document.getElementById('preset-buttons');
-        if (!container) return;
-
-        // Add default presets if none exist
-        if (this.presets.length === 0) {
-            this.presets = [
-                { name: '🎬 Complete Series', completenessOp: 'complete' },
-                { name: '📺 Recent (2020+)', yearStart: '2020' },
-                { name: '🔴 Incomplete', completenessOp: 'incomplete' }
-            ];
-        }
-
-        container.innerHTML = this.presets.map((preset, index) => `
-            <div class="flex items-center space-x-1 bg-plex-dark rounded-lg px-3 py-1">
-                <button data-action="load-search-preset" data-preset-index="${index}" 
-                    class="text-xs text-plex-light hover:text-purple-500">
-                    ${preset.name}
-                </button>
-                <button data-action="delete-search-preset" data-preset-index="${index}" 
-                    class="text-xs text-plex-gray hover:text-red-500">
-                    ×
-                </button>
-            </div>
-        `).join('');
-    }
-
-    addToHistory(query) {
-        if (!this.searchHistory.includes(query)) {
-            this.searchHistory.unshift(query);
-            if (this.searchHistory.length > 10) {
-                this.searchHistory.pop();
-            }
-            localStorage.setItem('searchHistory', JSON.stringify(this.searchHistory));
-            this.updateSearchHistory();
-        }
-    }
-
-    updateSearchHistory() {
-        const container = document.getElementById('search-history');
-        if (!container) return;
-
-        container.innerHTML = this.searchHistory.slice(0, 5).map(query => `
-            <button data-action="apply-search-history" data-query="${query.replace(/"/g, '&quot;')}" 
-                class="text-xs bg-plex-dark text-plex-light px-3 py-1 rounded-lg hover:bg-plex-gray">
-                ${query}
-            </button>
-        `).join('');
-    }
-
-    loadPresets() {
-        try {
-            return JSON.parse(localStorage.getItem('searchPresets') || '[]');
-        } catch {
-            return [];
-        }
-    }
-
-    loadSearchHistory() {
-        try {
-            return JSON.parse(localStorage.getItem('searchHistory') || '[]');
-        } catch {
-            return [];
-        }
     }
 
     open() {
@@ -658,8 +374,6 @@ class AdvancedSearch {
 // Initialize advanced search
 document.addEventListener('DOMContentLoaded', () => {
     window.advancedSearch = new AdvancedSearch();
-    
-    // Advanced search button is now integrated into the main search bar
 
     // Keyboard shortcut (Ctrl+Shift+F)
     document.addEventListener('keydown', (e) => {
