@@ -141,7 +141,7 @@ window.openSettings = function() {
                     <p class="text-[11px] text-surface-600">
                         <span class="text-primary-500/70 font-medium">Series Complete for Plex</span>
                         <span class="mx-1.5 text-surface-700">&middot;</span>
-                        v2.6.0
+                        v2.6.1
                     </p>
                 </div>
             </div>
