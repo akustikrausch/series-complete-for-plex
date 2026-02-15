@@ -3,21 +3,25 @@
 profile series-complete-plex flags=(attach_disconnected,mediate_deleted) {
   #include <abstractions/base>
 
+  # S6 overlay init system
+  /init rix,
+  /bin/** rix,
+  /sbin/** rix,
+  /usr/bin/** rix,
+  /usr/sbin/** rix,
+  /etc/** r,
+  /etc/s6-overlay/** rix,
+  /etc/services.d/** rix,
+  /etc/cont-init.d/** rix,
+
   # Allow network access (Plex API, TMDb, TheTVDB, OpenAI)
   network inet stream,
   network inet dgram,
   network inet6 stream,
   network inet6 dgram,
 
-  # Allow DNS resolution
-  /etc/resolv.conf r,
-  /etc/hosts r,
-  /etc/nsswitch.conf r,
-
   # Application directory (read-only)
   /app/** r,
-  /app/node_modules/** r,
-  /app/public/** r,
 
   # Node.js runtime
   /usr/bin/node ix,
@@ -34,14 +38,17 @@ profile series-complete-plex flags=(attach_disconnected,mediate_deleted) {
   /usr/lib/** r,
 
   # Proc filesystem (Node.js needs this)
-  /proc/sys/kernel/random/uuid r,
-  /proc/*/status r,
-  /proc/*/fd/ r,
+  /proc/** r,
 
-  # Bashio / S6 overlay
+  # Bashio / S6 overlay runtime
   /usr/bin/bashio ix,
   /usr/lib/bashio/** r,
   /run/** rw,
+  /var/run/** rw,
+
+  # Device access
+  /dev/null rw,
+  /dev/urandom r,
 
   # Deny everything else by default
 }
