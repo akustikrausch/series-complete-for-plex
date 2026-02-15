@@ -72,17 +72,47 @@ pm2 start server-crossplatform.js --name series-complete
 
 ### Method 4: HACS Integration (optional sensors)
 
-The HACS integration adds Home Assistant sensors for your Plex library statistics. **Install the app (Method 3) first**, then:
+The HACS integration adds Home Assistant sensors for your Plex library statistics. **Install the app (Method 3) first**, then install the integration:
 
-1. Open HACS in Home Assistant
-2. Click the three-dot menu > **Custom repositories**
-3. Add `https://github.com/akustikrausch/series-complete-for-plex` with category **Integration**
-4. Search for "Series Complete for Plex" and install
-5. Restart Home Assistant
-6. Go to **Settings** > **Integrations** - the app is auto-detected, or add manually
+#### Step 1: Install via HACS
 
-**Sensors provided:**
-- Total Series, Complete Series, Incomplete Series, Critical Series, Completion Rate (%)
+1. Open **HACS** in the Home Assistant sidebar
+2. Click the three-dot menu (top right) > **Custom repositories**
+3. Enter `https://github.com/akustikrausch/series-complete-for-plex` and select category **Integration**
+4. Click **Add**
+5. Search for **"Series Complete for Plex"** in HACS and click **Download**
+6. **Restart Home Assistant** (Settings > System > Restart)
+
+#### Step 2: Add the Integration
+
+After the restart, the app should be auto-detected:
+
+1. Go to **Settings** > **Devices & Services**
+2. If auto-detected, you will see a notification "New device discovered: Series Complete for Plex" - click **Configure**
+3. If not auto-detected, click **+ Add Integration**, search for **"Series Complete"**, and add it manually
+
+#### Step 3: Manual Configuration (if needed)
+
+If the integration does not auto-detect the app, you will be asked for Host and Port:
+
+| Field | Value | When to use |
+|-------|-------|-------------|
+| **Host** | `local-series-complete-plex` | Running as HA app (default) |
+| **Host** | `192.168.x.x` | Running standalone on another machine |
+| **Port** | `3000` | Default port (all setups) |
+| **Update interval** | `1800` | Seconds between sensor updates (default: 30 min) |
+
+**Tip:** If `local-series-complete-plex` does not work, try `series-complete-plex` as host.
+
+#### Sensors provided
+
+| Sensor | Description |
+|--------|-------------|
+| Total Series | Number of TV series in your Plex library |
+| Complete Series | Series with 100% of episodes |
+| Incomplete Series | Series with 50-99% of episodes |
+| Critical Series | Series with less than 50% of episodes |
+| Completion Rate | Overall library completion percentage |
 
 **Finding your Plex Token:**
 1. Sign in to Plex Web App
