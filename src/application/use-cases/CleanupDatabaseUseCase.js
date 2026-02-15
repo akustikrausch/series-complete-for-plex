@@ -5,6 +5,8 @@
 class CleanupDatabaseUseCase {
   constructor(cacheRepository) {
     this.cacheRepository = cacheRepository;
+    const haMode = require('fs').existsSync('/data/options.json');
+    this.dataDir = haMode ? '/data' : process.cwd();
   }
 
   /**
@@ -101,7 +103,7 @@ class CleanupDatabaseUseCase {
       const fs = require('fs');
       const fsp = require('fs').promises;
       
-      const apiCacheDir = path.join(process.cwd(), 'api-cache');
+      const apiCacheDir = path.join(this.dataDir, 'api-cache');
       
       if (fs.existsSync(apiCacheDir)) {
         await fsp.rm(apiCacheDir, { recursive: true, force: true });
@@ -135,7 +137,7 @@ class CleanupDatabaseUseCase {
       const fsp = require('fs').promises;
       
       // Clear legacy analysis cache file
-      const cacheFile = path.join(process.cwd(), 'analysis-cache.json');
+      const cacheFile = path.join(this.dataDir, 'analysis-cache.json');
       
       if (fs.existsSync(cacheFile)) {
         try {
@@ -247,14 +249,14 @@ class CleanupDatabaseUseCase {
       };
       
       // Check API cache directory
-      const apiCacheDir = path.join(process.cwd(), 'api-cache');
+      const apiCacheDir = path.join(this.dataDir, 'api-cache');
       if (fs.existsSync(apiCacheDir)) {
         const apiStats = await this.getDirectoryStats(apiCacheDir);
         preview.apiCache = { exists: true, ...apiStats };
       }
       
       // Check analysis cache file
-      const cacheFile = path.join(process.cwd(), 'analysis-cache.json');
+      const cacheFile = path.join(this.dataDir, 'analysis-cache.json');
       if (fs.existsSync(cacheFile)) {
         const stats = await fsp.stat(cacheFile);
         preview.analysisCache.exists = true;
