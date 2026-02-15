@@ -40,7 +40,7 @@ class ApiRetryWrapper {
                             analysisDiv.classList.remove('hidden');
                             analysisDiv.innerHTML = `
                                 <div class="flex items-center space-x-2 text-plex-light">
-                                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-plex-orange"></div>
+                                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-500"></div>
                                     <span>Analyzing...</span>
                                 </div>
                             `;
@@ -94,7 +94,7 @@ class ApiRetryWrapper {
                         };
                         
                         // Update cache
-                        localStorage.setItem('plexSeriesCache', JSON.stringify({
+                        localStorage.setItem('seriesCompleteCache', JSON.stringify({
                             series: window.state.series,
                             timestamp: Date.now()
                         }));
@@ -127,7 +127,7 @@ class ApiRetryWrapper {
                                 <span>Analysis failed: ${error.message}</span>
                             </div>
                             <button data-action="analyze-series" data-series-id="${seriesId}" data-force="true" 
-                                class="mt-2 text-xs text-purple-500 hover:text-plex-white transition">
+                                class="mt-2 text-xs text-primary-500 hover:text-plex-white transition">
                                 Try Again
                             </button>
                         </div>
