@@ -150,7 +150,7 @@ Series Complete for Plex requires API keys from external services to fetch TV se
 
 ### 2. Configure API Keys
 
-Edit `config.json` in the project root, or create `config.local.json` to keep your keys private (not tracked by git):
+Copy `config.default.json` to `config.json`, or create `config.local.json` to keep your keys private (both are git-ignored):
 
 ```json
 {

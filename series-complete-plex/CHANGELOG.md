@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.6
+
+- Fix HA Supervisor addon detection: rename `config.json` to `config.default.json` to prevent conflict with addon config schema
+- App auto-creates `config.json` from built-in defaults on first run
+
 ## 2.6.5
 
 - Show hostname and port in Settings for HACS integration setup (copy to clipboard)

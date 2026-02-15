@@ -1,6 +1,6 @@
 name: "Series Complete for Plex"
 description: "Analyze your Plex TV library for missing episodes"
-version: "2.6.5"
+version: "2.6.6"
 slug: "series-complete-plex"
 url: "https://github.com/akustikrausch/series-complete-for-plex"
 image: "ghcr.io/akustikrausch/series-complete-plex-{arch}"
