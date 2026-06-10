@@ -222,8 +222,8 @@ class ExportManager {
         let csvContent = 'Title,Year,Network,Genre,Total Episodes,Available Episodes,Missing Episodes,Completion %,Status,Path\n';
 
         this.filteredSeries.forEach(series => {
-            const completion = series.total_episodes > 0 ? 
-                Math.round((series.available_episodes / series.total_episodes) * 100) : 0;
+            const completion = series.totalEpisodes > 0 ? 
+                Math.round((series.episode_count / series.totalEpisodes) * 100) : 0;
             
             const status = completion === 100 ? 'Complete' : 
                           completion < 50 ? 'Critical' : 'Incomplete';
@@ -231,26 +231,26 @@ class ExportManager {
             const row = [
                 `"${(series.title || '').replace(/"/g, '""')}"`,
                 series.year || '',
-                `"${(series.network || '').replace(/"/g, '""')}"`,
-                `"${(series.genre || '').replace(/"/g, '""')}"`,
-                series.total_episodes || 0,
-                series.available_episodes || 0,
-                (series.total_episodes || 0) - (series.available_episodes || 0),
+                `"${(series.studio || '').replace(/"/g, '""')}"`,
+                `"${(series.tags_genre || '').replace(/"/g, '""')}"`,
+                series.totalEpisodes || 0,
+                series.episode_count || 0,
+                (series.totalEpisodes || 0) - (series.episode_count || 0),
                 completion,
                 status,
-                `"${(series.path || '').replace(/"/g, '""')}"`
+                `"${((series.folders || []).join('; ')).replace(/"/g, '""')}"`
             ].join(',');
 
             csvContent += row + '\n';
 
             // Add missing episodes if requested
-            if (includeMissing && series.missing_episodes && series.missing_episodes.length > 0) {
-                series.missing_episodes.forEach(episode => {
+            if (includeMissing && series.missingEpisodes && series.missingEpisodes.length > 0) {
+                series.missingEpisodes.forEach(episode => {
                     const episodeRow = [
                         `"${series.title} - Missing Episode"`,
                         series.year || '',
-                        series.network || '',
-                        series.genre || '',
+                        series.studio || '',
+                        series.tags_genre || '',
                         `"S${episode.season.toString().padStart(2, '0')}E${episode.episode.toString().padStart(2, '0')}"`,
                         episode.title ? `"${episode.title.replace(/"/g, '""')}"` : '',
                         episode.air_date || '',
@@ -268,7 +268,7 @@ class ExportManager {
             csvContent += '\n--- SUMMARY STATISTICS ---\n';
             const totalSeries = this.filteredSeries.length;
             const completeSeries = this.filteredSeries.filter(s => 
-                s.total_episodes > 0 && s.available_episodes === s.total_episodes).length;
+                s.totalEpisodes > 0 && s.episode_count === s.totalEpisodes).length;
             const incompleteSeries = totalSeries - completeSeries;
             
             csvContent += `Total Series,${totalSeries}\n`;
@@ -291,15 +291,15 @@ class ExportManager {
                 id: series.id,
                 title: series.title,
                 year: series.year,
-                network: series.network,
-                genre: series.genre,
-                totalEpisodes: series.total_episodes,
-                availableEpisodes: series.available_episodes,
-                missingEpisodes: series.missing_episodes || [],
-                completionPercentage: series.total_episodes > 0 ? 
-                    Math.round((series.available_episodes / series.total_episodes) * 100) : 0,
+                network: series.studio,
+                genre: series.tags_genre,
+                totalEpisodes: series.totalEpisodes,
+                availableEpisodes: series.episode_count,
+                missingEpisodes: series.missingEpisodes || [],
+                completionPercentage: series.totalEpisodes > 0 ? 
+                    Math.round((series.episode_count / series.totalEpisodes) * 100) : 0,
                 status: this.getSeriesStatus(series),
-                path: series.path,
+                path: (series.folders || []).join('; '),
                 summary: series.summary,
                 lastAnalyzed: series.last_analyzed || null
             }))
@@ -308,7 +308,7 @@ class ExportManager {
         if (includeMetadata) {
             exportData.metadata = {
                 exportDate: new Date().toISOString(),
-                exportedBy: 'Series Complete for Plex v2.6.9',
+                exportedBy: 'Series Complete for Plex v2.6.10',
                 totalSeries: this.filteredSeries.length,
                 completeSeries: this.filteredSeries.filter(s => this.getSeriesStatus(s) === 'complete').length,
                 incompleteSeries: this.filteredSeries.filter(s => this.getSeriesStatus(s) !== 'complete').length,
@@ -391,16 +391,16 @@ class ExportManager {
                 </thead>
                 <tbody>
                     ${this.filteredSeries.map(series => {
-                        const completion = series.total_episodes > 0 ? 
-                            Math.round((series.available_episodes / series.total_episodes) * 100) : 0;
+                        const completion = series.totalEpisodes > 0 ? 
+                            Math.round((series.episode_count / series.totalEpisodes) * 100) : 0;
                         const status = this.getSeriesStatus(series);
                         
                         return `
                         <tr class="status-${status}">
                             <td><strong>${series.title || 'Unknown'}</strong></td>
                             <td>${series.year || 'N/A'}</td>
-                            <td>${series.network || 'N/A'}</td>
-                            <td>${series.available_episodes || 0}/${series.total_episodes || 0}</td>
+                            <td>${series.studio || 'N/A'}</td>
+                            <td>${series.episode_count || 0}/${series.totalEpisodes || 0}</td>
                             <td>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: ${completion}%"></div>
@@ -416,7 +416,7 @@ class ExportManager {
         </div>
 
         <footer>
-            <p>Generated by <strong>Series Complete for Plex v2.6.9</strong> - Series Completeness Analyzer</p>
+            <p>Generated by <strong>Series Complete for Plex v2.6.10</strong> - Series Completeness Analyzer</p>
             <p><a href="https://github.com/your-repo/plexcomplete">GitHub Repository</a></p>
         </footer>
     </div>
@@ -441,7 +441,7 @@ class ExportManager {
         content += `# Series Complete for Plex Analysis Report\n\n`;
         content += `**Generated:** ${new Date().toLocaleString()}\n`;
         content += `**Total Series:** ${this.filteredSeries.length}\n`;
-        content += `**Report Version:** Series Complete for Plex v2.6.9\n\n`;
+        content += `**Report Version:** Series Complete for Plex v2.6.10\n\n`;
 
         // Table of Contents
         if (includeToc) {
@@ -478,24 +478,24 @@ class ExportManager {
             content += `|-------|------|---------|----------|------------|--------|\n`;
             
             this.filteredSeries.forEach(series => {
-                const completion = series.total_episodes > 0 ? 
-                    Math.round((series.available_episodes / series.total_episodes) * 100) : 0;
+                const completion = series.totalEpisodes > 0 ? 
+                    Math.round((series.episode_count / series.totalEpisodes) * 100) : 0;
                 const status = this.getSeriesStatus(series);
                 const statusIcon = status === 'complete' ? '[OK]' : status === 'critical' ? '[!!]' : '[!]';
                 
-                content += `| **${series.title || 'Unknown'}** | ${series.year || 'N/A'} | ${series.network || 'N/A'} | ${series.available_episodes || 0}/${series.total_episodes || 0} | ${completion}% | ${statusIcon} ${status} |\n`;
+                content += `| **${series.title || 'Unknown'}** | ${series.year || 'N/A'} | ${series.studio || 'N/A'} | ${series.episode_count || 0}/${series.totalEpisodes || 0} | ${completion}% | ${statusIcon} ${status} |\n`;
             });
         } else {
             this.filteredSeries.forEach(series => {
-                const completion = series.total_episodes > 0 ? 
-                    Math.round((series.available_episodes / series.total_episodes) * 100) : 0;
+                const completion = series.totalEpisodes > 0 ? 
+                    Math.round((series.episode_count / series.totalEpisodes) * 100) : 0;
                 const status = this.getSeriesStatus(series);
                 const statusIcon = status === 'complete' ? '[OK]' : status === 'critical' ? '[!!]' : '[!]';
                 
                 content += `### ${statusIcon} ${series.title || 'Unknown'}\n`;
                 content += `- **Year:** ${series.year || 'N/A'}\n`;
-                content += `- **Network:** ${series.network || 'N/A'}\n`;
-                content += `- **Episodes:** ${series.available_episodes || 0}/${series.total_episodes || 0}\n`;
+                content += `- **Network:** ${series.studio || 'N/A'}\n`;
+                content += `- **Episodes:** ${series.episode_count || 0}/${series.totalEpisodes || 0}\n`;
                 content += `- **Completion:** ${completion}%\n`;
                 content += `- **Status:** ${status.charAt(0).toUpperCase() + status.slice(1)}\n\n`;
             });
@@ -506,12 +506,12 @@ class ExportManager {
         let hasMissingEpisodes = false;
         
         this.filteredSeries.forEach(series => {
-            if (series.missing_episodes && series.missing_episodes.length > 0) {
+            if (series.missingEpisodes && series.missingEpisodes.length > 0) {
                 hasMissingEpisodes = true;
                 content += `### ${series.title}\n`;
-                content += `Missing ${series.missing_episodes.length} episodes:\n\n`;
+                content += `Missing ${series.missingEpisodes.length} episodes:\n\n`;
                 
-                series.missing_episodes.forEach(episode => {
+                series.missingEpisodes.forEach(episode => {
                     const episodeCode = `S${episode.season.toString().padStart(2, '0')}E${episode.episode.toString().padStart(2, '0')}`;
                     content += `- **${episodeCode}** - ${episode.title || 'Unknown Title'}`;
                     if (episode.air_date) {
@@ -529,7 +529,7 @@ class ExportManager {
 
         // Footer
         content += `---\n\n`;
-        content += `*Report generated by **Series Complete for Plex v2.6.9** - Series Completeness Analyzer*\n`;
+        content += `*Report generated by **Series Complete for Plex v2.6.10** - Series Completeness Analyzer*\n`;
         content += `*Export Date: ${new Date().toISOString()}*\n`;
 
         this.downloadFile(content, 'plexcomplete-report.md', 'text/markdown');
@@ -546,8 +546,8 @@ class ExportManager {
     }
 
     getSeriesStatus(series) {
-        if (!series.total_episodes || series.total_episodes === 0) return 'unknown';
-        const completion = (series.available_episodes / series.total_episodes) * 100;
+        if (!series.totalEpisodes || series.totalEpisodes === 0) return 'unknown';
+        const completion = (series.episode_count / series.totalEpisodes) * 100;
         
         if (completion === 100) return 'complete';
         if (completion < 50) return 'critical';
@@ -646,8 +646,8 @@ class ExportManager {
             const statusCtx = document.getElementById('statusChart').getContext('2d');
             const seriesData = ${JSON.stringify(this.filteredSeries.map(s => ({
                 title: s.title,
-                available: s.available_episodes || 0,
-                total: s.total_episodes || 0
+                available: s.episode_count || 0,
+                total: s.totalEpisodes || 0
             })).slice(0, 10))};
             
             new Chart(statusCtx, {

@@ -140,6 +140,16 @@ class SeriesMetadata {
   }
 
   /**
+   * Get the release year derived from the first-aired date.
+   * Several call sites (cache key generation, AI verification) rely on this;
+   * its absence threw a TypeError that broke the v2 cache-load path entirely.
+   * @returns {number|null}
+   */
+  getYear() {
+    return this.firstAired ? this.firstAired.getFullYear() : null;
+  }
+
+  /**
    * Check if series is currently running
    * @returns {boolean}
    */

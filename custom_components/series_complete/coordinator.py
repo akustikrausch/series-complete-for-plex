@@ -67,30 +67,43 @@ class SeriesCompleteCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 f"{self._base_url}/api/get-series",
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as resp:
-                if resp.status == 200:
+                # A non-200 response (e.g. 500 "Plex database not found") must
+                # mark the update as failed so the sensors become "unavailable"
+                # rather than silently reporting zeros (the v2.6.7 symptom).
+                if resp.status != 200:
+                    raise UpdateFailed(
+                        f"Series Complete API returned HTTP {resp.status}"
+                    )
+
+                try:
                     result = await resp.json()
-                    series_list = result if isinstance(result, list) else []
-                    data["series"] = series_list
-                    data["total"] = len(series_list)
+                except (aiohttp.ContentTypeError, ValueError) as err:
+                    raise UpdateFailed(
+                        f"Invalid JSON from Series Complete: {err}"
+                    ) from err
 
-                    # Count by analysis status
-                    for s in series_list:
-                        total_eps = s.get("totalEpisodes", 0)
-                        owned_eps = s.get("episode_count", 0)
-                        if total_eps and total_eps > 0:
-                            pct = (owned_eps / total_eps) * 100
-                            if pct >= 100:
-                                data["complete"] += 1
-                            elif pct < 50:
-                                data["critical"] += 1
-                            else:
-                                data["incomplete"] += 1
+                series_list = result if isinstance(result, list) else []
+                data["series"] = series_list
+                data["total"] = len(series_list)
 
-                    analyzed = data["complete"] + data["incomplete"] + data["critical"]
-                    if analyzed > 0:
-                        data["completion_pct"] = round(
-                            (data["complete"] / analyzed) * 100, 1
-                        )
+                # Count by analysis status
+                for s in series_list:
+                    total_eps = s.get("totalEpisodes", 0)
+                    owned_eps = s.get("episode_count", 0)
+                    if total_eps and total_eps > 0:
+                        pct = (owned_eps / total_eps) * 100
+                        if pct >= 100:
+                            data["complete"] += 1
+                        elif pct < 50:
+                            data["critical"] += 1
+                        else:
+                            data["incomplete"] += 1
+
+                analyzed = data["complete"] + data["incomplete"] + data["critical"]
+                if analyzed > 0:
+                    data["completion_pct"] = round(
+                        (data["complete"] / analyzed) * 100, 1
+                    )
 
         except aiohttp.ClientError as err:
             raise UpdateFailed(

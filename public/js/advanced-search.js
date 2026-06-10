@@ -194,15 +194,19 @@ class AdvancedSearch {
                 body: JSON.stringify({})
             });
             const data = await response.json();
-            this.allSeries = data.series || [];
+            // /api/get-series returns a bare array, not { series: [...] }.
+            this.allSeries = Array.isArray(data) ? data : (data.series || []);
 
-            // Extract unique genres and networks
+            // Extract unique genres (tags_genre) and networks (studio)
             this.allSeries.forEach(series => {
-                if (series.genre) {
-                    series.genre.split(',').forEach(g => this.genres.add(g.trim()));
+                if (series.tags_genre) {
+                    String(series.tags_genre).split(',').forEach(g => {
+                        const trimmed = g.trim();
+                        if (trimmed) this.genres.add(trimmed);
+                    });
                 }
-                if (series.network) {
-                    this.networks.add(series.network);
+                if (series.studio) {
+                    this.networks.add(series.studio);
                 }
             });
 
@@ -212,25 +216,39 @@ class AdvancedSearch {
         }
     }
 
+    escapeHtml(text) {
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return String(text ?? '').replace(/[&<>"']/g, m => map[m]);
+    }
+
     populateFilters() {
+        // Genre/network values originate from Plex metadata, so they must be
+        // escaped before being interpolated into markup (a value containing a
+        // quote would otherwise break out of the data-value attribute).
         // Populate genre tags
         const genreContainer = document.getElementById('genre-filters');
         if (genreContainer) {
-            genreContainer.innerHTML = Array.from(this.genres).sort().map(genre => `
-                <button class="filter-tag px-2.5 py-1 rounded-lg text-xs font-medium transition-all bg-white/[0.03] border border-white/[0.06] text-surface-400 hover:bg-white/[0.06] hover:text-white" data-value="${genre}">
-                    ${genre}
+            genreContainer.innerHTML = Array.from(this.genres).sort().map(genre => {
+                const safe = this.escapeHtml(genre);
+                return `
+                <button class="filter-tag px-2.5 py-1 rounded-lg text-xs font-medium transition-all bg-white/[0.03] border border-white/[0.06] text-surface-400 hover:bg-white/[0.06] hover:text-white" data-value="${safe}">
+                    ${safe}
                 </button>
-            `).join('');
+            `;
+            }).join('');
         }
 
         // Populate network tags
         const networkContainer = document.getElementById('network-filters');
         if (networkContainer) {
-            networkContainer.innerHTML = Array.from(this.networks).sort().map(network => `
-                <button class="filter-tag px-2.5 py-1 rounded-lg text-xs font-medium transition-all bg-white/[0.03] border border-white/[0.06] text-surface-400 hover:bg-white/[0.06] hover:text-white" data-value="${network}">
-                    ${network}
+            networkContainer.innerHTML = Array.from(this.networks).sort().map(network => {
+                const safe = this.escapeHtml(network);
+                return `
+                <button class="filter-tag px-2.5 py-1 rounded-lg text-xs font-medium transition-all bg-white/[0.03] border border-white/[0.06] text-surface-400 hover:bg-white/[0.06] hover:text-white" data-value="${safe}">
+                    ${safe}
                 </button>
-            `).join('');
+            `;
+            }).join('');
         }
     }
 
@@ -259,16 +277,16 @@ class AdvancedSearch {
                 }
             }
 
-            // Genre filter
+            // Genre filter (tags_genre is a comma-separated string)
             if (selectedGenres.length > 0) {
-                const seriesGenres = (series.genre || '').split(',').map(g => g.trim());
+                const seriesGenres = String(series.tags_genre || '').split(',').map(g => g.trim());
                 if (!selectedGenres.some(g => seriesGenres.includes(g))) {
                     return false;
                 }
             }
 
-            // Network filter
-            if (selectedNetworks.length > 0 && !selectedNetworks.includes(series.network)) {
+            // Network filter (studio)
+            if (selectedNetworks.length > 0 && !selectedNetworks.includes(series.studio)) {
                 return false;
             }
 
@@ -276,9 +294,10 @@ class AdvancedSearch {
             if (yearStart && series.year < parseInt(yearStart)) return false;
             if (yearEnd && series.year > parseInt(yearEnd)) return false;
 
-            // Status/completeness filter
-            const completeness = series.total_episodes > 0
-                ? (series.available_episodes / series.total_episodes) * 100
+            // Status/completeness filter: episode_count = owned, totalEpisodes = expected
+            const expectedEpisodes = series.totalEpisodes || 0;
+            const completeness = expectedEpisodes > 0
+                ? (series.episode_count / expectedEpisodes) * 100
                 : 0;
             switch (activeStatus) {
                 case 'complete':

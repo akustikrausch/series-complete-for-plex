@@ -447,25 +447,11 @@ app.post('/api/get-series', rateLimiters.database, async (req, res) => {
   }
 });
 
-// Load database route - moved here for testing
-app.post('/api/load-database', async (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Load database route works!',
-    timestamp: new Date().toISOString()
-  });
-});
-
-console.log('[Debug] EXECUTION CHECKPOINT: After /api/get-series route');
-
-// TEST ROUTE
-console.log('[Debug] REGISTERING TEST ROUTE');
-app.get('/api/test-route', (req, res) => {
-  res.json({ success: true, message: 'Test route works!' });
-});
-
 // Load database with enhanced security - CRITICAL ENDPOINT
-console.log('[Debug] REGISTERING LOAD DATABASE ROUTE');
+// (A stub /api/load-database route used to be registered above this one and,
+// because Express dispatches the first matching handler, it shadowed this real
+// handler so the database was never loaded. The stub and a leftover test route
+// have been removed.)
 app.post('/api/load-database', async (req, res) => {
   // Set timeout for large database operations
   res.setTimeout(120000); // 120 seconds timeout for large databases
