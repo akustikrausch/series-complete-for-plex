@@ -1206,9 +1206,14 @@ app.get('/api/settings', async (req, res) => {
     // Ensure config is loaded
     await config.init();
     const apiConfigs = config.getApiConfigs();
-    
-    // Show full keys if requested, otherwise mask them
-    const showFull = req.query.full === 'true';
+
+    // Show full keys ONLY to genuinely local (loopback) callers, and only when
+    // explicitly requested. We check the raw socket address rather than req.ip
+    // so a spoofed X-Forwarded-For header can never unlock the full keys over
+    // the network (HA ingress / LAN callers always get masked keys).
+    const rawRemote = req.socket?.remoteAddress || '';
+    const isLoopback = rawRemote === '127.0.0.1' || rawRemote === '::1' || rawRemote === '::ffff:127.0.0.1';
+    const showFull = req.query.full === 'true' && isLoopback;
     
     const settings = {
       tmdb: {
@@ -1361,10 +1366,33 @@ app.post('/api/plex/test', async (req, res) => {
         if (!url || !token) {
             return res.status(400).json({ error: 'URL and token are required' });
         }
+
+        // Validate the target URL to limit SSRF surface. This is a LAN tool, so
+        // private/LAN addresses are legitimate (Plex usually runs on the local
+        // network) — but we still require an http(s) scheme, reject the cloud
+        // metadata link-local range, never follow redirects, and cap the
+        // response size. The token is sent as a header, not in the URL, so it
+        // does not leak into proxy/access logs.
+        let target;
+        try {
+            target = new URL(url);
+        } catch {
+            return res.status(400).json({ success: false, error: 'Invalid URL' });
+        }
+        if (target.protocol !== 'http:' && target.protocol !== 'https:') {
+            return res.status(400).json({ success: false, error: 'Only http(s) URLs are allowed' });
+        }
+        if (/^169\.254\./.test(target.hostname) || target.hostname === 'metadata.google.internal') {
+            return res.status(400).json({ success: false, error: 'Target address is not allowed' });
+        }
+
         const axios = require('axios');
-        const response = await axios.get(`${url.replace(/\/+$/, '')}/?X-Plex-Token=${token}`, {
-            headers: { 'Accept': 'application/json' },
-            timeout: 10000
+        const response = await axios.get(`${target.origin}${target.pathname.replace(/\/+$/, '')}/`, {
+            headers: { 'Accept': 'application/json', 'X-Plex-Token': token },
+            timeout: 10000,
+            maxRedirects: 0,
+            maxContentLength: 5 * 1024 * 1024,
+            maxBodyLength: 5 * 1024 * 1024
         });
         const server = response.data.MediaContainer;
         res.json({

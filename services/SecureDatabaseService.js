@@ -32,9 +32,12 @@ class SecureDatabaseService {
             '/mnt/e/Users'
         ];
 
-        const isAllowed = allowedPaths.some(allowedPath => 
-            absolutePath.startsWith(allowedPath) || 
-            absolutePath.includes('com.plexapp.plugins.library.db')
+        // The path must live under one of the allowed roots. The previous
+        // `includes('com.plexapp.plugins.library.db')` short-circuit was
+        // independent of the directory, so ANY path containing that substring
+        // (e.g. /tmp/com.plexapp.plugins.library.db) bypassed the check.
+        const isAllowed = allowedPaths.some(allowedPath =>
+            absolutePath.startsWith(allowedPath)
         );
 
         if (!isAllowed) {
@@ -121,7 +124,14 @@ class SecureDatabaseService {
      */
     async executeTransaction(dbPath, queries) {
         const db = await this.getConnection(dbPath);
-        
+
+        // An empty query list would otherwise never reach the COMMIT/resolve
+        // inside the loop, leaving the returned promise (and an open
+        // transaction) hanging forever.
+        if (!Array.isArray(queries) || queries.length === 0) {
+            return [];
+        }
+
         return new Promise((resolve, reject) => {
             db.serialize(() => {
                 db.run('BEGIN TRANSACTION');
@@ -204,6 +214,12 @@ class SecureDatabaseService {
             };
 
         } finally {
+            // Close and drop the pooled connection for this temp DB BEFORE
+            // unlinking. Each temp copy has a unique name, so the connection is
+            // single-use; leaving it open leaked an fd + memory (and the open fd
+            // pinned the deleted inode, leaking disk) on every load.
+            await this.closeConnection(tempDbPath);
+
             // Always cleanup temp file
             try {
                 await fs.unlink(tempDbPath);
@@ -212,6 +228,28 @@ class SecureDatabaseService {
                 console.warn('Failed to cleanup temp database:', error.message);
             }
         }
+    }
+
+    /**
+     * Close and remove a single pooled connection (best-effort).
+     */
+    async closeConnection(dbPath) {
+        let key;
+        try {
+            key = this.validateDatabasePath(dbPath);
+        } catch {
+            key = path.resolve(dbPath);
+        }
+        const db = this.connections.get(key);
+        if (!db) return;
+        this.connections.delete(key);
+        await new Promise((resolve) => {
+            try {
+                db.close(() => resolve());
+            } catch {
+                resolve();
+            }
+        });
     }
 
     /**

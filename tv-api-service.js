@@ -95,7 +95,10 @@ const monitor = {
     },
     
     trackError: function(error) {
-        console.error('[MONITOR_ERROR]', error);
+        // Log only the message — never the full AxiosError, whose `config`
+        // contains the API key (params.api_key / Authorization header) and
+        // would leak it into logs that users routinely paste into bug reports.
+        console.error('[MONITOR_ERROR]', error?.message || error);
     },
     
     getStats: function() {

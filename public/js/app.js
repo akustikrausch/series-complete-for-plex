@@ -2266,7 +2266,7 @@
                     
                     <div class="pt-4 border-t border-plex-gray">
                         <p class="text-sm text-plex-light text-center">
-                            Series Complete for Plex v2.6.9<br>
+                            Series Complete for Plex v2.6.10<br>
                             Series: ${state.stats.total}<br>
                             Analyzed: ${state.series.filter(s => s.totalEpisodes).length}<br>
                             <span class="text-xs text-primary-500 mt-2 block">© 2025-2026 by Andreas Wendorf</span>
@@ -2376,7 +2376,7 @@
                 
                 <div class="pt-4 border-t border-plex-gray text-center">
                     <p class="text-xs text-plex-light mb-4">
-                        <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v2.6.9
+                        <span class="text-primary-500 font-semibold">Series Complete for Plex</span> v2.6.10
                     </p>
                 </div>
             </div>
@@ -2908,15 +2908,21 @@
             thetvdb: !!thetvdbInput
         });
         
-        // Collect all API keys to save
+        // Collect all API keys to save. Only send a key when the user actually
+        // changed the field — comparing against data-original prevents a masked
+        // or unchanged pre-filled value from overwriting the stored key.
         const payload = {};
-        
-        // Always save if there's a value that's not empty
-        if (tmdbInput && tmdbInput.value && tmdbInput.value.trim()) {
+        const isChanged = (input) => {
+            if (!input || !input.value || !input.value.trim()) return false;
+            const original = input.getAttribute('data-original') || '';
+            return input.value.trim() !== original.trim();
+        };
+
+        if (isChanged(tmdbInput)) {
             payload.tmdb = tmdbInput.value.trim();
         }
-        
-        if (thetvdbInput && thetvdbInput.value && thetvdbInput.value.trim()) {
+
+        if (isChanged(thetvdbInput)) {
             payload.thetvdb = thetvdbInput.value.trim();
         }
         
@@ -3362,7 +3368,9 @@
             '"': '&quot;',
             "'": '&#039;'
         };
-        return text.replace(/[&<>"']/g, m => map[m]);
+        // Coerce to string first: a numeric/undefined/null value would throw on
+        // .replace and break rendering of the whole card list.
+        return String(text ?? '').replace(/[&<>"']/g, m => map[m]);
     }
 
     function debounce(func, wait) {

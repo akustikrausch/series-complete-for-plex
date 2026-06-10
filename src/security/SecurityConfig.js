@@ -26,8 +26,11 @@ class SecurityConfig {
           scriptSrc: [
             "'self'",
             ...assetCSP['script-src'],
-            // Allow inline scripts only in development
-            ...(isDevelopment ? ["'unsafe-inline'"] : ["'nonce-${nonce}'"]),
+            // Inline scripts are allowed only in development. In production,
+            // load scripts from external files (public/js/*.js) — no inline
+            // scripts and no 'unsafe-inline'. (A real per-request nonce can be
+            // wired here later via a function directive if inline is needed.)
+            ...(isDevelopment ? ["'unsafe-inline'"] : []),
           ],
           styleSrc: [
             "'self'",
@@ -86,24 +89,9 @@ class SecurityConfig {
         allow: false
       },
 
-      // Expect-CT (deprecated but still useful for older browsers)
-      expectCt: {
-        maxAge: 30,
-        enforce: true
-      },
-
-      // Feature Policy / Permissions Policy
-      permissionsPolicy: {
-        camera: ["'none'"],
-        microphone: ["'none'"],
-        geolocation: ["'none'"],
-        payment: ["'none'"],
-        usb: ["'none'"],
-        bluetooth: ["'none'"],
-        magnetometer: ["'none'"],
-        gyroscope: ["'none'"],
-        accelerometer: ["'none'"]
-      },
+      // NOTE: Helmet v7+ removed the `expectCt` option, and `permissionsPolicy`
+      // was never a Helmet option. Passing either makes helmet() throw at
+      // startup. Permissions-Policy, if desired, must be set as a manual header.
 
       // Hide X-Powered-By header
       hidePoweredBy: true,
