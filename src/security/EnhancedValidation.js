@@ -5,7 +5,16 @@
 
 const { body, query, param, validationResult } = require('express-validator');
 const validator = require('validator');
-const DOMPurify = require('isomorphic-dompurify');
+
+// isomorphic-dompurify is an optional dependency. When it is not installed we
+// fall back to plain tag stripping below (the sanitizer only ever uses
+// ALLOWED_TAGS: [], i.e. "remove all HTML", so the fallback is equivalent).
+let DOMPurify = null;
+try {
+  DOMPurify = require('isomorphic-dompurify');
+} catch {
+  DOMPurify = null;
+}
 
 class EnhancedValidation {
   /**
@@ -41,11 +50,16 @@ class EnhancedValidation {
     // Remove null bytes and control characters
     let sanitized = value.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
     
-    // HTML sanitization with DOMPurify
-    sanitized = DOMPurify.sanitize(sanitized, {
-      ALLOWED_TAGS: [], // No HTML tags allowed
-      ALLOWED_ATTR: []
-    });
+    // HTML sanitization: remove all HTML. Use DOMPurify when available,
+    // otherwise strip tags directly.
+    if (DOMPurify) {
+      sanitized = DOMPurify.sanitize(sanitized, {
+        ALLOWED_TAGS: [], // No HTML tags allowed
+        ALLOWED_ATTR: []
+      });
+    } else {
+      sanitized = sanitized.replace(/<[^>]*>/g, '');
+    }
     
     // Additional XSS prevention
     sanitized = sanitized
@@ -144,7 +158,9 @@ class EnhancedValidation {
           const sqlPatterns = [
             /(\bUNION\b|\bSELECT\b|\bINSERT\b|\bDELETE\b|\bDROP\b|\bUPDATE\b)/i,
             /('|"|\bOR\b|\bAND\b).*(=|<|>)/i,
-            /[';--]/
+            // match a single quote, a semicolon, or a SQL "--" comment.
+            // The previous /[';--]/ was an invalid range (';' to '-').
+            /[';]|--/
           ];
           
           for (const pattern of sqlPatterns) {

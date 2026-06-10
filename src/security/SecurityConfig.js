@@ -89,9 +89,10 @@ class SecurityConfig {
         allow: false
       },
 
-      // NOTE: Helmet v7+ removed the `expectCt` option, and `permissionsPolicy`
-      // was never a Helmet option. Passing either makes helmet() throw at
-      // startup. Permissions-Policy, if desired, must be set as a manual header.
+      // NOTE: Helmet v7+ dropped the `expectCt` option, and `permissionsPolicy`
+      // was never a Helmet option. Helmet silently ignores both, so they set no
+      // headers at all (the old code gave a false sense of protection).
+      // Permissions-Policy, if desired, must be set as a manual header.
 
       // Hide X-Powered-By header
       hidePoweredBy: true,

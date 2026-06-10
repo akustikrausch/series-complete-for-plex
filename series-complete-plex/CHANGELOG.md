@@ -17,7 +17,7 @@ Bug fixes:
 - Close the SQLite connection on every database load (fixes a file-descriptor/memory leak)
 - Fix a hang when an empty query list was passed to the transaction helper
 - Add the missing `SeriesMetadata.getYear()` that broke the v2 cache-load path
-- Remove invalid Helmet options that crashed the secure server at startup; remove a duplicate stub route that shadowed the real database loader
+- Remove non-functional Helmet options (`expectCt`, `permissionsPolicy`) that Helmet silently ignored, plus a dead CSP nonce placeholder; remove a duplicate stub route that shadowed the real database loader
 - Fix Advanced Search (was reading the wrong response shape and field names, which wiped the library view)
 - Fix all exports (CSV/JSON/HTML/Markdown) that used wrong field names and reported 0/0 episodes
 - Harden HTML escaping against non-string values
