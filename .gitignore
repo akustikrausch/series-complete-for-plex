@@ -61,3 +61,6 @@ sync.log
 SYNC-PLAN.md
 ARCHITECTURE_AUDIT.md
 REFACTORING_PLAN.md
+
+# Developer-only documentation
+TECHNICAL.md
