@@ -1,6 +1,6 @@
 # Series Complete for Plex - TV Series Completeness Analyzer
 
-[![Version](https://img.shields.io/badge/version-2.6.9-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
+[![Version](https://img.shields.io/badge/version-2.6.10-blue.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 [![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-green.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Home%20Assistant-lightgrey.svg)](https://github.com/akustikrausch/series-complete-for-plex)
 
@@ -139,13 +139,14 @@ See [INSTALL.md](INSTALL.md) for detailed setup instructions.
 - **Integration**: Home Assistant App + HACS Integration (sensors)
 - **Security**: Helmet, express-validator, rate limiting, DOMPurify
 
-## Recent Changes (v2.6.9)
+## Recent Changes (v2.6.10)
 
-- **Integration Info in Settings**: Hostname and port shown in Settings for easy HACS integration setup
-- **Analysis Cache Fix**: Analysis results persist across HA restarts and browser cache expiry
-- **Hostname Fix**: Correct hash-based hostname detection for HA third-party apps
+- **Security & maintenance**: All runtime dependencies updated to patched versions; SSRF hardening on the Plex test endpoint; full API keys only exposed to local callers; API keys no longer logged
+- **Bug fixes**: Fixed Advanced Search and all export formats (CSV/JSON/HTML/Markdown), a SQLite connection leak, and the HACS coordinator reporting zeros on errors
 - **HACS Integration**: Custom component with 5 sensors (total, complete, incomplete, critical, completion rate)
 - **Plex REST API**: Connect to any Plex server over the network (no local DB access needed)
+
+See `series-complete-plex/CHANGELOG.md` for the full list.
 
 ## Contributing
 

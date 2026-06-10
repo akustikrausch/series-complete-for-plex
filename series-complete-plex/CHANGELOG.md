@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.6.10
+
+Maintenance, security audit and bug-fix release.
+
+Security:
+- Update all runtime dependencies to patched versions (axios, express, ws, validator, express-validator, express-rate-limit, helmet, cors, openai) — runtime dependency audit is now clean
+- `GET /api/settings?full=true` now returns full API keys only to local (loopback) callers; remote/HA/LAN callers always receive masked keys
+- Harden `POST /api/plex/test` against SSRF: validate the URL scheme, send the Plex token as a header instead of in the URL, block the cloud-metadata link-local range, disable redirect following, and cap the response size
+- Stop logging full Axios errors in the API monitor (they contained the API key in `config.params`/headers)
+- Tighten the database-path allow-list (removed a substring check that let any path containing the Plex DB filename bypass the directory restriction)
+- Harden the CI secret-scanning workflow
+
+Bug fixes:
+- HACS coordinator now marks the update as failed (sensors become "unavailable") on a non-200 response instead of silently reporting zeros
+- Close the SQLite connection on every database load (fixes a file-descriptor/memory leak)
+- Fix a hang when an empty query list was passed to the transaction helper
+- Add the missing `SeriesMetadata.getYear()` that broke the v2 cache-load path
+- Remove invalid Helmet options that crashed the secure server at startup; remove a duplicate stub route that shadowed the real database loader
+- Fix Advanced Search (was reading the wrong response shape and field names, which wiped the library view)
+- Fix all exports (CSV/JSON/HTML/Markdown) that used wrong field names and reported 0/0 episodes
+- Harden HTML escaping against non-string values
+
 ## 2.6.9
 
 - Fix addon restart loop: add missing `wget` to Docker image (required by healthcheck)

@@ -64,3 +64,7 @@ REFACTORING_PLAN.md
 
 # Developer-only documentation
 TECHNICAL.md
+
+# Python
+__pycache__/
+*.pyc
