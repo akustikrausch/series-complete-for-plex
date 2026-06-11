@@ -1,0 +1,10 @@
+# Gitleaks configuration for this repository.
+# Extends the default gitleaks ruleset.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "The secret-scan workflow intentionally contains key-detection patterns and SHA-256 canary hashes (one-way digests, not real secrets). Exclude it from gitleaks to avoid false positives."
+paths = [
+  '''\.github/workflows/secret-scan\.yml''',
+]
