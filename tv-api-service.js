@@ -121,8 +121,6 @@ let configLoaded = false;
 
 // Initialize configuration
 async function initConfig() {
-    if (configLoaded) return;
-    
     try {
         await config.init();
         apiConfig = config.getApiConfigs();
@@ -504,7 +502,9 @@ async function searchTheTVDB(seriesName, year) {
 async function searchTMDb(seriesName, year) {
     const cacheKey = getCacheKey('tmdb', seriesName, year);
     const cached = await loadFromCache(cacheKey);
-    if (cached) {
+    // Old cache entries predate IMDb-ID support. Refresh those once so all
+    // subsequent results can provide stable outbound links.
+    if (cached && cached.imdbId) {
         monitor.trackCache(true);
         return cached;
     }
@@ -548,27 +548,44 @@ async function searchTMDb(seriesName, year) {
         const detailResponse = await axios.get(`https://api.themoviedb.org/3/tv/${series.id}`, {
             params: {
                 api_key: apiKey,
-                language: 'de-DE'
+                language: 'de-DE',
+                append_to_response: 'external_ids'
             }
         });
 
         const details = detailResponse.data;
         
-        // Parse seasons
-        const seasons = details.seasons
+        // TMDb's show endpoint contains season counts only. Fetch the season
+        // endpoints as well so the comparison can use actual SxxExx indexes.
+        const seasons = (await Promise.all(details.seasons
             .filter(s => s.season_number > 0) // Skip specials
-            .map(s => ({
-                number: s.season_number,
-                episodeCount: s.episode_count,
-                episodes: [] // TMDb doesn't give episode details in this call
-            }))
-            .sort((a, b) => a.number - b.number);
+            .map(async season => {
+                try {
+                    const seasonResponse = await axios.get(
+                        `https://api.themoviedb.org/3/tv/${series.id}/season/${season.season_number}`,
+                        { params: { api_key: apiKey, language: 'de-DE' } }
+                    );
+                    return {
+                        number: season.season_number,
+                        episodeCount: season.episode_count,
+                        episodes: (seasonResponse.data.episodes || []).map(episode => ({
+                            number: episode.episode_number,
+                            title: episode.name,
+                            aired: episode.air_date || null
+                        }))
+                    };
+                } catch (error) {
+                    console.warn(`TMDb season detail unavailable for ${seriesName} S${season.season_number}: ${error.message}`);
+                    return { number: season.season_number, episodeCount: season.episode_count, episodes: [] };
+                }
+            }))).sort((a, b) => a.number - b.number);
 
         const result = {
             source: 'TMDb',
             title: details.name || details.original_name,
             year: details.first_air_date ? new Date(details.first_air_date).getFullYear() : null,
             status: details.status,
+            imdbId: details.external_ids?.imdb_id || null,
             isEnded: details.status === 'Ended' || details.status === 'Canceled',
             firstAired: details.first_air_date,
             lastAired: details.last_air_date || null,
@@ -1144,12 +1161,15 @@ async function testOpenAiApi() {
 
 // Main analysis function with fallback chain
 async function analyzeSeries(series, options = {}) {
-    const { useMultipleApis = false, useOpenAI = false } = options;
+    const { useMultipleApis = false, useOpenAI = false, includeUnaired = false } = options;
     let metadata = null;
     
     try {
         // Try primary APIs first
-        metadata = await getSeriesMetadata(series.title, series.year);
+        // Exact gap detection requires episode-level metadata, which TheTVDB
+        // provides in a single request. Fall back to the normal source chain.
+        metadata = await getSeriesMetadata(series.title, series.year, 'thetvdb');
+        if (!metadata) metadata = await getSeriesMetadata(series.title, series.year);
         
         // If multiple API verification requested
         if (useMultipleApis && metadata) {
@@ -1192,7 +1212,7 @@ async function analyzeSeries(series, options = {}) {
         
         // Calculate missing episodes
         if (metadata && series.seasons) {
-            metadata.missingEpisodes = calculateMissingEpisodes(series.seasons, metadata);
+            metadata.missingEpisodes = calculateMissingEpisodes(series.seasons, metadata, includeUnaired);
         }
         
         return metadata;
@@ -1218,38 +1238,31 @@ async function analyzeSeries(series, options = {}) {
 }
 
 // Helper function to calculate missing episodes
-function calculateMissingEpisodes(localSeasons, metadata) {
-    const missing = [];
-    const expectedSeasons = metadata.totalSeasons || 0;
-    
-    // Check each season
-    for (let seasonNum = 1; seasonNum <= expectedSeasons; seasonNum++) {
-        const localSeason = localSeasons.find(s => s.season_number === seasonNum);
-        
-        if (!localSeason) {
-            // Entire season missing
-            missing.push({
-                season: seasonNum,
-                episodes: 'All',
-                type: 'full_season'
-            });
-        } else if (metadata.seasonDetails && metadata.seasonDetails[seasonNum]) {
-            // Check individual episodes
-            const expectedEpisodes = metadata.seasonDetails[seasonNum];
-            const localEpisodes = localSeason.episode_count || 0;
-            
-            if (localEpisodes < expectedEpisodes) {
-                missing.push({
-                    season: seasonNum,
-                    episodes: `${localEpisodes}/${expectedEpisodes}`,
-                    type: 'partial_season',
-                    missing_count: expectedEpisodes - localEpisodes
-                });
-            }
-        }
-    }
-    
-    return missing;
+function calculateMissingEpisodes(localSeasons, metadata, includeUnaired = false) {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const expected = (metadata.seasons || []).flatMap(season =>
+        (season.episodes || []).map(episode => ({
+            season: Number(season.number),
+            episode: Number(episode.number),
+            title: episode.title,
+            air_date: episode.aired || null
+        }))
+    ).filter(episode => episode.season > 0 && episode.episode > 0);
+
+    // Metadata sources without episode details remain count-only; do not
+    // fabricate episode numbers from counts.
+    if (expected.length === 0) return [];
+
+    const eligible = expected.filter(episode => includeUnaired ||
+        (episode.air_date && new Date(episode.air_date) <= today));
+    metadata.comparisonEpisodes = eligible.length;
+
+    const owned = new Set((localSeasons || []).flatMap(season =>
+        (season.episodes || []).map(episode =>
+            `${Number(season.season_number)}:${Number(episode.episode_number)}`)
+    ));
+    return eligible.filter(episode => !owned.has(`${episode.season}:${episode.episode}`));
 }
 
 // Export all functions
@@ -1263,5 +1276,6 @@ module.exports = {
     testThetvdbApi,
     testOpenAiApi,
     analyzeSeries,
+    calculateMissingEpisodes,
     monitor
 };

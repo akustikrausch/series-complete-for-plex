@@ -89,6 +89,7 @@ class ApiRetryWrapper {
                             endYear: result.lastAired ? new Date(result.lastAired).getFullYear() : null,
                             seasons: result.seasons || [],
                             missingEpisodes: result.missingEpisodes || [],
+                            imdbId: result.imdbId || null,
                             thumb: result.thumb,
                             art: result.art
                         };
@@ -475,7 +476,9 @@ class ApiRetryWrapper {
         }
         
         // Display detailed results in analysis div
-        const missingCount = result.totalEpisodes - result.localEpisodes;
+        const missingCount = Array.isArray(result.missingEpisodes)
+            ? result.missingEpisodes.length
+            : Math.max(0, result.totalEpisodes - result.localEpisodes);
         const completionPercentage = result.totalEpisodes > 0 ? 
             Math.round((result.localEpisodes / result.totalEpisodes) * 100) : 0;
         
@@ -494,9 +497,15 @@ class ApiRetryWrapper {
                     <span class="text-plex-white">${result.totalSeasons || 0}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-plex-light">Total Episodes:</span>
+                    <span class="text-plex-light">${result.scheduledEpisodes ? 'Aired Episodes:' : 'Total Episodes:'}</span>
                     <span class="text-plex-white">${result.totalEpisodes || 0}</span>
                 </div>
+                ${result.scheduledEpisodes ? `
+                    <div class="flex items-center justify-between">
+                        <span class="text-plex-light">Scheduled Episodes:</span>
+                        <span class="text-plex-white">${result.scheduledEpisodes}</span>
+                    </div>
+                ` : ''}
                 <div class="flex items-center justify-between">
                     <span class="text-plex-light">Complete:</span>
                     <span class="text-plex-white font-semibold">${completionPercentage}%</span>
@@ -504,6 +513,11 @@ class ApiRetryWrapper {
                 ${missingCount > 0 ? `
                     <div class="mt-2 p-2 bg-red-900 bg-opacity-20 rounded-lg">
                         <p class="text-red-400 font-semibold">Missing ${missingCount} episodes</p>
+                        ${Array.isArray(result.missingEpisodes) && result.missingEpisodes.length ? `
+                            <ul class="mt-2 space-y-1 text-plex-light">
+                                ${result.missingEpisodes.map(episode => `<li>S${String(episode.season).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')} — ${String(episode.title || 'Unknown title').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char])}</li>`).join('')}
+                            </ul>
+                        ` : ''}
                     </div>
                 ` : `
                     <div class="mt-2 p-2 bg-green-900 bg-opacity-20 rounded-lg">

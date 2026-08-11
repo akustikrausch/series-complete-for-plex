@@ -284,6 +284,33 @@ class SecureDatabaseService {
             const seasonParams = [4, ...seriesIds, 3]; // 4 = episodes, 3 = seasons
             const seasons = await this.executeQuery(dbPath, seasonsQuery, seasonParams);
 
+            // Retain Plex's season and episode indexes so callers can compare
+            // episode identities, not merely aggregate counts.
+            const episodesQuery = `
+                SELECT
+                    seasons.parent_id AS series_id,
+                    seasons."index" AS season_number,
+                    episodes."index" AS episode_number,
+                    episodes.title AS title,
+                    episodes.originally_available_at AS air_date
+                FROM metadata_items AS episodes
+                JOIN metadata_items AS seasons ON episodes.parent_id = seasons.id
+                WHERE seasons.parent_id IN (${placeholders})
+                  AND seasons.metadata_type = ?
+                  AND episodes.metadata_type = ?
+                ORDER BY seasons.parent_id, seasons."index", episodes."index"
+            `;
+            const episodeRows = await this.executeQuery(dbPath, episodesQuery, [...seriesIds, 3, 4]);
+            const episodesBySeason = new Map();
+            episodeRows.forEach(episode => {
+                const key = `${episode.series_id}:${episode.season_number}`;
+                if (!episodesBySeason.has(key)) episodesBySeason.set(key, []);
+                episodesBySeason.get(key).push({ ...episode, available: true });
+            });
+            seasons.forEach(season => {
+                season.episodes = episodesBySeason.get(`${season.series_id}:${season.season_number}`) || [];
+            });
+
             // Group seasons by series
             const seasonsBySeriesId = {};
             seasons.forEach(season => {
