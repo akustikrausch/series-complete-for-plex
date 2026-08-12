@@ -87,6 +87,14 @@
                     if (modal) modal.remove();
                 }
             }
+
+            // Refreshes exactly one show: fetch current Plex episodes and
+            // recompute its gaps without scanning or analyzing the library.
+            const refreshSeriesBtn = e.target.closest('[data-action="refresh-series-from-plex"]');
+            if (refreshSeriesBtn) {
+                const seriesId = parseInt(refreshSeriesBtn.dataset.seriesId);
+                if (seriesId) refreshSeriesFromPlex(seriesId, refreshSeriesBtn);
+            }
             
             // Handle toggle season buttons
             const toggleSeasonBtn = e.target.closest('[data-action="toggle-season"]');
@@ -618,7 +626,7 @@
             
             if (data.success && data.series) {
                 updateProgressBar(90);
-                
+
                 console.log('=== SETTING STATE ===');
                 state.series = data.series;
                 state.filteredSeries = data.series;
@@ -641,7 +649,7 @@
                         }))
                     });
                 }
-                
+
                 console.log('=== CALLING FUNCTIONS ===');
                 calculateStats();
                 console.log('calculateStats() done');
@@ -820,8 +828,8 @@
             grid.innerHTML = cards.join('');
             console.log(`SUCCESS: Grid innerHTML set, length: ${grid.innerHTML.length}`);
             
-            // Add event listeners to series card buttons using event delegation
-            grid.addEventListener('click', (e) => {
+            // Use one delegated listener for current and subsequently rendered cards.
+            if (!grid.dataset.listenerAttached) grid.addEventListener('click', (e) => {
                 const analyzeBtn = e.target.closest('.series-analyze-btn');
                 if (analyzeBtn) {
                     const seriesId = parseInt(analyzeBtn.getAttribute('data-series-id'));
@@ -835,7 +843,13 @@
                     showDetails(seriesId);
                     return;
                 }
+
+                const card = e.target.closest('.series-card');
+                if (card) {
+                    showDetails(parseInt(card.dataset.seriesId));
+                }
             });
+            grid.dataset.listenerAttached = 'true';
             
             // Update pagination controls
             updatePaginationControls();
@@ -919,6 +933,11 @@
                         </button>
                     </div>
                 </div>
+                ${Array.isArray(series.missingEpisodes) && series.missingEpisodes.length > 0 ? `
+                    <button data-action="details" data-series-id="${series.id}" class="mt-3 w-full text-left text-xs text-amber-300 hover:text-white transition">
+                        ${series.missingEpisodes.length} exact missing episode${series.missingEpisodes.length === 1 ? '' : 's'} — click to view
+                    </button>
+                ` : ''}
                 
                 <div id="analysis-${series.id}" class="mt-4 hidden">
                     <!-- Analysis results will be inserted here -->
@@ -1052,10 +1071,16 @@
             if (seriesIndex !== -1) {
                 state.series[seriesIndex] = {
                     ...state.series[seriesIndex],
+                    season_count: data.localSeries?.season_count ?? data.localSeasons ?? state.series[seriesIndex].season_count,
+                    episode_count: data.localEpisodes ?? state.series[seriesIndex].episode_count,
+                    seasons: data.localSeries?.seasons ?? state.series[seriesIndex].seasons,
                     totalSeasons: data.totalSeasons,
                     totalEpisodes: data.totalEpisodes,
+                    scheduledEpisodes: data.scheduledEpisodes || 0,
                     completionPercentage: data.completionPercentage,
                     seriesStatus: data.status,
+                    missingEpisodes: data.missingEpisodes || [],
+                    imdbId: data.imdbId || null,
                     endYear: data.lastAired ? new Date(data.lastAired).getFullYear() : null
                 };
                 saveToCache(); // Save updated data
@@ -1079,6 +1104,26 @@
             throw error; // Re-throw for batch processing to catch
         }
     };
+
+    async function refreshSeriesFromPlex(seriesId, button) {
+        const series = state.series.find(s => s.id === seriesId);
+        if (!series) return;
+
+        const originalContent = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="inline-flex items-center gap-2"><span class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></span> Refreshing Plex…</span>';
+
+        try {
+            await analyzeSeries(seriesId, false);
+            showNotification('success', `${series.title} refreshed from Plex`);
+            showDetails(seriesId);
+        } catch (error) {
+            console.error(`Failed to refresh ${series.title} from Plex:`, error);
+            showNotification('error', `Could not refresh ${series.title}: ${error.message}`);
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+    }
 
     // Display analysis results
     function displayAnalysisResults(seriesId, analysis) {
@@ -1167,18 +1212,18 @@
             originalCount: state.filteredSeries.length
         });
         
-        // Apply grouping first if selected
+        // Sort first, then keep each group contiguous for its rendered header.
         let sortedSeries = [...state.filteredSeries];
         console.log('Starting with', sortedSeries.length, 'series');
-        
+
+        // Apply primary sort before grouping.
+        console.log('Applying primary sort:', sortOption);
+        sortedSeries = sortSeries(sortedSeries, sortOption);
+
         if (groupBy !== 'none') {
             console.log('Applying grouping...');
             sortedSeries = groupSeries(sortedSeries, groupBy);
         }
-        
-        // Apply primary sort
-        console.log('Applying primary sort:', sortOption);
-        sortedSeries = sortSeries(sortedSeries, sortOption);
         
         // Apply secondary sort if grouping is active
         if (groupBy !== 'none' && secondary) {
@@ -1294,6 +1339,10 @@
                 case 'decade':
                     const year = s.year || (s.originally_available_at ? new Date(s.originally_available_at).getFullYear() : null);
                     key = year ? `${Math.floor(year / 10) * 10}s` : 'Unknown Year';
+                    break;
+                case 'year':
+                    const releaseYear = s.year || (s.originally_available_at ? new Date(s.originally_available_at).getFullYear() : null);
+                    key = releaseYear ? String(releaseYear) : 'Unknown Year';
                     break;
                 case 'network':
                     key = s.studio || s.network || 'Unknown Network';
@@ -1421,10 +1470,30 @@
             case 'critical':
                 filtered = filtered.filter(series => calculateCompletion(series) < 50);
                 break;
+            case 'ongoing':
+                filtered = filtered.filter(series => isOngoingSeries(series));
+                break;
+            case 'ended':
+                filtered = filtered.filter(series => isEndedSeries(series));
+                break;
         }
         
         state.filteredSeries = filtered;
         renderSeries();
+    }
+
+    function getBroadcastStatus(series) {
+        return String(series.seriesStatus || series.status || '').toLowerCase();
+    }
+
+    function isOngoingSeries(series) {
+        return ['continuing', 'upcoming', 'running', 'returning series', 'in production', 'planned', 'pilot']
+            .includes(getBroadcastStatus(series));
+    }
+
+    function isEndedSeries(series) {
+        return ['ended', 'finished', 'canceled', 'cancelled', 'cancelled series']
+            .includes(getBroadcastStatus(series));
     }
 
     // Toggle season episodes visibility
@@ -1461,6 +1530,8 @@
         };
         
         const completion = calculateCompletion(series);
+        const imdbId = /^tt\d+$/.test(String(series.imdbId || '')) ? series.imdbId : null;
+        const missingSeasons = [...new Set((series.missingEpisodes || []).map(episode => Number(episode.season)).filter(Number.isInteger))].sort((a, b) => a - b);
         const statusClass = completion === 100 ? 'text-green-500' : 
                            completion === -1 ? 'text-gray-500' :
                            completion < 50 ? 'text-red-500' : 'text-yellow-500';
@@ -1536,6 +1607,20 @@
                             </div>
                         </div>
                     </div>
+                    ${imdbId ? `
+                        <div class="flex flex-wrap gap-2">
+                            <a href="https://www.imdb.com/title/${imdbId}/" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-lg bg-amber-500/15 text-amber-200 hover:bg-amber-500/25 text-sm font-semibold">Open on IMDb</a>
+                            ${missingSeasons.map(season => `<a href="https://debridmediamanager.com/show/${imdbId}/${season}" target="_blank" rel="noopener noreferrer" class="px-3 py-2 rounded-lg bg-primary-500/15 text-primary-200 hover:bg-primary-500/25 text-sm font-semibold">DMM: Season ${season}</a>`).join('')}
+                        </div>
+                    ` : ''}
+                    ${Array.isArray(series.missingEpisodes) && series.missingEpisodes.length > 0 ? `
+                        <div class="bg-red-950/30 border border-red-500/20 rounded-lg p-4">
+                            <h3 class="text-sm font-semibold text-red-300 mb-2">Missing episodes (${series.missingEpisodes.length})</h3>
+                            <ul class="space-y-1 text-sm text-plex-light">
+                                ${series.missingEpisodes.map(episode => `<li><span class="font-mono text-red-200">S${String(episode.season).padStart(2, '0')}E${String(episode.episode).padStart(2, '0')}</span> — ${escapeHtml(episode.title || 'Unknown title')}${episode.air_date ? ` <span class="text-xs">(${escapeHtml(episode.air_date)})</span>` : ''}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
                     
                     ${series.folders && series.folders.length > 0 ? `
                         <div class="bg-plex-darker rounded-lg p-4">
@@ -1629,10 +1714,14 @@
                         </div>
                     ` : ''}
                     
-                    <div class="flex">
-                        <button data-action="analyze-series-modal" data-series-id="${series.id}"
-                                class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-800 transition shadow-md" title="Analyze this series for missing episodes">
-                            Analyze Series
+                    <div class="flex gap-3">
+                        <button data-action="refresh-series-from-plex" data-series-id="${series.id}"
+                                class="flex-1 py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-800 transition shadow-md" title="Fetch this show's current episodes from Plex and recalculate only this series">
+                            Refresh from Plex
+                        </button>
+                        <button data-action="close-modal"
+                                class="py-3 px-4 bg-plex-gray text-plex-white rounded-lg font-semibold hover:bg-opacity-70 transition" title="Close window">
+                            Close
                         </button>
                     </div>
                 </div>
@@ -2165,6 +2254,15 @@
                     </h3>
                     
                     <div class="space-y-4 bg-plex-darker rounded-lg p-4">
+                        <div class="border-b border-plex-gray pb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="font-semibold text-plex-white">Remote Plex Server</span>
+                                <span class="text-xs ${apiSettings.plex?.configured ? 'text-green-400' : 'text-amber-400'}">${apiSettings.plex?.configured ? 'Configured' : 'Not configured'}</span>
+                            </div>
+                            <input type="url" id="plex-url" placeholder="http://your-plex-server:32400" value="${escapeHtml(apiSettings.plex?.url || '')}" data-original="${escapeHtml(apiSettings.plex?.url || '')}" class="w-full px-3 py-2 mb-2 bg-plex-dark text-white rounded border border-plex-gray focus:border-primary-500 focus:outline-none">
+                            <input type="password" id="plex-token" placeholder="Plex token" value="${escapeHtml(apiSettings.plex?.token || '')}" data-original="${escapeHtml(apiSettings.plex?.token || '')}" class="w-full px-3 py-2 bg-plex-dark text-white rounded border border-plex-gray focus:border-primary-500 focus:outline-none">
+                            <p class="text-xs text-surface-400 mt-1">Use this instead of a local Plex database.</p>
+                        </div>
                         <!-- TMDb API -->
                         <div class="border-b border-plex-gray pb-4">
                             <div class="flex items-center justify-between mb-2">
@@ -2902,6 +3000,8 @@
         
         const tmdbInput = document.getElementById('api-tmdb');
         const thetvdbInput = document.getElementById('api-thetvdb');
+        const plexUrlInput = document.getElementById('plex-url');
+        const plexTokenInput = document.getElementById('plex-token');
         
         console.log('[SaveAPIKeys] Inputs found:', {
             tmdb: !!tmdbInput,
@@ -2924,6 +3024,13 @@
 
         if (isChanged(thetvdbInput)) {
             payload.thetvdb = thetvdbInput.value.trim();
+        }
+        const plexUrlChanged = isChanged(plexUrlInput);
+        const plexTokenChanged = isChanged(plexTokenInput);
+        if (plexUrlChanged || plexTokenChanged) {
+            payload.plex = {};
+            if (plexUrlChanged) payload.plex.url = plexUrlInput.value.trim();
+            if (plexTokenChanged) payload.plex.token = plexTokenInput.value.trim();
         }
         
         console.log('[SaveAPIKeys] Payload to save:', payload);

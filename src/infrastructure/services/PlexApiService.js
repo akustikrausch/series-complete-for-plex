@@ -119,6 +119,37 @@ class PlexApiService {
   }
 
   /**
+   * Load a show together with its seasons and episode numbers.  The list view
+   * endpoint only supplies counts, which is insufficient for identifying a
+   * specific missing episode.
+   */
+  async getSeriesWithEpisodes(show) {
+    const seasons = await this.getSeasonsForSeries(show.ratingKey);
+    const populatedSeasons = await Promise.all(seasons
+      .filter(season => Number(season.index) > 0)
+      .map(async season => {
+        const episodes = await this.getEpisodesForSeason(season.ratingKey);
+        return {
+          season_number: Number(season.index),
+          episode_count: episodes.length,
+          episodes: episodes
+            .filter(episode => Number(episode.index) > 0)
+            .map(episode => ({
+              episode_number: Number(episode.index),
+              title: this._decodeHtmlEntities(episode.title),
+              air_date: episode.originallyAvailableAt || null,
+              available: true
+            }))
+        };
+      }));
+
+    return {
+      ...this._mapShowToSeries(show),
+      seasons: populatedSeasons
+    };
+  }
+
+  /**
    * Decode HTML entities that the Plex API returns in text fields
    * (e.g. &#x27; → ', &amp; → &, &lt; → <, &gt; → >, &quot; → ")
    * @param {string} str
@@ -145,19 +176,19 @@ class PlexApiService {
   _mapShowToSeries(show) {
     const genres = Array.isArray(show.Genre)
       ? show.Genre.map(g => g.tag).join(',')
-      : '';
+      : (show.tags_genre || '');
 
     return {
-      id: parseInt(show.ratingKey, 10) || show.ratingKey,
+      id: parseInt(show.ratingKey || show.id, 10) || show.ratingKey || show.id,
       title: this._decodeHtmlEntities(show.title),
       year: show.year,
       studio: this._decodeHtmlEntities(show.studio),
-      content_rating: show.contentRating,
+      content_rating: show.contentRating || show.content_rating,
       summary: this._decodeHtmlEntities(show.summary),
-      originally_available_at: show.originallyAvailableAt,
+      originally_available_at: show.originallyAvailableAt || show.originally_available_at,
       tags_genre: genres,
-      episode_count: show.leafCount || 0,
-      season_count: show.childCount || 0,
+      episode_count: show.leafCount ?? show.episode_count ?? 0,
+      season_count: show.childCount ?? show.season_count ?? 0,
       folders: [],
       seasons: []
     };

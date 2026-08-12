@@ -67,14 +67,22 @@ class AdvancedSearch {
                         </div>
                     </div>
 
-                    <!-- Status Filter (pill buttons) -->
+                    <!-- Independent completion and broadcast-status filters -->
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Status</label>
-                        <div class="flex gap-2" id="status-filter-group">
-                            <button data-status="all" class="status-pill active px-4 py-1.5 rounded-lg text-xs font-medium transition-all">All</button>
-                            <button data-status="complete" class="status-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Complete</button>
-                            <button data-status="incomplete" class="status-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Incomplete</button>
-                            <button data-status="critical" class="status-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Critical (&lt;50%)</button>
+                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Library completion</label>
+                        <div class="flex flex-wrap gap-2" id="completion-filter-group">
+                            <button data-completion="all" class="completion-pill active px-4 py-1.5 rounded-lg text-xs font-medium transition-all">All</button>
+                            <button data-completion="complete" class="completion-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Complete</button>
+                            <button data-completion="incomplete" class="completion-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Incomplete</button>
+                            <button data-completion="critical" class="completion-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Critical (&lt;50%)</button>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-semibold text-surface-500 uppercase tracking-wider">Series status</label>
+                        <div class="flex flex-wrap gap-2" id="broadcast-filter-group">
+                            <button data-broadcast="all" class="broadcast-pill active px-4 py-1.5 rounded-lg text-xs font-medium transition-all">All</button>
+                            <button data-broadcast="ongoing" class="broadcast-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Ongoing</button>
+                            <button data-broadcast="ended" class="broadcast-pill px-4 py-1.5 rounded-lg text-xs font-medium transition-all">Ended / Canceled</button>
                         </div>
                     </div>
 
@@ -160,11 +168,13 @@ class AdvancedSearch {
                 return;
             }
 
-            // Status pill clicks
-            const statusPill = e.target.closest('.status-pill');
-            if (statusPill) {
-                panel.querySelectorAll('.status-pill').forEach(p => p.classList.remove('active'));
-                statusPill.classList.add('active');
+            // Each pill group is independent, allowing combinations such as
+            // Incomplete + Ongoing.
+            const filterPill = e.target.closest('.completion-pill, .broadcast-pill');
+            if (filterPill) {
+                const groupClass = filterPill.classList.contains('completion-pill') ? '.completion-pill' : '.broadcast-pill';
+                panel.querySelectorAll(groupClass).forEach(p => p.classList.remove('active'));
+                filterPill.classList.add('active');
                 this.updateResultCount();
                 return;
             }
@@ -257,8 +267,8 @@ class AdvancedSearch {
         const yearStart = document.getElementById('year-start')?.value;
         const yearEnd = document.getElementById('year-end')?.value;
 
-        // Get active status
-        const activeStatus = document.querySelector('.status-pill.active')?.dataset.status || 'all';
+        const completionFilter = document.querySelector('.completion-pill.active')?.dataset.completion || 'all';
+        const broadcastFilter = document.querySelector('.broadcast-pill.active')?.dataset.broadcast || 'all';
 
         // Get selected genres and networks from active tags
         const selectedGenres = Array.from(document.querySelectorAll('#genre-filters .filter-tag.active'))
@@ -299,7 +309,7 @@ class AdvancedSearch {
             const completeness = expectedEpisodes > 0
                 ? (series.episode_count / expectedEpisodes) * 100
                 : 0;
-            switch (activeStatus) {
+            switch (completionFilter) {
                 case 'complete':
                     if (completeness < 100) return false;
                     break;
@@ -310,6 +320,10 @@ class AdvancedSearch {
                     if (completeness >= 50) return false;
                     break;
             }
+
+            const broadcastStatus = String(series.seriesStatus || series.status || '').toLowerCase();
+            if (broadcastFilter === 'ongoing' && !['continuing', 'upcoming', 'running', 'returning series', 'in production', 'planned', 'pilot'].includes(broadcastStatus)) return false;
+            if (broadcastFilter === 'ended' && !['ended', 'finished', 'canceled', 'cancelled', 'cancelled series'].includes(broadcastStatus)) return false;
 
             return true;
         });
@@ -358,10 +372,9 @@ class AdvancedSearch {
         const yearEndInput = document.getElementById('year-end');
         if (yearEndInput) yearEndInput.value = '';
 
-        // Reset status pills
-        document.querySelectorAll('.status-pill').forEach(p => p.classList.remove('active'));
-        const allPill = document.querySelector('.status-pill[data-status="all"]');
-        if (allPill) allPill.classList.add('active');
+        document.querySelectorAll('.completion-pill, .broadcast-pill').forEach(p => p.classList.remove('active'));
+        document.querySelector('.completion-pill[data-completion="all"]')?.classList.add('active');
+        document.querySelector('.broadcast-pill[data-broadcast="all"]')?.classList.add('active');
 
         // Reset all tags
         document.querySelectorAll('.filter-tag.active').forEach(tag => tag.classList.remove('active'));

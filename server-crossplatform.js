@@ -494,7 +494,7 @@ async function testApiConfiguration() {
 
 // Cache management
 let analysisCache = new Map();
-const HA_DATA_DIR = isHomeAssistant() ? '/data' : __dirname;
+const HA_DATA_DIR = isHomeAssistant() ? '/data' : (process.env.APP_DATA_DIR || __dirname);
 const CACHE_FILE = path.join(HA_DATA_DIR, 'analysis-cache.json');
 
 async function loadCache() {
@@ -559,14 +559,17 @@ function mergeAnalysisCache(seriesList) {
     const cached = analysisCache.get(series.id);
     if (cached && cached.metadata) {
       const meta = cached.metadata;
-      const totalEpisodes = meta.totalEpisodes || 0;
+      const totalEpisodes = meta.comparisonEpisodes || meta.totalEpisodes || 0;
       const localEpisodes = series.episode_count || 0;
       series.totalSeasons = meta.totalSeasons || series.totalSeasons;
       series.totalEpisodes = totalEpisodes;
+      series.scheduledEpisodes = meta.comparisonEpisodes ? (meta.totalEpisodes || 0) : 0;
       series.completionPercentage = totalEpisodes > 0
         ? Math.round((localEpisodes / totalEpisodes) * 100)
         : 0;
       series.seriesStatus = meta.status || series.seriesStatus;
+      series.missingEpisodes = meta.missingEpisodes || [];
+      series.imdbId = meta.imdbId || series.imdbId;
       series.endYear = meta.lastAired ? new Date(meta.lastAired).getFullYear() : series.endYear;
       series.analyzedAt = cached.analyzedAt;
       merged++;
@@ -893,6 +896,31 @@ app.get('/api/find-plex-database', async (req, res) => {
 app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
   monitoring.logPerformance('analysis', 'start');
   const { series, useVerified = false, useOpenAI = false, silent = false } = req.body;
+  let analysisSeries = series;
+
+  // Keep library scans fast in remote mode. Fetch this show's exact Plex
+  // episode indexes only when it is being analyzed.
+  if (isApiMode()) {
+    try {
+      const plexApiService = container.get('plexApiService');
+      analysisSeries = await plexApiService.getSeriesWithEpisodes({ ...series, ratingKey: series.id });
+      // getSeriesWithEpisodes retains fields from the browser's input record.
+      // Derive the ownership counts from its freshly fetched episode indexes so
+      // a stale client value (for example 6) cannot survive a Plex refresh
+      // that just found all 8 episodes.
+      if (Array.isArray(analysisSeries.seasons)) {
+        analysisSeries.episode_count = analysisSeries.seasons.reduce(
+          (total, season) => total + (season.episodes?.length ?? season.episode_count ?? 0),
+          0
+        );
+        analysisSeries.season_count = analysisSeries.seasons.filter(
+          season => (season.episodes?.length ?? season.episode_count ?? 0) > 0
+        ).length;
+      }
+    } catch (error) {
+      return res.status(502).json({ success: false, error: `Could not load episodes from Plex: ${error.message}` });
+    }
+  }
   
   // Start WebSocket task tracking (only if websocketService is available and not silent)
   let taskId = null;
@@ -915,11 +943,20 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
     // Check cache first
     if (analysisCache.has(series.id)) {
       const cached = analysisCache.get(series.id);
-      metadata = cached.metadata;
-      console.log(`Using cached data for: ${series.title}`);
+      const apiConfigs = config.getApiConfigs();
+      const hasExternalMetadata = Boolean(apiConfigs.tmdb?.apiKey || apiConfigs.thetvdb?.apiKey);
+      // A previous local fallback merely mirrors Plex's count. Once a metadata
+      // API is configured, refresh it instead of preserving a false 100%.
+      if ((cached.metadata?.source === 'local' && hasExternalMetadata) ||
+          (cached.metadata?.source === 'TMDb' && !cached.metadata?.imdbId)) {
+        console.log(`Refreshing local fallback with external metadata: ${series.title}`);
+      } else {
+        metadata = cached.metadata;
+        console.log(`Using cached data for: ${series.title}`);
+      }
       
       // Update WebSocket progress if available
-      if (taskId) {
+      if (metadata && taskId) {
         try {
           const websocketService = require('./services/websocket-service');
           websocketService.updateAnalysisProgress(taskId, 1, { cached: true });
@@ -927,7 +964,9 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
           // Ignore WebSocket errors
         }
       }
-    } else {
+    }
+
+    if (!metadata) {
       // Analyze series using API service
       if (taskId) {
         try {
@@ -938,7 +977,7 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
         }
       }
       
-      metadata = await tvApiService.analyzeSeries(series, { 
+      metadata = await tvApiService.analyzeSeries(analysisSeries, {
         useMultipleApis: useVerified,
         useOpenAI: useOpenAI 
       });
@@ -963,21 +1002,41 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
       analysisCache.set(series.id, cacheEntry);
       await saveCache();
     }
+
+    // Metadata can be cached, but Plex ownership must be evaluated on every
+    // analysis so a newly added episode immediately clears its old gap.
+    if (metadata && analysisSeries.seasons) {
+      metadata.missingEpisodes = tvApiService.calculateMissingEpisodes(analysisSeries.seasons, metadata);
+      const cacheEntry = analysisCache.get(series.id);
+      if (cacheEntry) {
+        cacheEntry.metadata = metadata;
+        await saveCache();
+      }
+    }
     
     // Calculate completion percentage
-    const totalEpisodes = metadata.totalEpisodes || 0;
-    const localEpisodes = series.episode_count || 0;
+    const totalEpisodes = metadata.comparisonEpisodes || metadata.totalEpisodes || 0;
+    // In Plex API mode this is the just-fetched show record, rather than the
+    // older browser-side library snapshot. A single-series refresh must report
+    // the episodes Plex has right now.
+    const localEpisodes = analysisSeries.episode_count || 0;
     const completionPercentage = totalEpisodes > 0 
-      ? Math.round((localEpisodes / totalEpisodes) * 100)
+      ? Math.min(100, Math.round((localEpisodes / totalEpisodes) * 100))
       : 0;
     
     const result = {
       id: series.id,
       title: escapeHtml(series.title),
-      localSeasons: series.season_count || 0,
+      localSeasons: analysisSeries.season_count || 0,
       localEpisodes: localEpisodes,
+      localSeries: {
+        season_count: analysisSeries.season_count || 0,
+        episode_count: localEpisodes,
+        seasons: analysisSeries.seasons || []
+      },
       totalSeasons: metadata.totalSeasons || 0,
       totalEpisodes: totalEpisodes,
+      scheduledEpisodes: metadata.comparisonEpisodes ? metadata.totalEpisodes : 0,
       completionPercentage: completionPercentage,
       missingEpisodes: metadata.missingEpisodes || [],
       overview: escapeHtml(metadata.overview || series.summary || ''),
@@ -985,7 +1044,8 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
       lastAired: metadata.lastAired,
       status: metadata.status || 'Unknown',
       dataSource: metadata.source || 'unknown',
-      confidence: metadata.confidence || 'low'
+      confidence: metadata.confidence || 'low',
+      imdbId: metadata.imdbId || null
     };
     
     monitoring.logPerformance('analysis', 'end');
@@ -1216,6 +1276,12 @@ app.get('/api/settings', async (req, res) => {
     const showFull = req.query.full === 'true' && isLoopback;
     
     const settings = {
+      plex: {
+        name: 'Plex server',
+        configured: !!(config.get('plex.url') && config.get('plex.token')),
+        url: config.get('plex.url') || '',
+        token: showFull ? (config.get('plex.token') || '') : maskApiKey(config.get('plex.token'), 6)
+      },
       tmdb: {
         name: 'The Movie Database (TMDb)',
         configured: !!(apiConfigs.tmdb?.apiKey && apiConfigs.tmdb.apiKey.trim()),
@@ -1291,7 +1357,7 @@ app.get('/api/settings', async (req, res) => {
 
 app.post('/api/settings', validateApiKeys, async (req, res) => {
   try {
-    const { tmdb, thetvdb, thetvdbPin, openai, omdb } = req.body;
+    const { tmdb, thetvdb, thetvdbPin, openai, omdb, plex } = req.body;
 
     // Ensure config is loaded
     await config.init();
@@ -1319,6 +1385,25 @@ app.post('/api/settings', validateApiKeys, async (req, res) => {
     
     if (omdb && omdb.trim()) {
       apiConfigs.omdb = { apiKey: omdb.trim(), enabled: true };
+    }
+
+    if (plex) {
+      if (typeof plex !== 'object' || Array.isArray(plex)) {
+        return res.status(400).json({ success: false, error: 'Invalid Plex configuration' });
+      }
+      const currentPlex = config.get('plex') || {};
+      const plexUrlValue = typeof plex.url === 'string' && plex.url.trim() ? plex.url.trim() : currentPlex.url;
+      const plexTokenValue = typeof plex.token === 'string' && plex.token.trim() ? plex.token.trim() : currentPlex.token;
+      if (!plexUrlValue || !plexTokenValue) {
+        return res.status(400).json({ success: false, error: 'Plex URL and token are required together' });
+      }
+      const plexUrl = new URL(plexUrlValue);
+      if (!['http:', 'https:'].includes(plexUrl.protocol)) {
+        return res.status(400).json({ success: false, error: 'Plex URL must use http or https' });
+      }
+      config.set('plex', { url: plexUrl.toString().replace(/\/$/, ''), token: plexTokenValue, libraryIds: currentPlex.libraryIds || [] });
+      await config.save();
+      container.get('plexApiService').resetClient();
     }
     
     // Update configuration
@@ -1475,7 +1560,10 @@ async function startServer() {
     });
     
     // Start listening
-    const HOST = isHomeAssistant() ? '0.0.0.0' : 'localhost';
+    // Keep the default loopback-only because the settings endpoints can store
+    // API tokens. Deployments that are protected on a LAN can opt in to a
+    // public bind with SERVER_HOST=0.0.0.0.
+    const HOST = process.env.SERVER_HOST || 'localhost';
     server.listen(PORT, HOST, () => {
       const url = `http://${HOST}:${PORT}`;
       console.log('╔═══════════════════════════════════════════════════════════════╗');
