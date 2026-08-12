@@ -494,7 +494,7 @@ async function testApiConfiguration() {
 
 // Cache management
 let analysisCache = new Map();
-const HA_DATA_DIR = isHomeAssistant() ? '/data' : __dirname;
+const HA_DATA_DIR = isHomeAssistant() ? '/data' : (process.env.APP_DATA_DIR || __dirname);
 const CACHE_FILE = path.join(HA_DATA_DIR, 'analysis-cache.json');
 
 async function loadCache() {

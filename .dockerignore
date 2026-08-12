@@ -1,0 +1,9 @@
+.git
+.github
+node_modules
+config.local.json
+config.json
+analysis-cache.json
+api-cache
+themovidedb
+npm-debug.log

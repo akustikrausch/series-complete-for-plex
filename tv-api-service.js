@@ -169,7 +169,8 @@ let statsWriteTimer = null;
 
 // Cache settings
 const HA_MODE = require('fs').existsSync('/data/options.json');
-const CACHE_DIR = path.join(HA_MODE ? '/data' : __dirname, 'api-cache');
+const APP_DATA_DIR = HA_MODE ? '/data' : (process.env.APP_DATA_DIR || __dirname);
+const CACHE_DIR = path.join(APP_DATA_DIR, 'api-cache');
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Token storage

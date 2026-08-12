@@ -5,7 +5,7 @@ class ConfigService {
     constructor() {
         const { existsSync } = require('fs');
         const isHA = existsSync('/data/options.json');
-        const baseDir = isHA ? '/data' : path.join(__dirname, '..');
+        const baseDir = isHA ? '/data' : (process.env.APP_DATA_DIR || path.join(__dirname, '..'));
         this.configPath = path.join(baseDir, 'config.json');
         this.localConfigPath = path.join(baseDir, 'config.local.json');
         this.config = null;
@@ -45,9 +45,27 @@ class ConfigService {
 
         // Validate and migrate config if needed
         await this.validateAndMigrateConfig();
+        this.applyRuntimeOverrides();
         
         this.initialized = true;
         return this.config;
+    }
+
+    /**
+     * Apply deployment-specific credentials without writing them to the config
+     * file. This keeps secrets in the runtime environment (for example, a
+     * Komodo-managed secret) while retaining the normal UI configuration flow.
+     */
+    applyRuntimeOverrides() {
+        const plexUrl = process.env.PLEX_URL?.trim();
+        const plexToken = process.env.PLEX_TOKEN?.trim();
+        const tmdbApiKey = process.env.TMDB_API_KEY?.trim();
+        const thetvdbApiKey = process.env.THETVDB_API_KEY?.trim();
+
+        if (plexUrl) this.config.plex.url = plexUrl;
+        if (plexToken) this.config.plex.token = plexToken;
+        if (tmdbApiKey) this.config.apis.tmdb.apiKey = tmdbApiKey;
+        if (thetvdbApiKey) this.config.apis.thetvdb.apiKey = thetvdbApiKey;
     }
 
     /**
