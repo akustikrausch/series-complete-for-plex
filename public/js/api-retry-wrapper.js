@@ -82,12 +82,18 @@ class ApiRetryWrapper {
                         // Update with proper field names including seasons data
                         window.state.series[seriesIndex] = { 
                             ...window.state.series[seriesIndex],
+                            // A targeted Plex refresh returns the current local
+                            // episode indexes in localSeries. Preserve those
+                            // values instead of leaving the stale browser cache
+                            // (for example, 6/8 after Plex already has 8/8).
+                            season_count: result.localSeries?.season_count ?? result.localSeasons ?? window.state.series[seriesIndex].season_count,
+                            episode_count: result.localEpisodes ?? window.state.series[seriesIndex].episode_count,
+                            seasons: result.localSeries?.seasons ?? window.state.series[seriesIndex].seasons,
                             totalSeasons: result.totalSeasons,
                             totalEpisodes: result.totalEpisodes,
                             completionPercentage: result.completionPercentage,
                             seriesStatus: result.status,
                             endYear: result.lastAired ? new Date(result.lastAired).getFullYear() : null,
-                            seasons: result.seasons || [],
                             missingEpisodes: result.missingEpisodes || [],
                             imdbId: result.imdbId || null,
                             thumb: result.thumb,

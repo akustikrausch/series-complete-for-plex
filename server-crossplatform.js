@@ -904,6 +904,19 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
     try {
       const plexApiService = container.get('plexApiService');
       analysisSeries = await plexApiService.getSeriesWithEpisodes({ ...series, ratingKey: series.id });
+      // getSeriesWithEpisodes retains fields from the browser's input record.
+      // Derive the ownership counts from its freshly fetched episode indexes so
+      // a stale client value (for example 6) cannot survive a Plex refresh
+      // that just found all 8 episodes.
+      if (Array.isArray(analysisSeries.seasons)) {
+        analysisSeries.episode_count = analysisSeries.seasons.reduce(
+          (total, season) => total + (season.episodes?.length ?? season.episode_count ?? 0),
+          0
+        );
+        analysisSeries.season_count = analysisSeries.seasons.filter(
+          season => (season.episodes?.length ?? season.episode_count ?? 0) > 0
+        ).length;
+      }
     } catch (error) {
       return res.status(502).json({ success: false, error: `Could not load episodes from Plex: ${error.message}` });
     }
