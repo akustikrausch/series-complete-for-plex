@@ -87,6 +87,14 @@
                     if (modal) modal.remove();
                 }
             }
+
+            // Refreshes exactly one show: fetch current Plex episodes and
+            // recompute its gaps without scanning or analyzing the library.
+            const refreshSeriesBtn = e.target.closest('[data-action="refresh-series-from-plex"]');
+            if (refreshSeriesBtn) {
+                const seriesId = parseInt(refreshSeriesBtn.dataset.seriesId);
+                if (seriesId) refreshSeriesFromPlex(seriesId, refreshSeriesBtn);
+            }
             
             // Handle toggle season buttons
             const toggleSeasonBtn = e.target.closest('[data-action="toggle-season"]');
@@ -1063,6 +1071,9 @@
             if (seriesIndex !== -1) {
                 state.series[seriesIndex] = {
                     ...state.series[seriesIndex],
+                    season_count: data.localSeries?.season_count ?? data.localSeasons ?? state.series[seriesIndex].season_count,
+                    episode_count: data.localEpisodes ?? state.series[seriesIndex].episode_count,
+                    seasons: data.localSeries?.seasons ?? state.series[seriesIndex].seasons,
                     totalSeasons: data.totalSeasons,
                     totalEpisodes: data.totalEpisodes,
                     scheduledEpisodes: data.scheduledEpisodes || 0,
@@ -1093,6 +1104,26 @@
             throw error; // Re-throw for batch processing to catch
         }
     };
+
+    async function refreshSeriesFromPlex(seriesId, button) {
+        const series = state.series.find(s => s.id === seriesId);
+        if (!series) return;
+
+        const originalContent = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="inline-flex items-center gap-2"><span class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></span> Refreshing Plex…</span>';
+
+        try {
+            await analyzeSeries(seriesId, false);
+            showNotification('success', `${series.title} refreshed from Plex`);
+            showDetails(seriesId);
+        } catch (error) {
+            console.error(`Failed to refresh ${series.title} from Plex:`, error);
+            showNotification('error', `Could not refresh ${series.title}: ${error.message}`);
+            button.disabled = false;
+            button.innerHTML = originalContent;
+        }
+    }
 
     // Display analysis results
     function displayAnalysisResults(seriesId, analysis) {
@@ -1683,10 +1714,14 @@
                         </div>
                     ` : ''}
                     
-                    <div class="flex">
-                        <button data-action="analyze-series-modal" data-series-id="${series.id}"
-                                class="w-full py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-800 transition shadow-md" title="Analyze this series for missing episodes">
-                            Analyze Series
+                    <div class="flex gap-3">
+                        <button data-action="refresh-series-from-plex" data-series-id="${series.id}"
+                                class="flex-1 py-3 px-4 bg-gradient-to-r from-primary-500 to-primary-700 text-white rounded-lg font-semibold hover:from-primary-600 hover:to-primary-800 transition shadow-md" title="Fetch this show's current episodes from Plex and recalculate only this series">
+                            Refresh from Plex
+                        </button>
+                        <button data-action="close-modal"
+                                class="py-3 px-4 bg-plex-gray text-plex-white rounded-lg font-semibold hover:bg-opacity-70 transition" title="Close window">
+                            Close
                         </button>
                     </div>
                 </div>

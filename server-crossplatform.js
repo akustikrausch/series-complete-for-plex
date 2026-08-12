@@ -1003,7 +1003,10 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
     
     // Calculate completion percentage
     const totalEpisodes = metadata.comparisonEpisodes || metadata.totalEpisodes || 0;
-    const localEpisodes = series.episode_count || 0;
+    // In Plex API mode this is the just-fetched show record, rather than the
+    // older browser-side library snapshot. A single-series refresh must report
+    // the episodes Plex has right now.
+    const localEpisodes = analysisSeries.episode_count || 0;
     const completionPercentage = totalEpisodes > 0 
       ? Math.min(100, Math.round((localEpisodes / totalEpisodes) * 100))
       : 0;
@@ -1011,8 +1014,13 @@ app.post('/api/analyze-series', validateSeriesAnalysis, async (req, res) => {
     const result = {
       id: series.id,
       title: escapeHtml(series.title),
-      localSeasons: series.season_count || 0,
+      localSeasons: analysisSeries.season_count || 0,
       localEpisodes: localEpisodes,
+      localSeries: {
+        season_count: analysisSeries.season_count || 0,
+        episode_count: localEpisodes,
+        seasons: analysisSeries.seasons || []
+      },
       totalSeasons: metadata.totalSeasons || 0,
       totalEpisodes: totalEpisodes,
       scheduledEpisodes: metadata.comparisonEpisodes ? metadata.totalEpisodes : 0,
