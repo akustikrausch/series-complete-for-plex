@@ -1025,9 +1025,9 @@ async function testTmdbApi() {
     try {
         // Force reload config to get latest saved keys
         const config = require('./services/ConfigService');
-        await config.init();
+        await config.init(true);
         await initConfig();
-        
+
         const apiKey = getTmdbApiKey();
         if (!apiKey) {
             return {
@@ -1058,6 +1058,9 @@ async function testTmdbApi() {
 
 async function testThetvdbApi() {
     try {
+        // Force reload config to get latest saved keys
+        const config = require('./services/ConfigService');
+        await config.init(true);
         await initConfig();
 
         const apiKey = getThetvdbApiKey();
@@ -1111,7 +1114,9 @@ async function testThetvdbApi() {
 
 async function testOpenAiApi() {
     try {
-        // Ensure config is loaded
+        // Force reload config to get latest saved keys
+        const config = require('./services/ConfigService');
+        await config.init(true);
         await initConfig();
         
         const apiKey = getOpenaiApiKey();
