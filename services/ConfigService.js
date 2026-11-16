@@ -15,8 +15,8 @@ class ConfigService {
     /**
      * Initialize configuration - load or create config file
      */
-    async init() {
-        if (this.initialized) return this.config;
+    async init(force = false) {
+        if (this.initialized && !force) return this.config;
 
         // Check for Home Assistant mode
         const { existsSync } = require('fs');
